@@ -72,8 +72,10 @@ src/
     empreinte.ts  sérialisation stable + SHA-256
     fichiers.ts   slugification et noms de fichiers
     lotsDeBase.ts constante des 13 lots de base (annexe A)
-  donnees/      Client Prisma et fonctions d'accès par entité (lecture et écriture), qui prennent
-                l'utilisateur en paramètre : testables hors de Next
+  donnees/      Client Prisma et fonctions d'accès par entité (lecture et écriture), testables hors
+                de Next. Elles ne vérifient pas les droits (tout le monde voit tout dans le Socle) :
+                la session et le rôle sont contrôlés dans actions/. Elles reçoivent l'identifiant de
+                l'utilisateur seulement quand elles l'enregistrent (auteur d'un document)
   actions/      Server Actions : session/rôle → Zod → appel de donnees/ → revalidatePath
   documents/
     schemas.ts    types + schémas Zod des objets de document (§ 7)
@@ -100,7 +102,9 @@ src/
 - **Montants :** `Decimal` Prisma et `decimal.js` ; jamais de `number` JavaScript dans un calcul
   d'argent. L'arrondi au centime se fait seulement à l'affichage et dans l'objet document.
 - **Saisie :** enregistrement quand on quitte le champ, sans bouton « Enregistrer ». En cas d'édition
-  simultanée du même champ, c'est la dernière saisie qui gagne (accepté pour une petite équipe).
+  simultanée du même champ par deux personnes, c'est la dernière écriture reçue qui gagne (accepté pour
+  une petite équipe). Dans un même navigateur, l'ordre des saisies est garanti : Next.js envoie les
+  Server Actions d'un client une par une, la deuxième attendant la fin de la première.
 - **PDF :** une seule instance Chromium par processus, lancée au premier besoin puis réutilisée, avec
   au plus 2 générations simultanées. Cette limite n'est tenue que parce que l'app tourne en **une seule
   réplique** ; passer à plusieurs répliques demanderait une file d'attente partagée.
@@ -341,8 +345,11 @@ Le gabarit imprime `contenu.dateSignature` si elle existe, sinon `cadre.dateGene
 4. si elle est identique à celle de la dernière version de la série, ne rien créer et renvoyer cette
    version ;
 5. rendre le PDF **à partir de cet objet** ;
-6. enregistrer **ce même objet**, son empreinte et le PDF (§ 8, « Versions et concurrence »). L'objet
-   n'est jamais reconstruit après le rendu : le JSON stocké est exactement celui qui a produit le PDF.
+6. relire la base et recalculer l'empreinte : si les données ont changé pendant le rendu, abandonner ce
+   PDF (« Les données ont changé pendant la génération. Relancez-la pour obtenir un document à jour. »)
+   plutôt que d'en faire la dernière version ;
+7. enregistrer **ce même objet**, son empreinte et le PDF (§ 8, « Versions et concurrence »). L'objet
+   relu à l'étape 6 ne sert qu'à comparer : le JSON stocké est exactement celui qui a produit le PDF.
 
 - **Marché :** généré depuis l'aperçu du lot, le panneau du lot ou « Générer les marchés manquants ».
   Le type (gré à gré ou sous-traitance) suit la nature actuelle du lot.
@@ -419,7 +426,9 @@ en majuscules (comme `nomFichierRecap` dans la maquette). `<REF>` est la référ
 
 ### Versions et concurrence
 
-- Le PDF est produit **hors transaction**, avec un délai maximum de 30 s.
+- Le PDF est produit **hors transaction**, avec un délai maximum de 30 s. Une génération dont les
+  données ont changé pendant le rendu est abandonnée (§ 7, étape 6) : un PDF périmé ne passe jamais
+  devant une version à jour.
 - L'insertion se fait ensuite dans une transaction qui **verrouille la série** (chantierId, lotId)
   par un verrou consultatif Postgres, relit la dernière version, compare l'empreinte (si une version
   identique vient d'être créée entre-temps, on la renvoie) et insère `version = max + 1`.
