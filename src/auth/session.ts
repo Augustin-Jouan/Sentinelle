@@ -11,11 +11,16 @@ export type UtilisateurConnecte = {
 	doitChangerMotDePasse: boolean;
 };
 
-/** Lue une fois par requête. Un compte bloqué n'a plus de session (le plugin admin les révoque). */
+/** Lue une fois par requête. Un compte banned est traité comme déconnecté (getSession ne le refuse pas). */
 export const utilisateurConnecte = cache(async (): Promise<UtilisateurConnecte | null> => {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session) return null;
-	const u = session.user as typeof session.user & { role?: string | null; doitChangerMotDePasse?: boolean | null };
+	const u = session.user as typeof session.user & {
+		role?: string | null;
+		doitChangerMotDePasse?: boolean | null;
+		banned?: boolean | null;
+	};
+	if (u.banned) return null;
 	return {
 		id: u.id,
 		nom: u.name,

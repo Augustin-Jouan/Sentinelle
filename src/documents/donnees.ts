@@ -1,5 +1,6 @@
 import { lireParametres } from '@/donnees/parametres';
 import { prisma } from '@/donnees/prisma';
+import { ErreurMetier } from '@/domaine/erreurs';
 import { batirMarche, batirRecap, type SourceChantier, type SourceLot, type SourceParametres } from './batir';
 import type { DonneesMarche, DonneesRecap } from './schemas';
 
@@ -37,7 +38,7 @@ function versSources(c: ChantierLu): { chantier: SourceChantier; lots: SourceLot
 
 export async function lireSources(chantierId: string): Promise<{ chantier: SourceChantier; lots: SourceLot[]; parametres: SourceParametres }> {
 	const [c, parametres] = await Promise.all([lireChantierBrut({ id: chantierId }), lireParametres()]);
-	if (!c) throw new Error('Chantier introuvable');
+	if (!c) throw new ErreurMetier('Chantier introuvable.');
 	return { ...versSources(c), parametres };
 }
 

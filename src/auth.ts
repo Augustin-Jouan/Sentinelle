@@ -16,15 +16,15 @@ export const auth = betterAuth({
 		},
 	},
 	account: { modelName: 'compte' },
-	// En E2E la suite enchaîne plus de 5 connexions en <60 s ; en production on garde le plafond.
-	rateLimit: process.env.E2E === '1'
-		? { enabled: false }
-		: {
-			enabled: true,
-			window: 60,
-			max: 100,
-			customRules: { '/sign-in/email': { window: 60, max: 5 } },
+	// En E2E la suite enchaîne plus de 5 connexions en <60 s ; on ne désactive que le plafond sign-in.
+	rateLimit: {
+		enabled: true,
+		window: 60,
+		max: 100,
+		customRules: {
+			'/sign-in/email': { window: 60, max: process.env.E2E === '1' ? 1_000 : 5 },
 		},
+	},
 	advanced: {
 		defaultCookieAttributes: { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' },
 	},

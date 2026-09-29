@@ -76,10 +76,6 @@ export async function creerCompte(p: { email: string; nom: string; role: 'admin'
 	return { id, motDePasse };
 }
 
-async function revoquerSessions(utilisateurId: string) {
-	await prisma.session.deleteMany({ where: { userId: utilisateurId } });
-}
-
 export async function reinitialiserMotDePasse(utilisateurId: string): Promise<string> {
 	const motDePasse = genererMotDePasse();
 	const hash = await hacherMotDePasse(motDePasse);
@@ -91,10 +87,13 @@ export async function reinitialiserMotDePasse(utilisateurId: string): Promise<st
 	return motDePasse;
 }
 
+/** Banned + révocation des sessions dans la même transaction (getSession ne lit pas banned). */
 export async function bloquerCompte(utilisateurId: string, parId: string): Promise<void> {
 	if (utilisateurId === parId) throw new ErreurMetier('Vous ne pouvez pas bloquer votre propre compte.');
-	await prisma.utilisateur.update({ where: { id: utilisateurId }, data: { banned: true } });
-	await revoquerSessions(utilisateurId);
+	await prisma.$transaction([
+		prisma.utilisateur.update({ where: { id: utilisateurId }, data: { banned: true } }),
+		prisma.session.deleteMany({ where: { userId: utilisateurId } }),
+	]);
 }
 
 export async function debloquerCompte(utilisateurId: string): Promise<void> {
