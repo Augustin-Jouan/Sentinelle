@@ -56,7 +56,7 @@ export function ReferentielArtisans({ artisans }: { artisans: ArtisanFiche[] }) 
 					<thead>
 						<tr className="border-b text-left text-muted-foreground">
 							{COLONNES.map((c) => <th key={c.champ} className="p-2 font-medium">{c.titre}</th>)}
-							<th className="p-2 font-medium">Active</th>
+							<th className="p-2 font-medium">Actif</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -68,7 +68,7 @@ export function ReferentielArtisans({ artisans }: { artisans: ArtisanFiche[] }) 
 									</td>
 								))}
 								<td className="p-2">
-									<Switch checked={a.actif} onCheckedChange={(v) => basculer(a, v)} aria-label={`${a.nom} active`} />
+									<Switch checked={a.actif} onCheckedChange={(v) => basculer(a, v)} aria-label={`${a.nom} actif`} />
 									{a.nombreLots > 0 && <span className="ml-2 text-xs text-muted-foreground">{a.nombreLots} lot{a.nombreLots > 1 ? 's' : ''}</span>}
 								</td>
 							</tr>
