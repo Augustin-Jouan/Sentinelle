@@ -43,7 +43,7 @@ Chaque sous-projet a sa propre spec, son plan et une livraison utilisable :
 | Interface | Tailwind CSS + shadcn/ui ; `cmdk` pour la recherche d'artisan |
 | Base de données | PostgreSQL 17 + Prisma ; montants en `Decimal` |
 | Écritures | Server Actions + validation Zod |
-| Authentification | Better Auth : e-mail + mot de passe, inscription fermée, plugin admin (rôles, blocage, création de comptes) |
+| Authentification | Better Auth : e-mail + mot de passe, inscription fermée, plugin admin (champs de rôle et de blocage, refus de connexion d'un compte bloqué) ; comptes écrits directement en base par l'application |
 | Visibilité | Tout utilisateur voit et modifie tous les chantiers **et le référentiel artisans** |
 | Rôles | `admin` (comptes, paramètres) et `user` |
 | PDF | Gabarits React rendus en HTML côté serveur puis imprimés par Playwright (Chromium) |
@@ -154,10 +154,11 @@ Document      id, chantierId → Chantier, lotId? → Lot (ON DELETE RESTRICT),
   la même série. L'historique affiche le type de chaque version.
 - **Unicité des versions :** Postgres considère par défaut deux `NULL` comme distincts. La contrainte
   est donc créée par une migration SQL avec `NULLS NOT DISTINCT` (Postgres 15 et plus).
-- **« Modifié depuis la génération » est calculé, jamais stocké.** On compare l'empreinte du
-  `contenu` actuel à celle de la dernière version de la série (§ 7).
-- **Blocage d'un compte :** on utilise `banned` du plugin admin de Better Auth (qui révoque les
-  sessions), et non un champ `actif` maison.
+- **« Modifié depuis la génération » est calculé, jamais stocké.** On compare l'empreinte de
+  `{ type, contenu }` actuels à celle de la dernière version de la série (§ 7).
+- **Blocage d'un compte :** on utilise le champ `banned` du plugin admin de Better Auth (le plugin
+  refuse alors la connexion), et non un champ `actif` maison. L'application pose `banned` et supprime
+  les sessions elle-même.
 - **`couleur`** est persistée dès le Socle pour le planning, mais aucun écran du Socle ne la modifie.
 
 ### Valeurs par défaut (reprises de la maquette)
@@ -295,8 +296,9 @@ Sans Mono, thème clair et sombre.
 Chaque objet est défini dans `documents/schemas.ts` par un type TypeScript et un schéma Zod. Il se
 compose de deux parties :
 
-- **`contenu`** : tout ce qui dépend du chantier, du lot et de l'entreprise. **Seul le contenu entre
-  dans l'empreinte.**
+- **`contenu`** : tout ce qui dépend du chantier, du lot et de l'entreprise. **Seuls `type` et
+  `contenu` entrent dans l'empreinte** : changer la nature d'un lot (gré à gré ↔ sous-traitance) change
+  donc l'empreinte, même si les textes se ressemblent.
 - **`cadre`** : l'en-tête SOCOREVE (lu dans `Parametres`) et la date de génération. Il est figé avec
   le document mais ne compte pas dans l'empreinte : modifier les paramètres ou changer de jour ne
   marque aucun document comme modifié.
@@ -323,7 +325,7 @@ DonneesRecap.contenu
   chargeAffaire, dateSignature?,
   lignes[] { numero, designation, entreprise?, montantTtc?, montantTtcTexte, tauxTva, tvaTexte,
              adresse, cp, commune, interlocuteur, telephone },
-  nombreLots, totalTtc, totalTtcTexte
+  nombreLots, totalLibelle ("Total marchés — 13 lots"), totalTtc, totalTtcTexte
   (montantTtc, tauxTva et totalTtc : valeurs décimales brutes, pour l'export tableur)
 ```
 
@@ -335,7 +337,7 @@ Le gabarit imprime `contenu.dateSignature` si elle existe, sinon `cadre.dateGene
 
 1. enregistrer la zone qui a le focus (côté client, avant l'appel) ;
 2. construire l'objet **une seule fois** (`construireDonneesMarche` ou `construireDonneesRecap`) ;
-3. calculer l'empreinte de `objet.contenu` ;
+3. calculer l'empreinte de `{ type, contenu }` ;
 4. si elle est identique à celle de la dernière version de la série, ne rien créer et renvoyer cette
    version ;
 5. rendre le PDF **à partir de cet objet** ;
@@ -430,8 +432,11 @@ en majuscules (comme `nomFichierRecap` dans la maquette). `<REF>` est la référ
 
 - **Better Auth :**
   - `emailAndPassword: { enabled: true, disableSignUp: true, minPasswordLength: 12 }` ;
-  - les comptes sont créés uniquement par le plugin admin (`createUser`), avec
-    `emailVerified = true` ;
+  - les comptes (création, réinitialisation, blocage) sont écrits directement en base par
+    l'application, avec le hachage de Better Auth et `emailVerified = true`. Un essai l'a montré :
+    `createUser` du plugin laisse `emailVerified` à faux et `banUser` exige une session admin, alors
+    que la connexion, la session et le refus d'un compte bloqué fonctionnent avec ces écritures. Un
+    test d'intégration le vérifie ;
   - limitation des tentatives de connexion (rate limit intégré) ;
   - cookies de session `HttpOnly`, `Secure`, `SameSite=Lax`.
 - Chaque action et chaque route de téléchargement vérifie la session ; les actions d'administration
