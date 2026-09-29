@@ -1,0 +1,52 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import { prisma } from '@/donnees/prisma';
+import { viderBase } from '../../tests/integration/aide';
+import { insererPerrier } from '../../tests/integration/perrier';
+import { etatsDocumentsChantier } from './etats';
+import { genererMarche, genererRecap } from './generer';
+
+const deps = { maintenant: new Date('2026-09-29T08:00:00Z'), rendrePdf: async () => new Uint8Array([1]) };
+let p: Awaited<ReturnType<typeof insererPerrier>>;
+
+async function etatDe(designation: string) {
+	const vue = await etatsDocumentsChantier(p.chantierId, deps.maintenant);
+	return vue.entreprises.flatMap((e) => e.lots).find((l) => l.lotId === p.lots[designation])!.marche;
+}
+
+describe('états des documents', () => {
+	beforeEach(async () => {
+		await viderBase();
+		p = await insererPerrier();
+	});
+
+	it('à produire, puis à jour, puis modifié', async () => {
+		expect((await etatDe('GROS ŒUVRE')).etat).toBe('a-produire');
+		await genererMarche(p.lots['GROS ŒUVRE'], p.utilisateurId, deps);
+		const aJour = await etatDe('GROS ŒUVRE');
+		expect(aJour.etat).toBe('a-jour');
+		expect(aJour.versions[0]).toMatchObject({ version: 1, type: 'MARCHE_GRE_A_GRE', auteur: 'Augustin Jouan' });
+		await prisma.lot.update({ where: { id: p.lots['GROS ŒUVRE'] }, data: { clauseParticuliere: 'Autre clause' } });
+		expect((await etatDe('GROS ŒUVRE')).etat).toBe('modifie');
+	});
+
+	it('renommer l\'artisan après génération rend le marché « modifié »', async () => {
+		await genererMarche(p.lots['GROS ŒUVRE'], p.utilisateurId, deps);
+		await prisma.artisan.update({ where: { id: p.artisans['CONSTRUCTIONS REBOURS'] }, data: { nom: 'REBOURS CONSTRUCTIONS' } });
+		expect((await etatDe('GROS ŒUVRE')).etat).toBe('modifie');
+	});
+
+	it('changer les paramètres ne rend rien « modifié »', async () => {
+		await genererMarche(p.lots['GROS ŒUVRE'], p.utilisateurId, deps);
+		await prisma.parametres.update({ where: { id: 1 }, data: { adresse: 'Z.I route de St Nazaire' } });
+		expect((await etatDe('GROS ŒUVRE')).etat).toBe('a-jour');
+	});
+
+	it('regroupe par entreprise, lots sans entreprise à part, récap séparé', async () => {
+		await genererRecap(p.chantierId, p.utilisateurId, deps);
+		const vue = await etatsDocumentsChantier(p.chantierId, deps.maintenant);
+		expect(vue.recap.etat).toBe('a-jour');
+		expect(vue.entreprises).toHaveLength(13);
+		const sansEntreprise = vue.entreprises.find((e) => e.entreprise === null)!;
+		expect(sansEntreprise.lots[0]).toMatchObject({ lotTexte: '12 — ENDUIT EXTÉRIEUR', manques: ['entreprise', 'montant'] });
+	});
+});
