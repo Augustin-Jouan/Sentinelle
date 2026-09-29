@@ -72,17 +72,18 @@ src/
     empreinte.ts  sérialisation stable + SHA-256
     fichiers.ts   slugification et noms de fichiers
     lotsDeBase.ts constante des 13 lots de base (annexe A)
-  donnees/      Client Prisma et fonctions de lecture par entité
-  actions/      Server Actions : Zod → session/rôle → Prisma → revalidatePath
+  donnees/      Client Prisma et fonctions d'accès par entité (lecture et écriture), qui prennent
+                l'utilisateur en paramètre : testables hors de Next
+  actions/      Server Actions : session/rôle → Zod → appel de donnees/ → revalidatePath
   documents/
     schemas.ts    types + schémas Zod des objets de document (§ 7)
+    batir.ts      construction pure des objets à partir des données lues (testable sans base)
     gabarits/     MarcheGreAGre, MarcheSousTraitance, Recapitulatif (+ composant Zone)
-    donnees.ts    construireDonneesMarche, construireDonneesRecap
+    donnees.ts    construireDonneesMarche, construireDonneesRecap (lecture en base puis batir)
     generer.ts    enchaînement construire → empreinte → PDF → enregistrer
     pdf.ts        navigateur Playwright partagé, HTML → PDF
     tableur.ts    export ExcelJS du récapitulatif
-    documents.css feuilles fidèles aux modèles (reprise des styles .sheet de la maquette)
-    ressources/   logo SOCOREVE, polices embarquées
+    styles.ts     CSS des feuilles (reprise des styles .sheet de la maquette), partagée écran / PDF
   composants/   Interface (shadcn/ui, tableau des lots, menu d'artisan…)
   app/          Routes et pages
 ```
@@ -320,9 +321,10 @@ DonneesMarcheSousTraitance.contenu
 DonneesRecap.contenu
   maitreOuvrage, natureTravaux, adresseChantier, cpCommune, adresseClient, mission,
   chargeAffaire, dateSignature?,
-  lignes[] { numero, designation, entreprise?, montantTtcTexte, tvaTexte,
+  lignes[] { numero, designation, entreprise?, montantTtc?, montantTtcTexte, tauxTva, tvaTexte,
              adresse, cp, commune, interlocuteur, telephone },
-  nombreLots, totalTtcTexte
+  nombreLots, totalTtc, totalTtcTexte
+  (montantTtc, tauxTva et totalTtc : valeurs décimales brutes, pour l'export tableur)
 ```
 
 Le gabarit imprime `contenu.dateSignature` si elle existe, sinon `cadre.dateGeneration`.
@@ -349,15 +351,17 @@ Le gabarit imprime `contenu.dateSignature` si elle existe, sinon `cadre.dateGene
 
 - Le **gabarit React** reçoit l'objet et rien d'autre (aucun accès à la base, aucun calcul). Il
   déclare son format de page : A4 paysage, marge 10 mm, pour les deux marchés et le récapitulatif.
-- `pdf.ts` rend le gabarit en HTML (`renderToStaticMarkup`), injecte `documents.css`, le logo et les
-  polices embarqués, puis Playwright produit le PDF (`page.setContent` → `page.pdf`, sans en-tête ni
+- `pdf.ts` rend le gabarit en HTML (`renderToStaticMarkup`, importé dynamiquement), injecte la CSS des
+  feuilles et les polices embarquées, puis Playwright produit le PDF (`page.setContent` → `page.pdf`, sans en-tête ni
   pied de page Playwright).
 - Les textes fixes des modèles sont ceux de la maquette, corrigés selon l'annexe C.
 
 ### Zones
 
 - Une zone bleue enregistre au blur le champ du lot correspondant (corps d'état, travaux, clause).
-- Le composant `<Zone cle="…">` lit le mode dans un contexte :
+- Le composant `<Zone cle="…">` reçoit le mode et le rappel de saisie **par ses props**. Les gabarits
+  n'ont ni hook, ni contexte, ni directive `'use client'` : Next.js 16 refuse le contexte React dans le
+  rendu serveur (vérifié par un essai), et le même gabarit sert à l'écran et au PDF.
   - **édition** : zone `contenteditable="plaintext-only"` teintée de bleu ; la feuille n'est jamais
     reconstruite pendant la frappe ;
   - **lecture** : texte, pour une copie figée ;
@@ -367,7 +371,7 @@ Le gabarit imprime `contenu.dateSignature` si elle existe, sinon `cadre.dateGene
 
 - Les textes des zones sont stockés en texte brut et réinjectés **échappés**, jamais comme du HTML.
 - Le Chromium de génération n'a **aucun accès réseau** : toute requête sortante est bloquée
-  (`page.route` → abort). Logo, polices et CSS sont injectés dans la page.
+  (`route` → abort). Polices et CSS sont injectées dans la page.
 
 ### Noms de fichiers
 
@@ -394,10 +398,11 @@ en majuscules (comme `nomFichierRecap` dans la maquette). `<REF>` est la référ
 
 ### Mise en forme
 
-- `documents.css` est une CSS dédiée aux couleurs fixes, reprise des styles `.sheet` de la maquette,
-  sans Tailwind.
-- Logo (`LOGO_SOCOREVE` de la maquette) et polices sont embarqués dans l'application et dans l'image
-  Docker.
+- La CSS des feuilles (`styles.ts`) est dédiée, aux couleurs fixes, reprise des styles `.sheet` de la
+  maquette, sans Tailwind.
+- Les polices sont embarquées dans l'application et dans l'image Docker.
+- Pas de logo : les marchés et le récapitulatif de la maquette n'en ont pas. `LOGO_SOCOREVE` servira au
+  compte rendu (sous-projet 4).
 
 ## 8. Gestion des erreurs
 
@@ -502,7 +507,9 @@ restaurer dans un Postgres vierge. Le test est réussi si :
   7. passer ce lot en sous-traitance, générer la v3 et vérifier que l'historique montre les deux
      types ;
   8. générer le récapitulatif et exporter le tableur ;
-  9. simuler un échec de Playwright et vérifier qu'aucune ligne `Document` n'est créée.
+  9. l'échec de Playwright sans ligne `Document` est vérifié par un test d'intégration (en injectant
+     une fonction d'impression qui échoue) : le provoquer depuis le navigateur demanderait un
+     interrupteur de test dans le code de production.
 - **Base de test :** Postgres dédié (conteneur), remis à zéro avant chaque suite.
 
 ## 11. Hors périmètre du Socle
