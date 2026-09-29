@@ -1,0 +1,81 @@
+# Production : une seule réplique de « app » (la limite de 2 PDF simultanés en dépend).
+services:
+  db:
+    image: postgres:17.11-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sentinelle
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: sentinelle
+    volumes: ['donnees-postgres:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sentinelle']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migration:
+    build: { context: ., target: outils }
+    restart: 'no'
+    environment:
+      DATABASE_URL: postgresql://sentinelle:${POSTGRES_PASSWORD}@db:5432/sentinelle
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: https://${DOMAINE}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_NOM: ${ADMIN_NOM}
+      ADMIN_MOT_DE_PASSE: ${ADMIN_MOT_DE_PASSE}
+    depends_on:
+      db: { condition: service_healthy }
+
+  app:
+    build: { context: ., target: application }
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://sentinelle:${POSTGRES_PASSWORD}@db:5432/sentinelle
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: https://${DOMAINE}
+      TZ: Europe/Paris
+    depends_on:
+      migration: { condition: service_completed_successfully }
+
+  caddy:
+    image: caddy:2.10.2
+    restart: unless-stopped
+    ports: ['80:80', '443:443']
+    environment:
+      DOMAINE: ${DOMAINE}
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-donnees:/data
+      - caddy-config:/config
+    depends_on:
+      # Attend le HEALTHCHECK du Dockerfile : pas de 502 pendant le démarrage de Next.
+      app: { condition: service_healthy }
+
+  sauvegarde:
+    build: infra/sauvegarde
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGUSER: sentinelle
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: sentinelle
+      TZ: Europe/Paris
+      AGE_DESTINATAIRE: ${AGE_DESTINATAIRE}
+      OVH_BUCKET: ${OVH_BUCKET:-}
+      SAUVEGARDE_LOCALE_SEULEMENT: ${SAUVEGARDE_LOCALE_SEULEMENT:-0}
+      RCLONE_CONFIG_OVH_TYPE: s3
+      RCLONE_CONFIG_OVH_PROVIDER: Other
+      RCLONE_CONFIG_OVH_ACCESS_KEY_ID: ${OVH_ACCESS_KEY_ID:-}
+      RCLONE_CONFIG_OVH_SECRET_ACCESS_KEY: ${OVH_SECRET_ACCESS_KEY:-}
+      RCLONE_CONFIG_OVH_ENDPOINT: ${OVH_ENDPOINT:-}
+      RCLONE_CONFIG_OVH_REGION: ${OVH_REGION:-}
+    volumes: ['sauvegardes:/sauvegardes']
+    depends_on:
+      db: { condition: service_healthy }
+
+volumes:
+  donnees-postgres:
+  caddy-donnees:
+  caddy-config:
+  sauvegardes:
