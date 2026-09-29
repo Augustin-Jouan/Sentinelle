@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { auth } from '@/auth';
+import { genererMotDePasse } from '@/auth/motDePasse';
 import { ErreurMetier } from '@/domaine/erreurs';
 import { prisma } from './prisma';
 
@@ -43,4 +44,66 @@ export async function creerCompteAvecMotDePasse(p: {
 
 export async function marquerMotDePasseChange(utilisateurId: string): Promise<void> {
 	await prisma.utilisateur.update({ where: { id: utilisateurId }, data: { doitChangerMotDePasse: false } });
+}
+
+export type CompteListe = {
+	id: string;
+	nom: string;
+	email: string;
+	role: 'admin' | 'user';
+	bloque: boolean;
+	doitChangerMotDePasse: boolean;
+};
+
+export async function listerComptes(): Promise<CompteListe[]> {
+	const lignes = await prisma.utilisateur.findMany({ orderBy: { name: 'asc' } });
+	return lignes.map((u) => ({
+		id: u.id,
+		nom: u.name,
+		email: u.email,
+		role: u.role === 'admin' ? 'admin' : 'user',
+		bloque: Boolean(u.banned),
+		doitChangerMotDePasse: u.doitChangerMotDePasse,
+	}));
+}
+
+/** Le mot de passe provisoire n'est renvoyé qu'ici, pour être montré une seule fois à l'admin. */
+export async function creerCompte(p: { email: string; nom: string; role: 'admin' | 'user' }): Promise<{ id: string; motDePasse: string }> {
+	if (!p.nom.trim()) throw new ErreurMetier('Le nom est obligatoire.', 'nom');
+	if (!/^\S+@\S+\.\S+$/.test(p.email.trim())) throw new ErreurMetier('Adresse e-mail invalide.', 'email');
+	const motDePasse = genererMotDePasse();
+	const id = await creerCompteAvecMotDePasse({ ...p, motDePasse, doitChangerMotDePasse: true });
+	return { id, motDePasse };
+}
+
+async function revoquerSessions(utilisateurId: string) {
+	await prisma.session.deleteMany({ where: { userId: utilisateurId } });
+}
+
+export async function reinitialiserMotDePasse(utilisateurId: string): Promise<string> {
+	const motDePasse = genererMotDePasse();
+	const hash = await hacherMotDePasse(motDePasse);
+	await prisma.$transaction([
+		prisma.compte.updateMany({ where: { userId: utilisateurId, providerId: 'credential' }, data: { password: hash } }),
+		prisma.utilisateur.update({ where: { id: utilisateurId }, data: { doitChangerMotDePasse: true } }),
+		prisma.session.deleteMany({ where: { userId: utilisateurId } }),
+	]);
+	return motDePasse;
+}
+
+export async function bloquerCompte(utilisateurId: string, parId: string): Promise<void> {
+	if (utilisateurId === parId) throw new ErreurMetier('Vous ne pouvez pas bloquer votre propre compte.');
+	await prisma.utilisateur.update({ where: { id: utilisateurId }, data: { banned: true } });
+	await revoquerSessions(utilisateurId);
+}
+
+export async function debloquerCompte(utilisateurId: string): Promise<void> {
+	await prisma.utilisateur.update({ where: { id: utilisateurId }, data: { banned: false, banReason: null, banExpires: null } });
+}
+
+export async function changerRole(utilisateurId: string, role: 'admin' | 'user', parId: string): Promise<void> {
+	if (utilisateurId === parId && role !== 'admin') {
+		throw new ErreurMetier('Vous ne pouvez pas retirer votre propre rôle administrateur.');
+	}
+	await prisma.utilisateur.update({ where: { id: utilisateurId }, data: { role } });
 }

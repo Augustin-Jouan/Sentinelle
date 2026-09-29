@@ -1,3 +1,4 @@
+import { ErreurMetier } from '@/domaine/erreurs';
 import type { Parametres } from '@/generated/prisma/client';
 import { prisma } from './prisma';
 
@@ -17,4 +18,15 @@ export const PARAMETRES_PAR_DEFAUT = {
 
 export async function lireParametres(): Promise<Parametres> {
 	return (await prisma.parametres.findUnique({ where: { id: 1 } })) ?? PARAMETRES_PAR_DEFAUT;
+}
+
+export type ChampParametres =
+	| 'raisonSociale' | 'libelleActivite' | 'adresse' | 'cp' | 'ville' | 'telephone' | 'fax' | 'email' | 'villeSignature';
+
+const FACULTATIFS: ChampParametres[] = ['fax', 'email'];
+
+export async function modifierParametre(champ: ChampParametres, valeur: string): Promise<void> {
+	const texte = valeur.trim();
+	if (!texte && !FACULTATIFS.includes(champ)) throw new ErreurMetier('Ce champ est obligatoire.', champ);
+	await prisma.parametres.update({ where: { id: 1 }, data: { [champ]: texte || null } });
 }
