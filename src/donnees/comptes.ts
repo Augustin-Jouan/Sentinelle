@@ -40,3 +40,7 @@ export async function creerCompteAvecMotDePasse(p: {
 	});
 	return id;
 }
+
+export async function marquerMotDePasseChange(utilisateurId: string): Promise<void> {
+	await prisma.utilisateur.update({ where: { id: utilisateurId }, data: { doitChangerMotDePasse: false } });
+}
