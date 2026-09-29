@@ -1,6 +1,6 @@
 # Sentinelle Marchés — Sous-projet 1 : Socle
 
-- **Date :** 2026-09-29 (révisée après audit le même jour)
+- **Date :** 2026-09-29 (révisée après deux audits le même jour)
 - **Statut :** à valider
 - **Référence :** maquette fonctionnelle `docs/maquette/sentinelle-marches.html` (lire les notes en tête de fichier)
 
@@ -28,8 +28,8 @@ Chaque sous-projet a sa propre spec, son plan et une livraison utilisable :
 ### Critères de réussite du Socle
 
 - Un chargé d'affaire se connecte, crée un chantier depuis les 13 lots de base, attribue les
-  entreprises, saisit les montants et imprime des marchés et un récapitulatif identiques aux modèles
-  de la maquette. La fidélité se mesure selon le § 10.
+  entreprises, saisit les montants et imprime des marchés et un récapitulatif conformes aux modèles
+  de la maquette (textes corrigés selon l'annexe C). La conformité se mesure selon le § 10.
 - Tous les collègues voient les mêmes données.
 - Un marché généré est figé : on peut toujours retrouver le PDF exact d'une version.
 - L'application tourne sur le VPS, en HTTPS, avec une sauvegarde nocturne dont la restauration a été
@@ -43,16 +43,18 @@ Chaque sous-projet a sa propre spec, son plan et une livraison utilisable :
 | Interface | Tailwind CSS + shadcn/ui ; `cmdk` pour la recherche d'artisan |
 | Base de données | PostgreSQL 17 + Prisma ; montants en `Decimal` |
 | Écritures | Server Actions + validation Zod |
-| Authentification | Better Auth, e-mail + mot de passe, inscription publique désactivée, comptes créés par l'admin |
+| Authentification | Better Auth : e-mail + mot de passe, inscription fermée, plugin admin (rôles, blocage, création de comptes) |
 | Visibilité | Tout utilisateur voit et modifie tous les chantiers **et le référentiel artisans** |
-| Rôles | `ADMIN` (comptes, paramètres) et `UTILISATEUR` |
+| Rôles | `admin` (comptes, paramètres) et `user` |
 | PDF | Gabarits React rendus en HTML côté serveur puis imprimés par Playwright (Chromium) |
 | Tableur | ExcelJS |
 | Tests | Vitest (domaine, documents) + Playwright (parcours) |
-| Hébergement | VPS, Docker Compose : app + Postgres + Caddy (HTTPS) + sauvegarde |
+| Hébergement | VPS, Docker Compose, **une seule réplique** de l'app : app + Postgres + Caddy (HTTPS) + sauvegarde |
+| Sauvegarde | `pg_dump` chiffré par `age`, envoyé par `rclone` vers OVHcloud Object Storage |
 | Données initiales | Référentiel artisans (`ARTISANS_SEED`), paramètres et premier admin ; PERRIER seulement en fixture de dev/test |
-| Documents | Figés à la génération (copie JSON + PDF + version) |
-| Coordonnées SOCOREVE | Un seul jeu de coordonnées, dans la page « Paramètres » modifiable par l'admin, lu par tous les gabarits |
+| Documents | Figés à la génération (copie JSON + PDF + version), une seule série de versions par lot |
+| Coordonnées SOCOREVE | Un seul jeu de coordonnées (71 rue du Général Patton), dans la page « Paramètres » modifiable par l'admin, lu par tous les gabarits |
+| Textes des marchés | Ceux des modèles de la maquette, **fautes de frappe corrigées** (annexe C) |
 | Ordre des lots | Ordre de saisie, jamais modifié ; tri et recherche d'affichage seulement (comme la maquette) |
 | Langue | Interface, code, modèles et commentaires en français |
 
@@ -63,7 +65,7 @@ Une seule application Next.js, organisée en couches :
 ```
 src/
   domaine/      Règles métier en TypeScript pur (ni Prisma, ni React)
-    montants.ts   ttcInitial, htEngage, ttcEngage, htDepuisTtc, arrondis, formatage €
+    montants.ts   ttcInitial, htEngage, ttcEngage, htDepuisTtc, arrondis, formatage € et %
     regles.ts     exemplaires par défaut, destinataire des factures, date « Fait le »,
                   corps d'état par défaut, conditions de génération
     recherche.ts  normalisation sans accents, recherche d'artisan (nom, commune)
@@ -73,8 +75,10 @@ src/
   donnees/      Client Prisma et fonctions de lecture par entité
   actions/      Server Actions : Zod → session/rôle → Prisma → revalidatePath
   documents/
+    schemas.ts    types + schémas Zod des objets de document (§ 7)
     gabarits/     MarcheGreAGre, MarcheSousTraitance, Recapitulatif (+ composant Zone)
     donnees.ts    construireDonneesMarche, construireDonneesRecap
+    generer.ts    enchaînement construire → empreinte → PDF → enregistrer
     pdf.ts        navigateur Playwright partagé, HTML → PDF
     tableur.ts    export ExcelJS du récapitulatif
     documents.css feuilles fidèles aux modèles (reprise des styles .sheet de la maquette)
@@ -88,7 +92,7 @@ src/
 - Les pages serveur lisent via `donnees/` et passent les données aux composants client.
 - Toute modification passe par une Server Action, puis revalidation de la page.
 - Les calculs de montants n'existent **qu'à un seul endroit**, dans `domaine/montants.ts`. L'écran, les
-  gabarits et l'export tableur l'appellent tous.
+  objets de document et l'export tableur l'appellent tous.
 
 ### Principes
 
@@ -96,8 +100,9 @@ src/
   d'argent. L'arrondi au centime se fait seulement à l'affichage et dans l'objet document.
 - **Saisie :** enregistrement quand on quitte le champ, sans bouton « Enregistrer ». En cas d'édition
   simultanée du même champ, c'est la dernière saisie qui gagne (accepté pour une petite équipe).
-- **PDF :** une seule instance Chromium, lancée au premier besoin puis réutilisée, avec au plus 2
-  générations simultanées (voir § 8, « Versions et concurrence »).
+- **PDF :** une seule instance Chromium par processus, lancée au premier besoin puis réutilisée, avec
+  au plus 2 générations simultanées. Cette limite n'est tenue que parce que l'app tourne en **une seule
+  réplique** ; passer à plusieurs répliques demanderait une file d'attente partagée.
 
 ## 4. Modèle de données
 
@@ -105,12 +110,14 @@ Seules les entités du Socle sont présentes. Tâches, avenants, acomptes, compt
 arriveront avec leurs sous-projets.
 
 ```
-Utilisateur   id, email (unique), nom, initiales, telephone?, role (ADMIN | UTILISATEUR), actif,
-              doitChangerMotDePasse
+Utilisateur   (table user de Better Auth, nommée Utilisateur)
+              id, email (unique), emailVerified, name, image?, createdAt, updatedAt,
+              role ('admin' | 'user'), banned, banReason?, banExpires?   ← plugin admin
+              initiales, telephone?, doitChangerMotDePasse             ← champs ajoutés
               + tables techniques Better Auth (Session, Compte, Verification)
 
-Parametres    singleton (id = 1) : raisonSociale, formeJuridique, adresse, cp, ville,
-              telephone, fax?, villeSignature
+Parametres    singleton (id = 1) : raisonSociale, libelleActivite, adresse, cp, ville,
+              telephone, fax?, email?, villeSignature
 
 Artisan       id, nom (unique), adresse, cp, commune, interlocuteur, telephone, email, actif
 
@@ -128,24 +135,28 @@ Lot           id, chantierId → Chantier (ON DELETE CASCADE), ordre, numero? (v
 
 Document      id, chantierId → Chantier, lotId? → Lot (ON DELETE RESTRICT),
               type (MARCHE_GRE_A_GRE | MARCHE_SOUS_TRAITANCE | RECAPITULATIF),
-              version, donnees Json, empreinte, pdf Bytes, nomFichier, creeLe, creeParId → Utilisateur
-              unique (chantierId, lotId, type, version) NULLS NOT DISTINCT
+              version, donnees Json ({ contenu, cadre }), empreinte, pdf Bytes, nomFichier,
+              creeLe, creeParId → Utilisateur
+              unique (chantierId, lotId, version) NULLS NOT DISTINCT
 ```
 
 ### Choix notables
 
 - **Un lot référence son artisan par identifiant** (la maquette le faisait par nom). Renommer une
   entreprise ne demande plus de mettre à jour les lots.
-- **Le chargé d'affaire est un utilisateur.**
+- **Le chargé d'affaire est un utilisateur.** Son nom est imprimé sur le récapitulatif.
 - **Référence de chantier obligatoire et unique.** Elle sert aussi de base aux noms de fichiers.
 - **Ordre des lots :** `ordre` est attribué à la création (max + 1) et n'est jamais modifié.
-- **Unicité des versions :** `lotId` est nul pour le récapitulatif, et Postgres considère par défaut
-  deux `NULL` comme distincts. La contrainte est donc créée par une migration SQL avec
-  `NULLS NOT DISTINCT` (Postgres 15 et plus).
-- **« À régénérer » est calculé, jamais stocké.** On compare l'empreinte des données actuelles à celle
-  de la dernière version.
-- **Changer la nature d'un lot** (gré à gré ↔ sous-traitance) change le type du document : une nouvelle
-  série de versions commence, l'ancienne reste consultable et n'est jamais régénérée.
+- **Séries de versions :** une série est identifiée par `(chantierId, lotId)` : une série de marchés
+  par lot, et une série de récapitulatifs par chantier (`lotId` nul). Le **type est porté par chaque
+  version** : si la nature d'un lot change, la version suivante est simplement d'un autre type, dans
+  la même série. L'historique affiche le type de chaque version.
+- **Unicité des versions :** Postgres considère par défaut deux `NULL` comme distincts. La contrainte
+  est donc créée par une migration SQL avec `NULLS NOT DISTINCT` (Postgres 15 et plus).
+- **« Modifié depuis la génération » est calculé, jamais stocké.** On compare l'empreinte du
+  `contenu` actuel à celle de la dernière version de la série (§ 7).
+- **Blocage d'un compte :** on utilise `banned` du plugin admin de Better Auth (qui révoque les
+  sessions), et non un champ `actif` maison.
 - **`couleur`** est persistée dès le Socle pour le planning, mais aucun écran du Socle ne la modifie.
 
 ### Valeurs par défaut (reprises de la maquette)
@@ -155,9 +166,10 @@ Document      id, chantierId → Chantier, lotId? → Lot (ON DELETE RESTRICT),
 - Nouveau chantier : les 13 lots de base (annexe A) sont recopiés dans le chantier sans entreprise
   ni montant. Ils sont ajoutés par défaut et désactivables par un interrupteur. Ce sont une constante
   du code, pas des données en base.
-- Paramètres à l'installation : S.A.S SOCOREVE, « Société Construction Rénovation Vente »,
-  71 rue du Général Patton, 44110 Châteaubriant, tél. 02 40 81 40 26, sans fax, ville de signature
-  Châteaubriant. L'admin les corrige dans la page Paramètres.
+- Paramètres à l'installation : raison sociale « S.A.S SOCOREVE », activité « Société Construction
+  Rénovation Vente », 71 rue du Général Patton, 44110 Châteaubriant, tél. 02 40 81 40 26, sans fax,
+  e-mail contact@socoreve-chateaubriant.fr, ville de signature Châteaubriant. L'admin les corrige dans
+  la page Paramètres.
 
 ## 5. Règles métier du Socle
 
@@ -171,27 +183,46 @@ Document      id, chantierId → Chantier, lotId? → Lot (ON DELETE RESTRICT),
 - Le **marché** imprime le montant **initial** (`ttcInitial`). Le **tableau**, les **totaux** et le
   **récapitulatif** portent le montant **engagé** (`htEngage`, `ttcEngage`), égal à l'initial dans le
   Socle.
-- Pourcentages imprimés sans décimales inutiles : « 5 % » et non « 5,00 % ».
+- **Total du récapitulatif :** somme des TTC de ligne **déjà arrondis au centime**, pour que la colonne
+  imprimée tombe juste.
+
+### Formats imprimés (repris de la maquette)
+
+| Donnée | Marché de gré à gré | Marché de sous-traitance | Récapitulatif |
+|---|---|---|---|
+| Montant | `115 500,00 €` | `115 500,00 €` | `115 500,00 €`, ou `—` si nul |
+| TVA | `20,00 %` (toujours 2 décimales) | `20 %` (décimales seulement si utiles) | `20,00 %` |
+| Retenue de garantie | `5` (décimales seulement si utiles) | `5` (imprimée deux fois) | — |
+| Complément de la retenue | `95` (= 100 − retenue) | — | — |
+| Exemplaires | `triple` / `double` / nombre | texte fixe « double » | — |
+| Date | `jj.mm.aaaa` | `jj.mm.aaaa` | `jj.mm.aaaa` |
+
+Tous ces textes sont produits par `domaine/` et rangés dans l'objet document ; **le gabarit ne calcule
+ni ne formate rien**.
 
 ### Marché de gré à gré
 
 - **Destinataire des factures :** « au Maître d'Ouvrage » en mission partielle, « à SOCOREVE » en
   mission complète.
-- **Exemplaires :** « Fait en triple exemplaire » (ou « double » selon `exemplaires`).
 
 ### Marché de sous-traitance
 
 - Les factures sont **toujours** adressées « à SOCOREVE », quelle que soit la mission.
-- « Fait en double exemplaire » (texte du modèle ; `exemplaires` vaut 2).
 
 ### Communes aux deux marchés
 
+- **En-tête SOCOREVE :** raison sociale, activité, adresse, CP, ville et téléphone, lus dans
+  `Parametres`. Le fax ne s'imprime que s'il est renseigné. L'e-mail n'est pas imprimé sur les
+  marchés.
 - **Date « Fait le » :** date de signature du lot, sinon date de signature prévue du chantier,
-  sinon date du jour de génération. Format `jj.mm.aaaa`. La ville vient de
-  `Parametres.villeSignature`.
+  sinon date du jour de génération. La ville vient de `Parametres.villeSignature`.
 - **Corps d'état vide :** on imprime la désignation du lot en minuscules.
 - **Coordonnées de l'entreprise :** lues dans le référentiel artisans au moment de la génération,
   puis figées dans le document.
+
+### Récapitulatif
+
+- **Date :** date de signature prévue du chantier, sinon date du jour de génération.
 
 ### Conditions pour générer un marché
 
@@ -242,7 +273,8 @@ Sans Mono, thème clair et sombre.
       génération** (bleu avec une pastille « modifié »). L'orangé reste réservé aux réserves des PV
       (sous-projet 4) ;
     - une légende sous le tableau explique ces états ;
-    - versions précédentes consultables.
+    - la case ouvre la dernière version ; l'historique liste toutes les versions de la série avec
+      leur type (gré à gré ou sous-traitance), leur date et leur auteur.
 - **Aperçu d'un document** (surcouche plein écran) :
   - feuille fidèle au modèle ; le **corps d'état, les travaux et la clause particulière se saisissent
     sur la feuille**, dans les zones bleues ;
@@ -252,38 +284,90 @@ Sans Mono, thème clair et sombre.
 - **Artisans** (`/artisans`) : recherche, ajout, modification, désactivation ; accessible à tous les
   utilisateurs.
 - **Paramètres** (`/parametres`, admin) : coordonnées de SOCOREVE.
-- **Comptes** (`/admin/comptes`, admin) : créer un compte, désactiver, réinitialiser le mot de passe,
-  changer le rôle.
+- **Comptes** (`/admin/comptes`, admin) : créer un compte, bloquer ou débloquer, réinitialiser le mot
+  de passe, changer le rôle. Le mot de passe provisoire s'affiche une seule fois (§ 8).
 
 ## 7. Documents et PDF
 
-### Chemin d'un document
+### Schéma des objets de document
 
-1. `construireDonneesMarche(lotId)` / `construireDonneesRecap(chantierId)` lisent la base et
-   produisent un objet JSON complet et autonome : textes, montants arrondis et formatés, coordonnées
-   de l'entreprise et de SOCOREVE. Le marché fige le **montant initial**, la TVA et la retenue ; le
-   récapitulatif fige les **montants engagés**.
-2. L'**empreinte** est le SHA-256 de la sérialisation stable de cet objet.
-3. Le **gabarit React** reçoit cet objet et rien d'autre (aucun accès à la base, aucun calcul). Il
-   déclare son format de page : A4 paysage, marge 10 mm, pour les deux marchés et le récapitulatif.
-4. `pdf.ts` rend le gabarit en HTML (`renderToStaticMarkup`), injecte `documents.css`, le logo et les
-   polices embarqués, puis Playwright produit le PDF (`page.setContent` → `page.pdf`, sans en-tête ni
-   pied de page Playwright).
+Chaque objet est défini dans `documents/schemas.ts` par un type TypeScript et un schéma Zod. Il se
+compose de deux parties :
 
-### Zones et empreinte
+- **`contenu`** : tout ce qui dépend du chantier, du lot et de l'entreprise. **Seul le contenu entre
+  dans l'empreinte.**
+- **`cadre`** : l'en-tête SOCOREVE (lu dans `Parametres`) et la date de génération. Il est figé avec
+  le document mais ne compte pas dans l'empreinte : modifier les paramètres ou changer de jour ne
+  marque aucun document comme modifié.
 
-- Une zone bleue enregistre au blur le champ du lot correspondant (corps d'état, travaux, clause).
-- « Générer le PDF » enregistre d'abord la zone qui a le focus, puis reconstruit l'objet et son
-  empreinte. Une saisie en cours n'est donc jamais perdue ni exclue du document.
+Tous les textes y sont déjà formatés (§ 5, « Formats imprimés »). Les champs :
+
+```
+Cadre (commun)
+  entete { raisonSociale, libelleActivite, adresseLigne, telephone, fax? }
+  villeSignature, dateGeneration (jj.mm.aaaa)
+
+DonneesMarcheGreAGre.contenu
+  maitreOuvrage, adresseClient, entreprise, adresseEntreprise, natureTravaux,
+  adresseChantier, lotTexte ("02 — GROS ŒUVRE"), montantTtcTexte, tvaTexte,
+  destinataireFactures, retenueTexte, complementRetenueTexte, exemplairesTexte,
+  clauseParticuliere, dateSignature? (jj.mm.aaaa, null si aucune date saisie)
+
+DonneesMarcheSousTraitance.contenu
+  maitreOuvrage, entreprise, adresseEntreprise, corpsEtat, travaux, natureTravaux,
+  adresseChantier, montantTtcTexte, tvaTexte, retenueTexte, dateSignature?
+
+DonneesRecap.contenu
+  maitreOuvrage, natureTravaux, adresseChantier, cpCommune, adresseClient, mission,
+  chargeAffaire, dateSignature?,
+  lignes[] { numero, designation, entreprise?, montantTtcTexte, tvaTexte,
+             adresse, cp, commune, interlocuteur, telephone },
+  nombreLots, totalTtcTexte
+```
+
+Le gabarit imprime `contenu.dateSignature` si elle existe, sinon `cadre.dateGeneration`.
 
 ### Générer
 
-- Si l'empreinte est identique à celle de la dernière version de la série, on ne crée rien et on
-  renvoie cette version.
-- Sinon, la version n+1 est créée (voir § 8, « Versions et concurrence »).
+`documents/generer.ts` enchaîne, dans cet ordre :
+
+1. enregistrer la zone qui a le focus (côté client, avant l'appel) ;
+2. construire l'objet **une seule fois** (`construireDonneesMarche` ou `construireDonneesRecap`) ;
+3. calculer l'empreinte de `objet.contenu` ;
+4. si elle est identique à celle de la dernière version de la série, ne rien créer et renvoyer cette
+   version ;
+5. rendre le PDF **à partir de cet objet** ;
+6. enregistrer **ce même objet**, son empreinte et le PDF (§ 8, « Versions et concurrence »). L'objet
+   n'est jamais reconstruit après le rendu : le JSON stocké est exactement celui qui a produit le PDF.
+
 - **Marché :** généré depuis l'aperçu du lot, le panneau du lot ou « Générer les marchés manquants ».
+  Le type (gré à gré ou sous-traitance) suit la nature actuelle du lot.
 - **Récapitulatif :** la carte « Récapitulatif » de l'onglet Documents ouvre l'aperçu de la feuille,
-  puis « Générer le PDF » crée un Document `RECAPITULATIF` versionné (JSON + PDF).
+  puis « Générer le PDF » crée une version `RECAPITULATIF` (JSON + PDF).
+
+### Rendu
+
+- Le **gabarit React** reçoit l'objet et rien d'autre (aucun accès à la base, aucun calcul). Il
+  déclare son format de page : A4 paysage, marge 10 mm, pour les deux marchés et le récapitulatif.
+- `pdf.ts` rend le gabarit en HTML (`renderToStaticMarkup`), injecte `documents.css`, le logo et les
+  polices embarqués, puis Playwright produit le PDF (`page.setContent` → `page.pdf`, sans en-tête ni
+  pied de page Playwright).
+- Les textes fixes des modèles sont ceux de la maquette, corrigés selon l'annexe C.
+
+### Zones
+
+- Une zone bleue enregistre au blur le champ du lot correspondant (corps d'état, travaux, clause).
+- Le composant `<Zone cle="…">` lit le mode dans un contexte :
+  - **édition** : zone `contenteditable="plaintext-only"` teintée de bleu ; la feuille n'est jamais
+    reconstruite pendant la frappe ;
+  - **lecture** : texte, pour une copie figée ;
+  - **impression** : texte neutre, pour le rendu côté serveur.
+
+### Sécurité du rendu
+
+- Les textes des zones sont stockés en texte brut et réinjectés **échappés**, jamais comme du HTML.
+- Le Chromium de génération n'a **aucun accès réseau** : toute requête sortante est bloquée
+  (`page.route` → abort). Logo, polices et CSS sont injectés dans la page.
 
 ### Noms de fichiers
 
@@ -293,21 +377,6 @@ en majuscules (comme `nomFichierRecap` dans la maquette). `<REF>` est la référ
 - Marché de gré à gré : `<REF>-Lot<NN>-<DESIGNATION>-Marche-v<N>.pdf`
 - Marché de sous-traitance (sans numéro) : `<REF>-ST-<DESIGNATION>-Marche-v<N>.pdf`
 - Récapitulatif : `<REF>-RecapMarches-v<N>.pdf` ; export tableur : `<REF>-RecapMarches.xlsx`
-
-### Modes du gabarit
-
-Le composant `<Zone cle="…">` lit le mode dans un contexte :
-
-- **édition** : zone `contenteditable="plaintext-only"` teintée de bleu, enregistrée au blur ; la
-  feuille n'est jamais reconstruite pendant la frappe ;
-- **lecture** : texte, pour une copie figée ;
-- **impression** : texte neutre, pour le rendu côté serveur.
-
-### Sécurité du rendu
-
-- Les textes des zones sont stockés en texte brut et réinjectés **échappés**, jamais comme du HTML.
-- Le Chromium de génération n'a **aucun accès réseau** : toute requête sortante est bloquée
-  (`page.route` → abort). Logo, polices et CSS sont injectés dans la page.
 
 ### Consultation
 
@@ -344,57 +413,85 @@ Le composant `<Zone cle="…">` lit le mode dans un contexte :
 ### Versions et concurrence
 
 - Le PDF est produit **hors transaction**, avec un délai maximum de 30 s.
-- L'insertion se fait ensuite dans une transaction qui **verrouille la série** (chantierId, lotId,
-  type) par un verrou consultatif Postgres, relit la dernière version, compare l'empreinte et insère
-  `version = max + 1`.
+- L'insertion se fait ensuite dans une transaction qui **verrouille la série** (chantierId, lotId)
+  par un verrou consultatif Postgres, relit la dernière version, compare l'empreinte (si une version
+  identique vient d'être créée entre-temps, on la renvoie) et insère `version = max + 1`.
 - Un échec de Playwright ne crée **aucune ligne** ; un message clair est affiché et l'échec est
   journalisé **sans HTML, sans montant ni nom de client**.
-- Au-delà de 2 générations simultanées sur le serveur, la demande est refusée immédiatement
-  (« Génération en cours, réessayez dans quelques secondes »).
+- Au-delà de 2 générations simultanées, la demande est refusée immédiatement (« Génération en cours,
+  réessayez dans quelques secondes »).
 
 ### Comptes et sécurité
 
+- **Better Auth :**
+  - `emailAndPassword: { enabled: true, disableSignUp: true, minPasswordLength: 12 }` ;
+  - les comptes sont créés uniquement par le plugin admin (`createUser`), avec
+    `emailVerified = true` ;
+  - limitation des tentatives de connexion (rate limit intégré) ;
+  - cookies de session `HttpOnly`, `Secure`, `SameSite=Lax`.
 - Chaque action et chaque route de téléchargement vérifie la session ; les actions d'administration
-  vérifient en plus le rôle `ADMIN`.
-- Un utilisateur `actif = false` ne peut pas se connecter et toute requête de sa part est refusée ;
-  sa désactivation révoque ses sessions.
-- Création de compte ou réinitialisation par l'admin : mot de passe provisoire, `doitChangerMotDePasse`
-  passe à vrai, sessions révoquées. Le mot de passe provisoire n'est jamais journalisé.
-- Limitation du nombre de tentatives de connexion (rate limit de Better Auth).
-- Cookies de session `HttpOnly`, `Secure`, `SameSite=Lax`.
+  vérifient en plus le rôle `admin`.
+- Un compte bloqué (`banned`) ne peut plus se connecter et ses sessions sont révoquées.
+- **Mot de passe provisoire** (création de compte ou réinitialisation) :
+  - généré par le serveur : 16 caractères aléatoires ;
+  - **affiché une seule fois** à l'admin, dans une fenêtre avec un bouton « Copier » ; jamais stocké en
+    clair ni journalisé ;
+  - `doitChangerMotDePasse` passe à vrai et les sessions existantes sont révoquées ;
+  - le nouveau mot de passe choisi par l'utilisateur fait au moins 12 caractères.
 
 ## 9. Déploiement et exploitation
 
-- **`docker-compose.yml` :**
+- **`docker-compose.yml`** (une seule réplique de `app`) :
   - `app` : Next.js `standalone` + Chromium + polices, avec un healthcheck HTTP ;
   - `db` : Postgres 17, volume persistant ;
   - `caddy` : HTTPS automatique, domaine canonique (redirection des autres noms), HSTS ;
-  - `sauvegarde` : `pg_dump` chaque nuit, chiffré, écrit hors du volume Postgres **et copié hors du
-    VPS** (stockage distant), rotation 14 jours.
+  - `sauvegarde` : tâche nocturne (voir ci-dessous).
 - **Au démarrage :** `prisma migrate deploy` ; s'il échoue, l'application ne démarre pas. Puis seed
   idempotent :
   - référentiel artisans et paramètres, seulement s'ils sont vides ;
   - premier admin (depuis les variables d'environnement) **seulement s'il n'existe aucun admin** ; le
     seed n'écrase jamais un mot de passe.
-- **Restauration :** une procédure écrite (`docs/exploitation/restauration.md`) est rejouée une fois,
-  sur une base vierge, avant la mise en production.
 - **Secrets :** dans `.env` sur le VPS, jamais versionnés ; un `.env.example` est versionné.
 - **Développement :** Postgres via Docker Compose, `next dev` en local.
+
+### Sauvegarde
+
+- Chaque nuit : `pg_dump -Fc`, chiffré avec **`age`** (seule la clé **publique** est sur le VPS ; la
+  clé **privée** est conservée hors du VPS, dans le gestionnaire de mots de passe de l'admin).
+- Le fichier chiffré est écrit hors du volume Postgres, puis envoyé par **`rclone`** vers un bucket
+  **OVHcloud Object Storage** (compatible S3).
+- Rotation : 14 sauvegardes nocturnes, en local comme sur le bucket.
+- Un échec de sauvegarde est journalisé et le healthcheck de la tâche passe en erreur.
+
+### Test de restauration
+
+La procédure est écrite dans `docs/exploitation/restauration.md` et rejouée une fois avant la mise en
+production : télécharger la dernière sauvegarde depuis OVH, la déchiffrer avec la clé privée, la
+restaurer dans un Postgres vierge. Le test est réussi si :
+
+- `prisma migrate status` ne signale aucune migration manquante ;
+- le nombre de chantiers, de lots, d'artisans et de documents est identique à la base d'origine ;
+- un PDF téléchargé depuis la base restaurée a le même SHA-256 que dans la base d'origine.
 
 ## 10. Tests
 
 - **Vitest, domaine :**
   - aller-retour TTC → HT → TTC au centime près (TVA 5,5 %, 10 %, 20 %), refus d'un HT négatif,
-    totaux ;
-  - exemplaires, destinataire des factures (gré à gré selon la mission, sous-traitance toujours
-    SOCOREVE), date « Fait le » (trois cas), corps d'état par défaut, conditions de génération ;
+    total du récap égal à la somme des lignes arrondies ;
+  - formats imprimés du § 5 (TVA `20,00 %` sur le gré à gré et `20 %` sur la sous-traitance,
+    retenue `5`, complément `95`, exemplaires) ;
+  - destinataire des factures (gré à gré selon la mission, sous-traitance toujours SOCOREVE), date
+    « Fait le » (trois cas), corps d'état par défaut, conditions de génération ;
   - recherche sans accents ; noms de fichiers ;
   - stabilité de l'empreinte.
-- **Vitest, documents (mesure de la fidélité) :**
-  - l'objet JSON construit à partir de la fixture PERRIER est **égal à une référence enregistrée**,
-    pour un marché de gré à gré, un marché de sous-traitance et le récapitulatif ;
+- **Vitest, documents (mesure de la conformité) :**
+  - l'objet construit à partir de la fixture PERRIER est **égal à une référence enregistrée**, pour
+    un marché de gré à gré (lot 02), un marché de sous-traitance (escalier) et le récapitulatif ;
+  - chaque objet respecte son schéma Zod ;
+  - l'empreinte ne change pas quand on modifie `Parametres` ni quand la date du jour change ;
   - chaque PDF généré fait **exactement une page A4 paysage** (`pageCount === 1`) ;
-  - un texte de zone contenant du HTML ressort échappé.
+  - un texte de zone contenant du HTML ressort échappé ;
+  - les textes corrigés de l'annexe C sont présents et les anciennes formulations absentes.
 - **Playwright E2E :**
   1. se connecter (et changer le mot de passe provisoire) ;
   2. créer un chantier avec les lots de base ;
@@ -402,7 +499,8 @@ Le composant `<Zone cle="…">` lit le mode dans un contexte :
   4. générer le marché de gré à gré ;
   5. modifier le lot et vérifier l'état « modifié » ;
   6. générer la v2 ;
-  7. passer un lot en sous-traitance et générer son marché ;
+  7. passer ce lot en sous-traitance, générer la v3 et vérifier que l'historique montre les deux
+     types ;
   8. générer le récapitulatif et exporter le tableur ;
   9. simuler un échec de Playwright et vérifier qu'aucune ligne `Document` n'est créée.
 - **Base de test :** Postgres dédié (conteneur), remis à zéro avant chaque suite.
@@ -413,6 +511,7 @@ Le composant `<Zone cle="…">` lit le mode dans un contexte :
 - Avenants, certificats de paiement, caution bancaire (sous-projet 3).
 - Comptes rendus, PV de réception, « Tout télécharger » en ZIP (sous-projet 4).
 - Réordonnancement manuel des lots.
+- Plusieurs répliques de l'application.
 - Mot de passe oublié en libre-service, connexion Microsoft 365, import des données de la maquette.
 
 ## Annexe A — Les 13 lots de base
@@ -439,6 +538,31 @@ Constante du code (`domaine/lotsDeBase.ts`), reprise de `LOTS_BASE` dans la maqu
 
 - **Référentiel artisans :** les 73 fiches de `ARTISANS_SEED` de la maquette (nom, adresse, CP,
   commune, interlocuteur, téléphone ; e-mail vide), toutes actives.
-- **Fixture PERRIER** (développement et tests uniquement) : le chantier PERRIER de la maquette
-  réduit au Socle (en-tête et lots avec entreprise, montants, TVA, retenue, corps d'état, travaux,
-  clause), sans avenants, planning, acomptes, comptes rendus ni réceptions.
+- **Fixture PERRIER** (développement et tests uniquement), tirée de la fonction `seed()` de la
+  maquette et réduite au Socle :
+  - chantier : référence « PERRIER — Louisfert », client « M. et Mme PERRIER », adresse actuelle
+    « 12 rue de la Barre, 44110 CHÂTEAUBRIANT », nature « Construction d'une maison individuelle —
+    142 m² + garage », chantier « Le Haut Bois, 44110 LOUISFERT », mission complète, signature prévue
+    le 03.04.2026, chargé d'affaire : l'utilisateur de test « Augustin Jouan » ;
+  - les 13 lots de la maquette avec leurs entreprises et montants HT (dont l'escalier en
+    sous-traitance chez PASSION BOIS et le lot 12 sans entreprise ni montant), et les dates de
+    signature des lots 02 et 05 ;
+  - **sans** les avenants des lots 02 et 05, ni planning, documents, acomptes, comptes rendus ou
+    réceptions ;
+  - corps d'état, travaux et clause vides partout (pour tester les valeurs par défaut), **sauf** une
+    clause particulière sur le lot 02 et des travaux sur l'escalier (pour tester les zones). Leurs
+    textes sont fixés dans la fixture.
+
+## Annexe C — Corrections des textes des modèles
+
+Les textes fixes sont repris de la maquette, avec ces corrections (demandées par l'utilisateur) :
+
+| Modèle | Texte de la maquette | Texte imprimé |
+|---|---|---|
+| Sous-traitance | « avant le mois 5ème jour du mois suivant » | « avant le 5ème jour du mois suivant » |
+| Sous-traitance | « sera déduits du présent marché » | « sera déduit du présent marché » |
+| Sous-traitance | « Les travaux sous-traiter sans accord » | « Les travaux sous-traités sans accord » |
+| Sous-traitance | « les situations, seront réglées » | « les situations seront réglées » |
+| Sous-traitance | « à 60 jour maximum » | « à 60 jours maximum » |
+| Sous-traitance | « dans le cas ou le client cesserait » | « dans le cas où le client cesserait » |
+| Les deux marchés | « tous les différents découlant du présent contrat » | « tous les différends découlant du présent contrat » |
