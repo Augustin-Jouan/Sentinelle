@@ -84,7 +84,7 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 							{lot.manques.length > 0 ? (
 								<Button disabled>Ouvrir le marché</Button>
 							) : (
-								<Link href={`?apercu=${lot.id}`} scroll={false} className={buttonVariants()}>Ouvrir le marché</Link>
+								<Link href={`?apercu=${lot.id}`} scroll={false} className={buttonVariants()} onClick={onFermer}>Ouvrir le marché</Link>
 							)}
 							<Button variant="destructive" disabled={enCours} onClick={() => agir(() => supprimerLotAction(lot.id), onFermer)}>Supprimer le lot</Button>
 						</div>
