@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Mission {
+  COMPLETE
+  PARTIELLE
+}
+
+enum Nature {
+  GRE_A_GRE
+  SOUS_TRAITANCE
+}
+
+enum TypeDocument {
+  MARCHE_GRE_A_GRE
+  MARCHE_SOUS_TRAITANCE
+  RECAPITULATIF
+}
+
+// ---------- Better Auth (noms de champs imposés par la bibliothèque) ----------
+
+model Utilisateur {
+  id                    String    @id
+  name                  String
+  email                 String    @unique
+  emailVerified         Boolean   @default(false)
+  image                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  // plugin admin
+  role                  String?   @default("user")
+  banned                Boolean?  @default(false)
+  banReason             String?
+  banExpires            DateTime?
+  // champs de Sentinelle
+  initiales             String    @default("")
+  telephone             String?
+  doitChangerMotDePasse Boolean   @default(false)
+
+  sessions        Session[]
+  comptes         Compte[]
+  chantiersSuivis Chantier[] @relation("ChargeAffaire")
+  chantiersCrees  Chantier[] @relation("CreePar")
+  documentsCrees  Document[]
+
+  @@map("utilisateur")
+}
+
+model Session {
+  id             String      @id
+  expiresAt      DateTime
+  token          String      @unique
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
+  userId         String
+  user           Utilisateur @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Compte {
+  id                    String      @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  Utilisateur @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@map("compte")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+}
+
+// ---------- Sentinelle ----------
+
+/// Ligne unique (id = 1) : coordonnées de SOCOREVE imprimées sur les documents.
+model Parametres {
+  id              Int     @id @default(1)
+  raisonSociale   String
+  libelleActivite String
+  adresse         String
+  cp              String
+  ville           String
+  telephone       String
+  fax             String?
+  email           String?
+  villeSignature  String
+}
+
+model Artisan {
+  id            String  @id @default(cuid())
+  nom           String  @unique
+  adresse       String  @default("")
+  cp            String  @default("")
+  commune       String  @default("")
+  interlocuteur String  @default("")
+  telephone     String  @default("")
+  email         String  @default("")
+  actif         Boolean @default(true)
+  lots          Lot[]
+}
+
+model Chantier {
+  id                  String      @id @default(cuid())
+  reference           String      @unique
+  maitreOuvrage       String
+  adresseClient       String      @default("")
+  natureTravaux       String      @default("")
+  adresse             String      @default("")
+  cp                  String      @default("")
+  commune             String      @default("")
+  mission             Mission     @default(COMPLETE)
+  dateSignaturePrevue DateTime?   @db.Date
+  termine             Boolean     @default(false)
+  chargeAffaireId     String
+  chargeAffaire       Utilisateur @relation("ChargeAffaire", fields: [chargeAffaireId], references: [id])
+  creeLe              DateTime    @default(now())
+  creeParId           String
+  creePar             Utilisateur @relation("CreePar", fields: [creeParId], references: [id])
+  lots                Lot[]
+  documents           Document[]
+}
+
+model Lot {
+  id                 String     @id @default(cuid())
+  chantierId         String
+  chantier           Chantier   @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  ordre              Int
+  numero             String?
+  designation        String
+  nature             Nature     @default(GRE_A_GRE)
+  artisanId          String?
+  artisan            Artisan?   @relation(fields: [artisanId], references: [id], onDelete: Restrict)
+  montantHtInitial   Decimal    @default(0) @db.Decimal(18, 8)
+  tauxTva            Decimal    @default(20) @db.Decimal(5, 2)
+  retenueGarantie    Decimal    @default(5) @db.Decimal(5, 2)
+  exemplaires        Int        @default(3)
+  corpsEtat          String     @default("")
+  travaux            String     @default("")
+  clauseParticuliere String     @default("")
+  couleur            String     @default("noir")
+  dateSignature      DateTime?  @db.Date
+  documents          Document[]
+
+  @@unique([chantierId, ordre])
+}
+
+model Document {
+  id         String       @id @default(cuid())
+  chantierId String
+  chantier   Chantier     @relation(fields: [chantierId], references: [id], onDelete: Restrict)
+  lotId      String?
+  lot        Lot?         @relation(fields: [lotId], references: [id], onDelete: Restrict)
+  type       TypeDocument
+  version    Int
+  donnees    Json
+  empreinte  String
+  pdf        Bytes
+  nomFichier String
+  creeLe     DateTime     @default(now())
+  creeParId  String
+  creePar    Utilisateur  @relation(fields: [creeParId], references: [id])
+
+  /// Rendu NULLS NOT DISTINCT par la migration : une seule série de récapitulatifs par chantier.
+  @@unique([chantierId, lotId, version])
+}
