@@ -26,8 +26,9 @@ sur ce planning. Le sous-projet livre :
 
 ### Critères de réussite
 
-- Un chargé d'affaire trace, déplace, allonge et enchaîne des périodes à la souris et au clavier comme
-  dans la maquette ; retarder une période repousse ses suites, y compris dans d'autres lots.
+- Un chargé d'affaire trace, déplace, allonge et enchaîne des périodes à la souris comme dans la
+  maquette, et décale, supprime ou désélectionne au clavier (← →, Suppr, Échap) ; retarder une période
+  repousse ses suites, y compris dans d'autres lots.
 - Deux collègues qui modifient en même temps des périodes différentes du même planning ne perdent
   rien.
 - Le planning imprimé tient sur une page A4 paysage, quel que soit le nombre de lots ou de semaines.
@@ -65,6 +66,8 @@ src/
     batir.ts        + construirePlanning, construireVisa (purs)
     donnees.ts      + construireDonneesPlanning, construireDonneesVisa
     gabarits/       + PlanningPrevisionnel, VisaPlanning
+    uneFeuille.ts   ajusterUneFeuille(racine) : pas des numéros de semaine et échelle, même code
+                    dans l'aperçu et dans Playwright (§ 7)
     pdf.ts          + option « une seule feuille » (§ 7)
   composants/
     planning/       Gantt (grille, barres, flèches SVG, fermetures), barre d'outils, panneau du lot,
@@ -91,8 +94,8 @@ Fermeture id, chantierId → Chantier (onDelete Cascade), libelle (≤ 60, défa
 ```
 
 - `debut` est la **date du lundi** de la semaine ISO. Une contrainte `CHECK (EXTRACT(ISODOW FROM
-  debut) = 1)` l'impose en base ; une semaine qui n'existe pas (semaine 53 d'une année qui n'en a que
-  52) ne peut pas s'écrire. Les écrans et les documents affichent semaine et année ISO.
+  debut) = 1)` l'impose en base ; une semaine qui n'existe pas est refusée avant d'arriver en base
+  (§ 5). Les écrans et les documents affichent semaine et année ISO.
 - Index sur `Periode(lotId)`, `Periode(dependDeId)` et `Fermeture(chantierId)`.
 - Supprimer un lot supprime ses périodes (cascade) ; les périodes d'autres lots qui en dépendaient
   sont détachées (`SetNull`) et restent à leur place.
@@ -113,8 +116,24 @@ Fermeture id, chantierId → Chantier (onDelete Cascade), libelle (≤ 60, défa
   dont il est issu ; nul pour les autres types.
 - `documents/generer.ts`, `documents/etats.ts` et le verrou consultatif passent de `(chantierId,
   lotId)` à `(chantierId, serie)` : `pg_advisory_xact_lock(hashtext(chantierId), hashtext(serie))`.
-- La migration s'écrit avec `prisma migrate diff`, s'applique avec `prisma migrate deploy` et se
-  vérifie sans écart (contraintes globales du plan du Socle).
+- **Migration :** Prisma n'émet ni la contrainte `CHECK` du lundi ni les opérations de données. La
+  migration s'écrit donc en deux temps : `prisma migrate diff … --script` produit le squelette (tables
+  `Periode` et `Fermeture`, colonnes `serie` et `sourceId`, valeurs d'enum), puis on complète le SQL à
+  la main, comme le Socle l'a fait pour `NULLS NOT DISTINCT` :
+  1. `ALTER TABLE "Periode" ADD CONSTRAINT "Periode_debut_lundi" CHECK (EXTRACT(ISODOW FROM "debut") = 1)`,
+     et de même pour `Fermeture` ;
+  2. `serie` ajoutée d'abord sans `NOT NULL`, remplie par `UPDATE "Document" SET "serie" =
+     COALESCE("lotId", 'RECAPITULATIF')`, puis passée en `NOT NULL` ;
+  3. suppression de l'index `Document_chantierId_lotId_version_key`, création de
+     `Document_chantierId_serie_version_key`.
+
+  Elle s'applique avec `prisma migrate deploy` et se vérifie avec `prisma migrate diff
+  --from-config-datasource --to-schema … --exit-code` (0 attendu), sans `migrate dev` ni `migrate
+  reset`.
+- La clé du verrou d'un récapitulatif devient `hashtext('RECAPITULATIF')` au lieu de
+  `hashtext('recap')` dans le plan du Socle. Avec une seule réplique, déployée d'un bloc, ce changement
+  est sans effet ; le plan du Socle en cours n'est pas modifié, c'est le plan du Planning qui adapte
+  `generer.ts`.
 
 ## 5. Règles du planning
 
@@ -123,6 +142,8 @@ Toutes dans `domaine/planning.ts` et `domaine/semaines.ts`, en TypeScript pur, t
 ### Semaines
 
 - Semaines ISO 8601 (lundi, semaine 1 = celle du premier jeudi). 2026 compte 53 semaines.
+- Une semaine saisie qui n'existe pas (semaine 53 d'une année qui n'en a que 52) est **refusée** :
+  « Cette semaine n'existe pas. » Elle n'est jamais recalée en silence sur la semaine 1 suivante.
 - Une période couvre `duree` semaines entières à partir de son lundi ; sa dernière semaine est
   `rang(debut) + duree − 1`.
 - Libellé d'un mois de l'axe : le mois du **lundi** de la semaine, abrégé comme la maquette
@@ -187,14 +208,20 @@ comme au Socle.
 
 ### Barre d'outils
 
-- À gauche : résumé (« 13 lots · 24 périodes ») et état de la sélection (« 3 périodes sélectionnées —
-  ← → pour décaler, Maj = 4 semaines, Suppr, Échap »), annoncé aux lecteurs d'écran.
-- À droite :
+- **En-tête de page** (au-dessus du bandeau de contexte, comme la maquette) : titre « Planning des
+  travaux » et boutons **Fermetures**, **Feuille de visa**, **Planning imprimable**.
+- **Barre d'outils du Gantt, à gauche :**
+  - résumé repris de la maquette : « 24 périodes · semaine 14 de 2026 à la semaine 9 de 2027 » (bornes
+    de l'étendue), avec « 18 périodes sur 24 » quand des lots sont masqués ; « Aucune période parmi les
+    lots affichés. » ou « Aucune période — tracez-en une à la souris sur la ligne d'un lot. » ;
+  - état de la sélection (« 3 périodes sélectionnées — ← → pour décaler, Maj = 4 semaines, Suppr,
+    Échap »), annoncé aux lecteurs d'écran.
+- **Barre d'outils du Gantt, à droite :**
   - menu **Lots affichés** (cases à cocher, « Tout afficher ») ;
   - outils **Main** (faire glisser la vue) et **Cible** (tracer) ;
-  - bouton **Aujourd'hui** ;
-  - densité **Compacte / Normale / Large** (32, 46 et 68 px par semaine) ;
-  - boutons **Fermetures**, **Feuille de visa**, **Planning imprimable**.
+  - bouton **Aujourd'hui** : fait défiler jusqu'à la semaine en cours ; si elle est hors de l'étendue,
+    message « La semaine en cours est hors du planning. » sans déplacer la vue ;
+  - densité **Compacte / Normale / Large** (32, 46 et 68 px par semaine).
 - Outil, densité et lots masqués sont des préférences de la personne : gardées dans le `localStorage`
   du navigateur (par chantier pour les lots masqués), lues avec `try/catch`, l'écran fonctionnant sans.
   Par défaut : outil Cible, densité Normale, tous les lots affichés.
@@ -203,10 +230,21 @@ comme au Socle.
 
 - En-tête collé en haut : ligne des mois, ligne des numéros de semaine ; la semaine en cours est
   signalée sur toute la hauteur.
-- Colonne des lots collée à gauche : pastille de couleur, désignation, entreprise dessous (ou « — »).
-  Un clic sur le lot ouvre son panneau.
+- Colonne des lots collée à gauche : pastille de couleur, désignation, et dessous l'entreprise suivie
+  du téléphone de l'artisan (« PERRAIS · 02 40 … »), ou « à attribuer » en italique. Un clic sur le
+  lot ouvre son panneau.
 - Une ligne **Fermetures** en tête de la grille et des bandes hachurées sur toute la hauteur.
-- Une ligne par lot affiché, dans l'ordre du chantier, avec ses barres (couleur du lot, intitulé).
+- Une ligne par lot affiché, dans l'ordre du chantier, avec ses barres (couleur du lot) :
+  - intitulé dans la barre, suivi de « · 3 sem. » si la barre mesure au moins 150 px ;
+  - barre de moins de 96 px : intitulé posé à droite de la barre si la période suivante du lot laisse
+    au moins 80 px (largeur limitée à 224 px), sinon gardé dedans ;
+  - infobulle « <intitulé ou désignation du lot> — semaine 18 de 2026, 3 semaines » ;
+  - poignée de redimensionnement au bord droit.
+- Légende sous la grille : pastille et désignation de chaque lot affiché.
+- Messages à la place de la grille : « Tous les lots sont masqués. » avec **Tout afficher** ; « Ce
+  chantier n'a pas encore de lot. Ajoutez-les depuis l'écran Marchés. »
+- La vue garde la semaine affichée à gauche après chaque rendu (réponse du serveur, changement de
+  densité) : elle ne revient jamais au début.
 - Flèches de dépendance fin → début en SVG au-dessus des pistes, entre lots compris ; une flèche vers
   ou depuis un lot masqué n'est pas dessinée.
 - À l'ouverture, la vue se cadre sur la semaine en cours si elle tombe dans l'étendue, sinon sur la
@@ -227,8 +265,18 @@ comme au Socle.
 | Suppr / Retour arrière | — | Supprime la sélection (une période : directement ; plusieurs : après confirmation) |
 | Échap | — | Ferme le panneau ou l'aperçu ouvert, sinon vide une sélection multiple |
 
-- Pendant un glisser, une pastille près du curseur donne la semaine visée et la durée
-  (« S18 2026 · 3 sem. »), et les suites se décalent à l'écran en direct.
+- **Pendant un glisser**, la barre (ou le groupe) suit le curseur **sans recalage ni cascade**, comme
+  dans la maquette. Au relâchement : recalage de la barre lâchée si elle passe devant la période dont
+  elle dépend, puis cascade des suites ; l'écran montre ce résultat, calculé localement, en attendant
+  la réponse du serveur.
+- Un glisser ne franchit pas à gauche le début de l'étendue pris au moment où le pointeur s'est posé ;
+  les flèches ← le peuvent (l'étendue s'agrandit).
+- Pastille près du curseur, textes de la maquette : « S18 → S20 · 3 sem. » (« S18 · 1 sem. » pour une
+  semaine), sans année ; pour un groupe, « +2 sem. · 3 périodes » (ou « −2 sem. »).
+- Messages après le geste : tracé, « Période créée — semaine 18, 3 sem. Nommez-la si besoin. » (la
+  nouvelle période est sélectionnée et le panneau de son lot s'ouvre) ; déplacement ou
+  redimensionnement, « 3 périodes décalées à la suite. » s'il y en a ; groupe, « 3 périodes décalées
+  de 2 semaines plus tard — 1 à la suite. »
 - Les raccourcis clavier ne réagissent pas quand le focus est dans un champ, un menu, ou qu'une
   fenêtre (aperçu, confirmation) est ouverte.
 - Un geste qui ne change rien (clic sans mouvement, retour au point de départ) n'envoie rien.
@@ -247,7 +295,7 @@ comme au Socle.
 ### Fenêtre Fermetures
 
 - Tableau libellé / semaine / année / durée, enregistrement au blur, suppression ; bouton **Ajouter**
-  (« Congés », 2 semaines, à la semaine en cours). Note : « Les congés et fermetures barrent toute la
+  (« Congés », 2 semaines, au lundi du début de l'étendue, comme la maquette). Note : « Les congés et fermetures barrent toute la
   hauteur du planning : ils valent pour tous les lots. »
 
 ### Enregistrement
@@ -258,7 +306,7 @@ Chaque geste terminé ou champ quitté appelle une Server Action qui porte une *
 |---|---|
 | `creerPeriode` | `lotId`, `debut`, `duree`, `intitule?` |
 | `deplacerPeriodes` | `chantierId`, `[{ id, debut }]` (déplacement seul, en groupe, flèches) |
-| `modifierPeriode` | `id`, un champ parmi `intitule`, `debut`, `duree` |
+| `modifierPeriode` | `id`, un champ parmi `intitule`, `debut`, `duree` (le redimensionnement à la souris envoie `duree` ; une durée inchangée n'envoie rien) |
 | `lierPeriode` | `id`, `dependDeId` ou `null` |
 | `supprimerPeriodes` | `chantierId`, `ids` |
 | `enregistrerFermeture` | `chantierId`, `id?`, `libelle`, `debut`, `duree` |
@@ -274,6 +322,16 @@ Côté serveur, `donnees/planning.ts`, dans une transaction :
 4. applique l'opération de `domaine/planning.ts` (recalage, cascade, contrôle des boucles) ;
 5. écrit seulement les lignes qui ont changé ;
 6. renvoie `Resultat<{ planning: PlanningVue; message?: string }>` avec le planning complet à jour.
+
+`PlanningVue` est typé et partagé par la page, le composant et les actions : `{ chantierId, lots: [{
+id, designation, entreprise, telephone, couleur, periodes: [{ id, intitule, debut, duree, dependDeId
+}] }], fermetures: [{ id, libelle, debut, duree }] }`, les dates en `AAAA-MM-JJ`.
+
+**Concurrence :** une action applique son intention (des débuts ou une durée absolus) au planning
+**relu sous verrou**, jamais à l'état que le navigateur avait sous les yeux ; aucun résultat calculé
+côté client n'est fusionné. Deux gestes sur des périodes différentes sont donc tous deux conservés. Si
+le second touche, directement ou par cascade, une ligne que le premier a écrite, il l'emporte, puis le
+recalage et la cascade réappliquent la contrainte des dépendances.
 
 Côté navigateur :
 
@@ -315,7 +373,8 @@ des données actuelles, puis **Générer le PDF** crée une version. Condition :
 ```
 
 - `coordination` = nom du chargé d'affaire ; `projet` = nature des travaux ; `adresseChantier` =
-  adresse, CP et commune joints par « – » ; « — » pour une valeur vide.
+  « adresse – CP commune » comme `enTetePlanning` (CP et commune séparés par une espace, l'adresse par
+  « – ») ; « — » pour une valeur vide.
 - Les lots sans période ont leur ligne (vide), comme dans la maquette.
 - La couleur est stockée par sa clé ; le gabarit lit la palette (annexe A).
 
@@ -328,18 +387,24 @@ n'a changé depuis la dernière version, on retrouve cette version avec sa date 
 toute la largeur restante ; barres et fermetures positionnées en pourcentage de la piste ; note de bas
 de page (annexe C). Pas de colonne Téléphone.
 
-**Une seule feuille, toujours.** `htmlVersPdf` reçoit l'option `uneSeuleFeuille` ; après
-`setContent`, et avant `page.pdf`, du code de l'application (pas du gabarit) s'exécute dans la page
-par `page.evaluate` :
+**Une seule feuille, toujours, et l'aperçu montre ce qui sera imprimé.** Une seule fonction,
+`ajusterUneFeuille(racine)` (`documents/uneFeuille.ts`, du DOM pur, sans import), s'exécute :
 
-1. il mesure la largeur de la piste, calcule `pas = max(1, ceil(13 px / largeur d'une semaine))`
-   (fonction pure de `domaine/planning.ts`) et masque les numéros de semaine dont le rang n'est pas
-   un multiple de `pas` ; la grille garde toutes ses colonnes ;
-2. il mesure la hauteur de la feuille et, si elle dépasse la zone imprimable A4 paysage, `page.pdf`
-   reçoit `scale = zone imprimable / hauteur` (minimum 0,4 ; au-delà, génération refusée avec
-   « Trop de lots pour une seule feuille. »).
+- dans l'**aperçu**, sur la feuille affichée à la largeur utile d'une A4 paysage (297 mm moins les
+  marges du Socle) ;
+- dans **Playwright**, après `setContent` et avant `page.pdf`, par `page.evaluate`.
 
-Ces réglages ne font pas partie du contenu : l'empreinte ne change pas.
+Elle :
+
+1. mesure la largeur de la piste, calcule `pas = max(1, ceil(13 px / largeur d'une semaine))` et
+   masque les numéros de semaine dont le rang n'est pas un multiple de `pas` ; la grille garde toutes
+   ses colonnes ;
+2. mesure la hauteur de la feuille et renvoie `echelle = min(1, hauteur utile / hauteur)`. L'aperçu
+   l'applique à la feuille affichée, Playwright la passe à `page.pdf({ scale })`.
+
+Si l'échelle tombe sous 0,4, l'aperçu l'annonce (« Trop de lots pour une seule feuille. ») et le
+bouton **Générer le PDF** est désactivé ; le serveur refuse de même. Ces réglages ne font pas partie
+du contenu : l'empreinte ne change pas.
 
 **Fichier :** `<REF>-Planning-v<N>.pdf` (règles de nom du Socle).
 
@@ -355,7 +420,8 @@ le visa liste exactement ce que ce planning montrait.
   entete: { … },                                   // repris du planning source
   planning: { version, date: 'JJ.MM.AAAA' },       // version et date de génération de la source
   periodeTravaux: { debut, fin },                  // repris du planning source
-  lignes: [{ entreprise, lot }]                    // repris du planning source, même ordre
+  lignes: [{ entreprise, lot }]                    // toutes les lignes du planning source, même ordre,
+                                                   // lots sans période compris (comme la maquette)
 }
 ```
 
@@ -388,7 +454,8 @@ Un seul créneau Chromium par génération, mesures comprises.
 - **Planning** : « à produire » (aucune version), « à jour » (empreinte actuelle = dernière version),
   « modifié » (sinon), comme le récapitulatif.
 - **Visa** : « à produire », « à jour » (sa source est la dernière version du planning), « périmé »
-  (« sur le planning v2 — v3 disponible »).
+  (« sur le planning v2 — v3 disponible »). « Périmé » s'affiche comme « modifié » au Socle : une
+  pastille texte, sans couleur nouvelle ; l'orangé reste réservé aux réserves des PV.
 - La page Documents ajoute deux cartes « chantier entier », **Planning** et **Visa du planning**, à
   côté du Récapitulatif, avec la dernière version (lecture seule) et l'historique.
 
@@ -401,6 +468,7 @@ journalisée sans données et affichée comme erreur générique.
 |---|---|
 | Durée hors 1-104, année hors 2000-2100, intitulé > 120 caractères | message Zod explicite par champ (`refine`) |
 | Début qui n'est pas un lundi | recalé sur le lundi de sa semaine ISO (pas d'erreur) |
+| Semaine 53 d'une année qui n'en a que 52 | « Cette semaine n'existe pas. » |
 | Lien qui ferait une boucle | « Ce lien créerait une boucle : <intitulé> dépend déjà de cette période. » |
 | Cascade au-delà de 2100 | « Ce déplacement pousserait des périodes au-delà de 2100. » |
 | Période, lot ou fermeture supprimé entre-temps | « Cette période n'existe plus. » (ou lot, fermeture) + planning à jour renvoyé |
@@ -408,7 +476,7 @@ journalisée sans données et affichée comme erreur générique.
 | Couleur hors palette | « Couleur inconnue. » |
 | Planning sans période | « Aucune période : rien à imprimer. » |
 | Données changées pendant le rendu | message du Socle (« Les données ont changé pendant la génération… ») |
-| Feuille impossible à faire tenir | « Trop de lots pour une seule feuille. » |
+| Feuille impossible à faire tenir (échelle < 0,4) | « Trop de lots pour une seule feuille. » (bouton désactivé dans l'aperçu, refus côté serveur) |
 
 ## 9. Tests
 
@@ -421,7 +489,8 @@ journalisée sans données et affichée comme erreur générique.
   - boucles : lien direct et indirect refusés ; options de dépendance sans la période ni ses suites ;
   - suppression qui détache ;
   - étendue élargie aux mois, cas sans période (date de signature, puis semaine en cours) ;
-  - vraie période des travaux (fermetures exclues) ; colonnes et mois ; calcul de `pas`.
+  - vraie période des travaux (fermetures exclues) ; colonnes et mois ; calcul de `pas` ;
+  - semaine 53 d'une année à 52 semaines refusée.
 - **Vitest, documents :**
   - objets planning et visa construits depuis la fixture PERRIER **égaux à une référence
     enregistrée** ; schémas Zod respectés ;
@@ -429,7 +498,9 @@ journalisée sans données et affichée comme erreur générique.
   - intitulé contenant du HTML échappé ;
   - PDF du planning d'**une page** pour PERRIER et pour un cas extrême (30 lots, 104 semaines, noms
     d'entreprise de 40 caractères) ; PDF du visa d'une page ;
-  - textes de l'annexe C présents.
+  - textes de l'annexe C présents ;
+  - `ajusterUneFeuille` donne le même `pas` et la même échelle dans l'aperçu (jsdom n'ayant pas de mise
+    en page, ce test passe par Playwright sur la page d'aperçu) et dans le PDF.
 - **Intégration (vraie base) :**
   - deux `deplacerPeriodes` simultanés sur des périodes différentes : les deux sont conservés ;
   - la cascade est enregistrée, y compris entre lots ;
@@ -440,11 +511,15 @@ journalisée sans données et affichée comme erreur générique.
     planning et visa coexistent ;
   - visa rattaché à sa version du planning, puis « périmé » après une nouvelle version ;
   - génération du planning abandonnée si une période change pendant le rendu.
-- **Playwright E2E :**
+- **Fixture :** `tests/fixtures/planningPerrier.ts` (annexe B) étend la fixture PERRIER du Socle ;
+  `insererPlanningPerrier(ids)` l'écrit en base après `insererPerrier()`. Le seed de l'application
+  (`prisma/seed.ts`) reste sans chantier ni planning.
+- **Playwright E2E** (les données sont insérées avant le test par `insererPerrier` puis
+  `insererPlanningPerrier`, contre la base E2E) :
   1. ouvrir le Planning de PERRIER ;
   2. tracer une période avec l'outil Cible ;
-  3. déplacer « Fondations et soubassements » d'une semaine plus tard et voir « Élévation RDC »
-     repoussée ;
+  3. déplacer « Fondations et soubassements » (S16, 3 sem.) de deux semaines plus tard et voir
+     « Élévation RDC » repoussée de S20 à S21, « Plancher intermédiaire » restant en S25 ;
   4. sélectionner deux périodes (Maj + clic) et les décaler avec → ;
   5. ajouter une fermeture ;
   6. changer la couleur d'un lot ;
@@ -479,11 +554,12 @@ Reprise de `COULEURS` de la maquette (couleurs du .ods d'origine) :
 ## Annexe B — Planning de démonstration (fixture PERRIER)
 
 Repris de `PLAN_DEMO`, `CHAINE_DEMO` et `appliquePlanDemo` de la maquette (lignes 3028-3070) ; pour
-le développement et les tests uniquement, jamais en production.
+les tests uniquement (documents, intégration, E2E), jamais dans le seed de l'application.
 
 - Fermetures : « Congés d'été », semaine 31 de 2026, 2 semaines ; « Congés de Noël », semaine 52 de
   2026, 2 semaines.
-- Périodes (intitulé, semaine, année, durée), par lot :
+- Périodes (intitulé, semaine, année, durée), par lot. Ce tableau décrit les périodes, pas l'ordre
+  d'affichage : les lots gardent l'ordre du chantier du Socle (ENDUIT EXTÉRIEUR, lot 12, en dernier).
 
 | Lot | Couleur | Périodes |
 |---|---|---|
