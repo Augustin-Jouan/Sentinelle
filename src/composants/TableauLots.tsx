@@ -1,6 +1,5 @@
 'use client';
 
-import Decimal from 'decimal.js';
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { ajouterLotAction, modifierChampLotAction } from '@/actions/lots';
@@ -10,13 +9,11 @@ import { usePreference } from '@/composants/maquette/preference';
 import { Recherche } from '@/composants/maquette/Recherche';
 import type { VueMarches } from '@/donnees/marches';
 import { lotsVisibles, TRIS_LOTS, type TriLots } from '@/domaine/lots';
-import { formatMontantSaisie } from '@/domaine/montants';
+import { formatMontantSaisie, formatTauxPoint } from '@/domaine/montants';
 import { ChampEnLigne } from './ChampEnLigne';
 import { PanneauLot } from './PanneauLot';
 
 const estTri = (v: unknown): v is TriLots => TRIS_LOTS.some((t) => t.v === v);
-/** « 20.00 » : le taux tel que la maquette l'affiche (toFixed(2)) ; lireNombreFr le relit. */
-export const tauxAffiche = (v: string) => new Decimal(v).toFixed(2);
 
 const OUVRIR_LOT = 'sentinelle:ouvrir-lot';
 
@@ -95,7 +92,7 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 										<ChampEnLigne variante="montant" libelle="Montant HT" valeur={formatMontantSaisie(l.htInitial)} enregistrer={champ(l.id, 'montantHt')} />
 									</td>
 									<td className="ta-r cell-tva is-editable" onClick={arreter}>
-										<ChampEnLigne variante="montant-mini" libelle="Taux de TVA" valeur={tauxAffiche(l.tauxTva)} enregistrer={champ(l.id, 'tauxTva')} />
+										<ChampEnLigne variante="montant-mini" libelle="Taux de TVA" valeur={formatTauxPoint(l.tauxTva)} enregistrer={champ(l.id, 'tauxTva')} />
 									</td>
 									<td className="ta-r cell-ht is-editable" onClick={arreter} title={nbAv ? 'Avenants compris — le montant initial HT est recalculé' : undefined}>
 										<ChampEnLigne variante="montant" libelle="Montant TTC" valeur={formatMontantSaisie(l.ttcEngage)} enregistrer={champ(l.id, 'montantTtc')} />

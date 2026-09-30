@@ -62,3 +62,10 @@ a.nav-marque, a.nav-ic, a.nav-b, a.nav-o { text-decoration: none; }
 
 /* La carte « Nouveau chantier » est un lien dans l'app (un bouton dans la maquette). */
 a.chantier-new { text-decoration: none; color: inherit; }
+
+/* Le TTC du panneau est en gras (style en ligne dans la maquette, que ChampEnLigne ne porte pas). */
+.champ-kv.est-gras { font-weight: 600; }
+/* Les liens-boutons du pied du panneau et des lignes d'avenant. */
+.panel-foot a.btn, .cell-actions a.btn { text-decoration: none; }
+/* Nature du marché : des libellés sans bouton radio, comme la maquette ; focus visible au clavier. */
+.radio-row label[role='radio']:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
