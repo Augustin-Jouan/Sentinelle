@@ -6,7 +6,7 @@ async function nouveauChantier(page: Page, reference: string) {
 	await page.getByLabel('Nom du client').fill('M. et Mme PERRIER');
 	await page.getByLabel('Adresse du chantier').fill('Le Haut Bois');
 	await page.getByLabel('Référence dossier').fill(reference);
-	await page.getByRole('button', { name: 'Créer le chantier' }).click();
+	await page.getByRole('button', { name: 'Créer le chantier' }).first().click();
 	await expect(page).toHaveURL(/\/marches$/);
 }
 

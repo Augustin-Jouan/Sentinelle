@@ -26,7 +26,7 @@ test('du chantier au récapitulatif, en passant par trois versions de marché', 
 	await page.getByLabel('Commune').fill('ERBRAY');
 	await page.getByLabel('Signature des marchés prévue le').fill('2026-04-03');
 	await page.getByLabel('Référence dossier').fill('PARCOURS');
-	await page.getByRole('button', { name: 'Créer le chantier' }).click();
+	await page.getByRole('button', { name: 'Créer le chantier' }).first().click();
 	await expect(page).toHaveURL(/\/marches$/);
 	const marches = page.url();
 
