@@ -9,9 +9,15 @@ export function slugifier(s: string): string {
 		.toUpperCase();
 }
 
+/** `Lot02`, `Lot` sans numéro, `ST` en sous-traitance. */
+const prefixeLot = (nature: Nature, numero: string | null) => (nature === 'SOUS_TRAITANCE' ? 'ST' : `Lot${numero ? slugifier(numero) : ''}`);
+
 export function nomFichierMarche(p: { reference: string; numero: string | null; designation: string; nature: Nature; version: number }): string {
-	const prefixe = p.nature === 'SOUS_TRAITANCE' ? 'ST' : `Lot${p.numero ? slugifier(p.numero) : ''}`;
-	return `${slugifier(p.reference)}-${prefixe}-${slugifier(p.designation)}-Marche-v${p.version}.pdf`;
+	return `${slugifier(p.reference)}-${prefixeLot(p.nature, p.numero)}-${slugifier(p.designation)}-Marche-v${p.version}.pdf`;
+}
+
+export function nomFichierAvenant(p: { reference: string; numero: string | null; designation: string; nature: Nature; numeroAvenant: number; version: number }): string {
+	return `${slugifier(p.reference)}-${prefixeLot(p.nature, p.numero)}-${slugifier(p.designation)}-Avenant${String(p.numeroAvenant).padStart(2, '0')}-v${p.version}.pdf`;
 }
 
 export function nomFichierRecap(reference: string, version: number): string {

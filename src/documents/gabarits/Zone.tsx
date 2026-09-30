@@ -1,5 +1,6 @@
 export type ModeGabarit = 'edition' | 'lecture' | 'impression';
-export type CleZone = 'clauseParticuliere' | 'corpsEtat' | 'travaux';
+/** Champs des marchés, ou objet d'une lettre d'avenant. */
+export type CleZone = 'clauseParticuliere' | 'corpsEtat' | 'travaux' | 'objet';
 export type Saisie = (cle: CleZone, texte: string) => void;
 
 type Props = {

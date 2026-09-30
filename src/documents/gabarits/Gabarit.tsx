@@ -1,4 +1,5 @@
 import type { DonneesDocument } from '../schemas';
+import { LettreAvenant } from './LettreAvenant';
 import { MarcheGreAGre } from './MarcheGreAGre';
 import { MarcheSousTraitance } from './MarcheSousTraitance';
 import { PlanningPrevisionnel } from './PlanningPrevisionnel';
@@ -20,5 +21,7 @@ export function Gabarit({ donnees, mode, onSaisie }: { donnees: DonneesDocument;
 			return <PlanningPrevisionnel donnees={donnees} />;
 		case 'VISA_PLANNING':
 			return <VisaPlanning donnees={donnees} />;
+		case 'AVENANT':
+			return <LettreAvenant donnees={donnees} mode={mode} onSaisie={onSaisie} />;
 	}
 }

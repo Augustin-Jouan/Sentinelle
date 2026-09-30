@@ -79,6 +79,20 @@ table.d-gantt th.d-piste { padding: 0; }
 table.d-visa td { padding: .3125rem .375rem; }
 table.d-visa .sig { border-bottom: 1px solid #b9beb8; height: 1.75rem; width: 22%; }
 
+/* Lettre d'avenant : A4 portrait (maquette buildDocAvenant). Double classe : « .sheet-doc » fixerait 68rem. */
+.sheet-doc.sheet-avenant { width: 46rem; }
+.av-lieu { text-align: right; margin: 0 0 1.25rem; }
+.av-kv { margin: 0 0 .875rem; }
+.av-objet { margin: 0 0 1rem; line-height: 1.6; }
+.av-objet .fill { border-bottom: 0; padding: 0; font-style: italic; }
+table.d-avenant { width: 100%; border-collapse: collapse; margin: 0 0 .5rem; }
+table.d-avenant td { padding: .3125rem .375rem; }
+table.d-avenant .r { text-align: right; white-space: nowrap; }
+table.d-avenant .mono { font-family: 'Spline Sans Mono', monospace; font-variant-numeric: tabular-nums; }
+table.d-avenant tr.total td { border-top: 1px solid #16191b; font-weight: 600; }
+table.d-avenant tr.apres td { border-top: 2px solid #16191b; font-weight: 600; font-size: .75rem; }
+.av-sign { margin-top: 2.5rem; }
+
 /* PDF : la page A4 (marges 10 mm) porte la feuille, sans cadre ni ombre. */
 .mode-impression { margin: 0; background: #fff; }
 .mode-impression .sheet { width: 100%; max-width: none; min-height: 0; border: 0; box-shadow: none; padding: 0; background: #fff; }

@@ -125,12 +125,31 @@ export const contenuVisaSchema = z.object({
 	lignes: z.array(z.object({ entreprise: texte, lot: texte })),
 });
 
+/** Montants en TTC, déjà formatés ; chacun arrondi au centime séparément (spec § 5). */
+export const contenuAvenantSchema = z.object({
+	entete: entetePlanningSchema,
+	/** « Châteaubriant, le 12 mai 2026 » : la date de l'avenant. */
+	lieuDate: texte,
+	numero: texte,
+	entreprise: texte,
+	lot: texte,
+	sens: z.enum(['plus-value', 'moins-value']),
+	objet: texte,
+	montants: z.object({
+		marcheInitial: texte,
+		devis: z.object({ numero: texte, montant: texte }),
+		difference: texte,
+		nouveauMontant: texte,
+	}),
+});
+
 export const donneesDocumentSchema = z.discriminatedUnion('type', [
 	z.object({ type: z.literal('MARCHE_GRE_A_GRE'), contenu: contenuMarcheGreAGreSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('MARCHE_SOUS_TRAITANCE'), contenu: contenuMarcheSousTraitanceSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('RECAPITULATIF'), contenu: contenuRecapSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('PLANNING'), contenu: contenuPlanningSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('VISA_PLANNING'), contenu: contenuVisaSchema, cadre: cadreSchema }),
+	z.object({ type: z.literal('AVENANT'), contenu: contenuAvenantSchema, cadre: cadreSchema }),
 ]);
 
 export type Cadre = z.infer<typeof cadreSchema>;
@@ -146,5 +165,7 @@ export type DonneesMarche = DonneesMarcheGreAGre | DonneesMarcheSousTraitance;
 export type EntetePlanning = z.infer<typeof entetePlanningSchema>;
 export type ContenuPlanning = z.infer<typeof contenuPlanningSchema>;
 export type ContenuVisa = z.infer<typeof contenuVisaSchema>;
+export type ContenuAvenant = z.infer<typeof contenuAvenantSchema>;
 export type DonneesPlanning = Extract<DonneesDocument, { type: 'PLANNING' }>;
 export type DonneesVisa = Extract<DonneesDocument, { type: 'VISA_PLANNING' }>;
+export type DonneesAvenant = Extract<DonneesDocument, { type: 'AVENANT' }>;

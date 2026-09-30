@@ -1,4 +1,4 @@
-import { sommeAvenants } from '@/domaine/avenants';
+import { AVENANT_DISPARU, dateLongue, montantsLettre, numeroAvenantTexte, sommeAvenants } from '@/domaine/avenants';
 import { empreinte } from '@/domaine/empreinte';
 import { ErreurMetier } from '@/domaine/erreurs';
 import {
@@ -10,7 +10,7 @@ import {
 	type Mission, type Nature,
 } from '@/domaine/regles';
 import { lundiDuRang, rangDe, semaineDuRang, versIso } from '@/domaine/semaines';
-import type { Cadre, DonneesDocument, DonneesMarche, DonneesPlanning, DonneesRecap, DonneesVisa, EntetePlanning, LigneRecap } from './schemas';
+import type { Cadre, DonneesAvenant, DonneesDocument, DonneesMarche, DonneesPlanning, DonneesRecap, DonneesVisa, EntetePlanning, LigneRecap } from './schemas';
 
 export type SourceParametres = {
 	raisonSociale: string; libelleActivite: string; adresse: string; cp: string; ville: string;
@@ -203,6 +203,32 @@ export function batirVisa(source: { version: number; donnees: DonneesPlanning },
 			periodeTravaux: c.periodeTravaux,
 			phrase: `Planning prévisionnel des travaux sur la période de la Semaine ${debut.semaine} de ${debut.annee} à la Semaine ${fin.semaine} de ${fin.annee} (version ${source.version} du ${date})`,
 			lignes: c.lignes.map((l) => ({ entreprise: l.entreprise, lot: l.lot })),
+		},
+		cadre: batirCadre(p, maintenant),
+	};
+}
+
+/** Fac-similé de « 4- AVENANT.doc » (maquette `buildDocAvenant`) : le « marché initial » compte les avenants antérieurs encore présents. */
+export function batirAvenant(c: SourceChantier, l: SourceLot, avenantId: string, p: SourceParametres, maintenant: Date): DonneesAvenant {
+	const a = l.avenants.find((x) => x.id === avenantId);
+	if (!a) throw new ErreurMetier(AVENANT_DISPARU);
+	const m = montantsLettre({ htInitial: l.montantHtInitial, tauxTva: l.tauxTva, avenants: l.avenants, numero: a.numero });
+	return {
+		type: 'AVENANT',
+		contenu: {
+			entete: entetePlanning(c),
+			lieuDate: `${p.villeSignature}, le ${dateLongue(a.date)}`,
+			numero: numeroAvenantTexte(a.numero),
+			entreprise: l.artisan?.nom ?? TIRET,
+			lot: l.designation || 'Lot sans désignation',
+			sens: m.plusValue ? 'plus-value' : 'moins-value',
+			objet: a.objet,
+			montants: {
+				marcheInitial: formatEuros(m.marcheInitial),
+				devis: { numero: a.devis, montant: formatEuros(m.devis) },
+				difference: formatEuros(m.devis),
+				nouveauMontant: formatEuros(m.nouveauMontant),
+			},
 		},
 		cadre: batirCadre(p, maintenant),
 	};
