@@ -2,19 +2,19 @@
 
 import type Decimal from 'decimal.js';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import {
 	ajouterAcompteManuelAction, changerCautionAction, corrigerCertificatAction, genererCertificatAction,
 	modifierAcompteManuelAction, supprimerAcompteManuelAction,
 } from '@/actions/certificats';
 import type { Resultat } from '@/actions/executer';
-import { Button } from '@/components/ui/button';
+import { CadreApercu } from '@/composants/maquette/CadreApercu';
+import * as Icone from '@/composants/maquette/icones';
 import { telecharger } from '@/composants/telecharger';
 import { batirCertificat, entreeCalcul } from '@/documents/certificat';
 import { CertificatPaiement, type EditionCertificat } from '@/documents/gabarits/CertificatPaiement';
 import { TITRES_TYPES } from '@/documents/libelles';
-import { CSS_DOCUMENTS } from '@/documents/styles';
 import type { CertificatOuvert } from '@/donnees/acomptes';
 import { alerteCertificat, calculerCertificat, lireCumul, PRESENT_NON_POSITIF } from '@/domaine/certificats';
 import { ErreurMetier } from '@/domaine/erreurs';
@@ -43,18 +43,6 @@ export function ApercuCertificat({ ouvert, sousTitre }: { ouvert: CertificatOuve
 	const [date, setDate] = useState(ouvert.saisies.date);
 	const [enCours, demarrer] = useTransition();
 	const enregistrements = useRef(new Set<Promise<unknown>>());
-
-	// Un document ouvert bloque le défilement de la page de derrière ; Échap le ferme.
-	useEffect(() => {
-		const avant = document.body.style.overflow;
-		document.body.style.overflow = 'hidden';
-		const touche = (e: KeyboardEvent) => { if (e.key === 'Escape') router.replace(chemin, { scroll: false }); };
-		window.addEventListener('keydown', touche);
-		return () => {
-			document.body.style.overflow = avant;
-			window.removeEventListener('keydown', touche);
-		};
-	}, [router, chemin]);
 
 	const { source, acompteId, blocage } = ouvert;
 	// Un certificat qui n'est plus le dernier s'ouvre tel quel, sans saisie.
@@ -118,32 +106,20 @@ export function ApercuCertificat({ ouvert, sousTitre }: { ouvert: CertificatOuve
 	}
 
 	return (
-		<div role="dialog" aria-label={TITRES_TYPES.CERTIFICAT_PAIEMENT} className="fixed inset-0 z-50 flex flex-col bg-background">
-			<style dangerouslySetInnerHTML={{ __html: CSS_DOCUMENTS }} />
-			<header className="flex flex-wrap items-center gap-4 border-b bg-card px-6 py-3">
-				<div>
-					<p className="text-xs uppercase tracking-wide text-muted-foreground">
-						{acompteId ? `Correction du certificat n° ${donnees.contenu.numero}` : TITRES_TYPES.CERTIFICAT_PAIEMENT}
-					</p>
-					<p className="font-semibold">{sousTitre}</p>
-				</div>
-				<div className="ml-auto flex items-center gap-3">
-					{!lecture && (
-						<>
-							<span className="text-xs text-muted-foreground">Le cumul réalisé, le mois et la date se saisissent sur la feuille — le bleu ne s&apos;imprime pas.</span>
-							<Button onClick={generer} disabled={enCours || messages.length > 0 || !lu.cumul}>
-								{enCours ? 'Génération…' : acompteId ? `Générer la v${(ouvert.derniereVersion ?? 0) + 1}` : 'Générer le PDF'}
-							</Button>
-						</>
-					)}
-					<Button variant="outline" onClick={fermer}>Fermer</Button>
-				</div>
-			</header>
-			{messages.map((m) => <p key={m} role="note" className="border-b bg-destructive-soft px-6 py-2 text-sm">{m}</p>)}
-			<div className="flex flex-1 flex-col items-center gap-3 overflow-auto overscroll-contain p-7">
-				<CertificatPaiement donnees={donnees} mode={lecture ? 'lecture' : 'edition'} edition={lecture ? undefined : edition} />
-				{alerte && <p role="note" className="rounded-md border border-destructive bg-destructive-soft px-3 py-2 text-sm text-destructive">{alerte}</p>}
-			</div>
-		</div>
+		<CadreApercu libelle={TITRES_TYPES.CERTIFICAT_PAIEMENT} disposition="solo" onFermer={fermer}
+			surtitre={acompteId ? `Correction du certificat n° ${donnees.contenu.numero}` : TITRES_TYPES.CERTIFICAT_PAIEMENT} titre={sousTitre}
+			aide={lecture ? undefined : "Le cumul réalisé, le mois et la date se saisissent sur la feuille — le bleu ne s'imprime pas."}
+			notes={messages.map((m) => <p key={m} role="note" className="gen-note">{m}</p>)}
+			actions={<>
+				<button type="button" className="btn btn-ghost" onClick={fermer}>Fermer</button>
+				{!lecture && (
+					<button type="button" className="btn btn-primary" onClick={generer} disabled={enCours || messages.length > 0 || !lu.cumul}>
+						<Icone.Telecharger />{enCours ? 'Génération…' : acompteId ? `Générer la v${(ouvert.derniereVersion ?? 0) + 1}` : 'Générer le PDF'}
+					</button>
+				)}
+			</>}>
+			<CertificatPaiement donnees={donnees} mode={lecture ? 'lecture' : 'edition'} edition={lecture ? undefined : edition} />
+			{alerte && <p role="note" className="gen-note">{alerte}</p>}
+		</CadreApercu>
 	);
 }
