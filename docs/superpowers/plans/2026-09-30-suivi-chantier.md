@@ -15,7 +15,7 @@
 ## Global Constraints
 
 - Tout en français : interface, fichiers, variables, fonctions, commentaires, messages (exceptions imposées par les outils).
-- Messages exactement ceux de la spec (§ 9) : « Saisissez l'avancement ou la coordination avant d'enregistrer. », « Le compte rendu n° 5 existe déjà. », « Heure : saisissez HH:MM. », « Saisissez d'abord la date du prochain rendez-vous. », « Seul le dernier compte rendu se corrige. », « Ce brouillon n'existe plus. », « L'avancement est limité à 5 000 caractères. », « CONSTRUCTIONS REBOURS : précisez la nature des réserves. », « … : précisez les motifs du report. », « Ce lot n'a pas d'entreprise. », « Attribuez d'abord une entreprise à un lot. », « Le dernier PV de ce lot n'a pas de réserves. », « La levée ne peut précéder la réception. », `DONNEES_CHANGEES`, `TROP_DE_LIGNES` ; toasts « Compte rendu n° 04 enregistré. », « PV de réception généré — CONSTRUCTIONS REBOURS. », « 10 PV générés, 2 inchangés. », « Rien n'a changé depuis la version N : elle est téléchargée. ».
+- Messages exactement ceux de la spec (§ 9) : « Saisissez l'avancement ou la coordination avant d'enregistrer. », « Le compte rendu n° 5 existe déjà. », « Heure : saisissez HH:MM. », « Saisissez d'abord la date du prochain rendez-vous. », « Seul le dernier compte rendu se corrige. », « Ce brouillon n'existe plus. », « L'avancement est limité à 5 000 caractères. », « CONSTRUCTIONS REBOURS : précisez la nature des réserves. », « … : précisez les motifs du report. », « Ce lot n'a pas d'entreprise. », « Attribuez d'abord une entreprise à un lot. », « Le dernier PV de ce lot n'a pas de réserves. », « La levée ne peut précéder la réception. », `DONNEES_CHANGEES`, `TROP_DE_LIGNES` ; toasts « Compte rendu n° 04 enregistré. », « PV de réception généré — CONSTRUCTIONS REBOURS. », « 10 PV générés, 2 inchangés. » (les autres toasts sont repris de l'application : voir « Écarts assumés »).
 - Numéro d'un compte rendu : fixé à la création du brouillon (plus grand numéro enregistré + 1, sinon 1), jamais saisi. « Dernier » = le compte rendu `ENREGISTRE` de plus grand numéro ; seul lui se corrige.
 - Un compte rendu et un PV **n'ont pas d'état « modifié »** : `etatsDocumentsChantier` ne reconstruit jamais leur contenu.
 - Seul `{ type, contenu }` entre dans l'empreinte ; l'en-tête SOCOREVE (`societe`) en est exclu. Gabarits sans `'use client'`, sans hook, sans formatage : tous les textes viennent de l'objet document.
@@ -32,17 +32,19 @@
 1. **Brouillon enregistré ou abandonné par un collègue pendant qu'on écrit** : la sortie du champ suivant renvoie « Ce brouillon n'existe plus. » et n'écrit rien dans le compte rendu enregistré. Test : Task 4 (« un brouillon enregistré ne s'écrit plus »).
 2. **Date du compte rendu vidée, date du rendez-vous vidée alors qu'une heure est saisie** : la date vide est refusée (« Date : choisissez une date. ») sans écriture ; vider la date du rendez-vous efface aussi l'heure (la base refuserait une heure sans date). Test : Task 4 (« dates et heure du brouillon »).
 3. **Coordination collée depuis Word** (fins de ligne `\r\n`, tabulation en tête, espace insécable dans l'intitulé) : les intitulés sont reconnus, aucune ligne fantôme. Test : Task 1 (« texte collé depuis un traitement de texte »).
-4. **Entreprise retirée d'un lot entre l'ouverture et la génération des PV** : pour ce lot seul, « Ce lot n'a pas d'entreprise. » ; en « tous les lots », le lot n'est plus compté, sans erreur. Test : Task 6 (« entreprise retirée entre l'ouverture et la génération »).
+4. **Entreprise retirée d'un lot entre l'ouverture et la génération des PV** : « Ce lot n'a pas d'entreprise. », pour ce lot seul comme en « tous les lots » (spec § 6 : un seul refus bloque tout) ; rien n'est écrit et l'aperçu passe sur ce lot ; rouvert, « tous les lots » ne le compte plus. Inversement, un lot attribué après l'ouverture n'est pas généré : on génère les pages qu'on a vues. Tests : Task 6 (« entreprise retirée entre l'ouverture et la génération », « un lot attribué après l'ouverture n'est pas généré »).
 5. **Lien périmé ou d'un autre chantier** (`?cr=` d'un compte rendu d'un autre chantier, `?corriger-cr=` d'un compte rendu qui n'est plus le dernier, `?pv=` d'un lot d'un autre chantier) : rien ne s'ouvre, ou la feuille s'ouvre en lecture seule avec « Seul le dernier compte rendu se corrige. » ; aucune ligne `Reception` n'est créée ailleurs. Test : Task 4 (« liens périmés »), Task 6 (« lot d'un autre chantier »).
 
 ## Écarts assumés avec la spec
 
-- § 4 prévoit deux index uniques partiels (un brouillon par chantier ; numéros uniques parmi les enregistrés) : ils deviennent **un seul `@@unique([chantierId, numero])`** sur tous les comptes rendus, brouillon compris. Le schéma Prisma ne déclare pas d'index partiel, et un index écrit seulement dans le SQL ferait échouer le contrôle `prisma migrate diff --exit-code`. Le brouillon prend toujours le numéro suivant : deux créations simultanées visent le même numéro, la seconde est refusée par l'unicité et rouvre le brouillon de la première ; et un numéro enregistré ne peut plus être repris. Le message « Le compte rendu n° 5 existe déjà. » reste vérifié à l'enregistrement, en défense.
+- § 4 prévoit deux index uniques partiels (un brouillon par chantier ; numéros uniques parmi les enregistrés) : ils deviennent **un seul `@@unique([chantierId, numero])`** sur tous les comptes rendus, brouillon compris. Le schéma Prisma ne déclare pas d'index partiel, et un index écrit seulement dans le SQL ferait échouer le contrôle `prisma migrate diff --exit-code`. Le brouillon prend toujours le numéro suivant : deux créations simultanées visent le même numéro, la seconde est refusée par l'unicité et rouvre le brouillon de la première ; et un numéro enregistré ne peut plus être repris. Conséquence : à l'enregistrement, le numéro du brouillon ne peut pas être pris (il le détient déjà) ; aucun contrôle n'y est fait. Le message « Le compte rendu n° 5 existe déjà. » ne sort qu'à la création, dans le seul cas où la création simultanée perd et où le brouillon gagnant a déjà été enregistré. Le scénario « numéro pris refusé » de la spec § 10 est remplacé par le test de course (deux créations, un seul brouillon) et par le refus d'un doublon par la base (Task 4).
 - § 3 place `batirCompteRendu` et `batirReception` dans `batir.ts` : ils vivent dans des modules purs (`src/documents/compteRendu.ts`, `reception.ts`, `coordonnees.ts`), parce que `batir.ts` charge `node:crypto` et que la correction d'un compte rendu recalcule la feuille dans le navigateur (même choix que le certificat).
 - L'en-tête SOCOREVE du compte rendu et du PV est un objet `societe: { lignes }` hors empreinte, comme la `societe` du certificat.
 - § 4 écrit `siteWeb String @default(…)` : la colonne est `String?`, parce qu'elle est facultative comme l'e-mail (un champ vidé devient `null`).
 - « Repartir des lots » est calculé dans le navigateur (`coordinationBase`) puis enregistré comme une saisie de la coordination : pas d'action dédiée.
-- « Tous les lots » génère sous un seul verrou de tous les lots (`sousVerrouLots`, ajouté à `verrouLot.ts`), dans une seule transaction : un refus n'écrit rien. Le lot en cause revient à l'écran par le champ de l'erreur (`ErreurMetier(message, lotId)`).
+- « Tous les lots » génère sous un seul verrou de tous les lots (`sousVerrouLots`, ajouté à `verrouLot.ts`), dans une seule transaction : un refus n'écrit rien. Le lot en cause revient à l'écran par le champ de l'erreur : pour un refus de `genererReceptions` propre à un lot, `ErreurMetier(message, lotId)` ; partout ailleurs (saisies, date de réception), le second argument reste le nom du champ.
+- Spec muette : l'aperçu envoie la liste des lots qu'il affiche, et seuls ceux-là sont générés. Un lot attribué après l'ouverture de « Tous les lots » n'est pas ajouté ; un lot de la liste qui a perdu son entreprise refuse tout (« Ce lot n'a pas d'entreprise. »).
+- Toasts repris de l'application (ceux du certificat), absents de la spec : « Version N générée. » (correction d'un compte rendu) et « Rien n'a changé depuis la version N : elle est téléchargée. » (correction sans changement, PV d'un lot déjà à jour). La spec § 5 écrit « Rien n'a changé depuis la version N » ; la suite dit ce qui se passe, puisque le PDF est téléchargé.
 - Les champs communs du PV sont remplis à chaque ouverture **s'ils sont vides** : une date de réception ou un maître d'œuvre effacés sont reproposés à l'ouverture suivante.
 - Messages ajoutés, sur lesquels la spec est muette : « Date : choisissez une date. » (date du compte rendu vidée, message existant du certificat), « Date de réception : choisissez une date. » (génération d'un PV sans date de réception), « Les réserves sont limitées à 60 lignes. » (avec 2 000 caractères en lignes très courtes, le PV ne tiendrait plus sur une page lisible), « Compte rendu introuvable. », et les confirmations « Abandonner ce brouillon ? Son contenu sera perdu. » et « Fermer sans enregistrer la correction ? ».
 
@@ -1912,6 +1914,7 @@ export async function creerBrouillon(chantierId: string, maintenant = new Date()
 	} catch (e) {
 		if (!estDoublon(e)) throw e;
 		const gagnant = await trouver();
+		// Le brouillon gagnant a déjà été enregistré : seul endroit où ce message peut sortir.
 		if (!gagnant) throw new ErreurMetier(numeroPris(numero));
 		return gagnant;
 	}
@@ -1990,7 +1993,7 @@ async function creerVersion(tx: Tx, p: {
 	return { documentId: doc.id, version: p.version, nomFichier, nouvelle: true };
 }
 
-/** Lecture → PDF hors transaction → sous verrou du chantier : brouillon relu, empreinte refaite, numéro libre, statut, version 1. */
+/** Lecture → PDF hors transaction → sous verrou du chantier : brouillon relu, empreinte refaite, statut, version 1. */
 export async function enregistrerCompteRendu(id: string, utilisateurId: string, deps: Dependances = {}): Promise<ResultatGeneration & { chantierId: string; numero: number }> {
 	const brouillon = await prisma.compteRendu.findFirst({ where: { id, statut: 'BROUILLON' } });
 	if (!brouillon) throw new ErreurMetier(BROUILLON_DISPARU);
@@ -2000,10 +2003,7 @@ export async function enregistrerCompteRendu(id: string, utilisateurId: string, 
 	return sousVerrouChantier(brouillon.chantierId, async (tx) => {
 		const cr = await verrouillerBrouillon(tx, id);
 		if (empreinteDocument(await construire(tx, cr, saisiesDe(cr))) !== empreinte) throw new ErreurMetier(DONNEES_CHANGEES);
-		// Défense : l'unicité (chantier, numéro) l'interdit déjà.
-		if (await tx.compteRendu.findFirst({ where: { chantierId: cr.chantierId, statut: 'ENREGISTRE', numero: cr.numero }, select: { id: true } })) {
-			throw new ErreurMetier(numeroPris(cr.numero));
-		}
+		// Numéro : le brouillon le détient, l'unicité (chantier, numéro) interdit à toute autre ligne de le prendre.
 		await tx.compteRendu.update({ where: { id }, data: { statut: 'ENREGISTRE' } });
 		const r = await creerVersion(tx, { cr, version: 1, donnees, empreinte, pdf, utilisateurId });
 		return { ...r, chantierId: cr.chantierId, numero: cr.numero };
@@ -2625,10 +2625,11 @@ git commit -m "feat(suivi): feuille du procès-verbal de réception, construite 
   - `modifierChampReception(lotId, champ: ChampReception, valeur: string): Promise<void>`
   - `modifierChampReceptionCommun(chantierId, champ: ChampReceptionCommun, valeur: string): Promise<void>`
   - `type ResultatReception = ResultatGeneration & { lotId: string; entreprise: string }`
-  - `genererReceptions(chantierId, cible, utilisateurId, deps?): Promise<ResultatReception[]>`
+  - `genererReceptions(chantierId, lotIds: string[], utilisateurId, deps?): Promise<ResultatReception[]>` : les lots que l'aperçu affiche (un seul, ou toutes les pages de « Tous les lots »)
+  - contrat de `ErreurMetier.champ` : pour un refus de `genererReceptions` propre à un lot (sans entreprise, réserves ou motifs manquants), l'id de ce lot ; partout ailleurs (saisies, `DATE_RECEPTION`), le nom du champ
   - `leverReserves(lotId, date: string): Promise<{ chantierId: string }>`, `annulerLevee(lotId): Promise<{ chantierId: string }>`
   - `assemblerReceptions(chantierId, documentIds: string[]): Promise<{ pdf: Uint8Array; nomFichier: string } | null>`
-  - Server Actions : `modifierChampReceptionAction(lotId, champ, valeur)`, `modifierChampReceptionCommunAction(chantierId, champ, valeur)`, `genererReceptionsAction(chantierId, cible): Promise<Resultat<ResultatReception[]>>`, `leverReservesAction(lotId, date)`, `annulerLeveeAction(lotId)`
+  - Server Actions : `modifierChampReceptionAction(lotId, champ, valeur)`, `modifierChampReceptionCommunAction(chantierId, champ, valeur)`, `genererReceptionsAction(chantierId, lotIds: string[]): Promise<Resultat<ResultatReception[]>>`, `leverReservesAction(lotId, date)`, `annulerLeveeAction(lotId)`
   - Route `GET /api/chantiers/[id]/receptions-pdf?documents=<id>,<id>`
 
 - [ ] **Step 1: pdf-lib en production**
@@ -2684,7 +2685,10 @@ let grosOeuvre: string;
 let peinture: string;
 
 const reception = (lotId: string) => prisma.reception.findUnique({ where: { lotId } });
-const generer = (cible: string, d = deps) => genererReceptions(p.chantierId, cible, p.utilisateurId, d);
+const generer = (lotIds: string[], d = deps) => genererReceptions(p.chantierId, lotIds, p.utilisateurId, d);
+/** Les pages de « Tous les lots » à l'ouverture, comme l'aperçu les envoie. */
+const affiches = async () => (await preparerReceptions(p.chantierId, TOUS_LES_LOTS))!.pages.map((x) => x.lotId);
+const genererTous = async (d = deps) => generer(await affiches(), d);
 const contenu = async (documentId: string) =>
 	((await prisma.document.findUniqueOrThrow({ where: { id: documentId } })).donnees as unknown as DonneesReception).contenu;
 async function refus(promesse: Promise<unknown>): Promise<ErreurMetier> {
@@ -2770,12 +2774,12 @@ describe('procès-verbaux de réception', () => {
 
 	it('un lot : v1, puis rien de neuf sans changement', async () => {
 		await preparerReceptions(p.chantierId, grosOeuvre, LE_12_OCTOBRE);
-		const [r] = await generer(grosOeuvre);
+		const [r] = await generer([grosOeuvre]);
 		expect(r).toMatchObject({ lotId: grosOeuvre, entreprise: 'CONSTRUCTIONS REBOURS', version: 1, nouvelle: true, nomFichier: 'PERRIER-LOUISFERT-Lot02-GROS-OEUVRE-Reception-v1.pdf' });
 		const doc = await prisma.document.findUniqueOrThrow({ where: { id: r.documentId } });
 		expect([doc.type, doc.serie, doc.lotId]).toEqual(['PV_RECEPTION', `RECEPTION:${grosOeuvre}`, grosOeuvre]);
 		expect(await contenu(r.documentId)).toMatchObject({ decision: 'SANS_RESERVES', effet: '12/10/2026', dateReception: '2026-10-12', entreprise: 'CONSTRUCTIONS REBOURS' });
-		const [bis] = await generer(grosOeuvre);
+		const [bis] = await generer([grosOeuvre]);
 		expect(bis).toMatchObject({ documentId: r.documentId, version: 1, nouvelle: false });
 		expect(faux).toHaveBeenCalledTimes(1);
 	});
@@ -2783,19 +2787,19 @@ describe('procès-verbaux de réception', () => {
 	it('tous les lots : un lot invalide bloque tout, rien d\'écrit ; puis 12 PV ; puis inchangés', async () => {
 		await preparerReceptions(p.chantierId, TOUS_LES_LOTS, LE_12_OCTOBRE);
 		await modifierChampReception(peinture, 'decision', 'AVEC_RESERVES');
-		const e = await refus(generer(TOUS_LES_LOTS));
+		const e = await refus(genererTous());
 		expect([e.message, e.champ]).toEqual(["LA DÉCO'TECH : précisez la nature des réserves.", peinture]);
 		expect([faux.mock.calls.length, await prisma.document.count()]).toEqual([0, 0]);
 
 		await modifierChampReception(peinture, 'reserves', 'Reprise des joints de la cuisine');
-		const premiers = await generer(TOUS_LES_LOTS);
+		const premiers = await genererTous();
 		expect(premiers.filter((r) => r.nouvelle)).toHaveLength(12);
 		expect(premiers.map((r) => r.entreprise)[0]).toBe('GILLOT TP');
 
 		// Le délai d'un lot sans réserves ne s'imprime pas : rien ne change. Le représentant, si.
 		await modifierChampReception(grosOeuvre, 'delai', '15 jours');
 		await modifierChampReception(grosOeuvre, 'representant', 'Paul REBOURS');
-		const seconds = await generer(TOUS_LES_LOTS);
+		const seconds = await genererTous();
 		expect(seconds.filter((r) => r.nouvelle).map((r) => [r.lotId, r.version])).toEqual([[grosOeuvre, 2]]);
 		expect(bilanReceptions(1, 11)).toBe('1 PV généré, 11 inchangés.');
 	});
@@ -2803,20 +2807,39 @@ describe('procès-verbaux de réception', () => {
 	it('différée sans motif refusée ; date de réception vide refusée', async () => {
 		await preparerReceptions(p.chantierId, grosOeuvre);
 		await modifierChampReception(grosOeuvre, 'decision', 'DIFFEREE');
-		await expect(generer(grosOeuvre)).rejects.toThrow('CONSTRUCTIONS REBOURS : précisez les motifs du report.');
+		await expect(generer([grosOeuvre])).rejects.toThrow('CONSTRUCTIONS REBOURS : précisez les motifs du report.');
 		await modifierChampReception(grosOeuvre, 'motifs', 'Enduits non secs');
 		await modifierChampReceptionCommun(p.chantierId, 'date', '');
-		await expect(generer(grosOeuvre)).rejects.toThrow(DATE_RECEPTION);
+		await expect(generer([grosOeuvre])).rejects.toThrow(DATE_RECEPTION);
 		expect(await prisma.document.count()).toBe(0);
 	});
 
-	it('entreprise retirée entre l\'ouverture et la génération', async () => {
-		await preparerReceptions(p.chantierId, TOUS_LES_LOTS);
+	it('entreprise retirée entre l\'ouverture et la génération : refus, en « tous les lots » aussi, rien d\'écrit', async () => {
+		const vus = await affiches();
+		expect(vus).toHaveLength(12);
 		await prisma.lot.update({ where: { id: grosOeuvre }, data: { artisanId: null } });
-		await expect(generer(grosOeuvre)).rejects.toThrow(SANS_ENTREPRISE);
-		const tous = await generer(TOUS_LES_LOTS);
+		await expect(generer([grosOeuvre])).rejects.toThrow(SANS_ENTREPRISE);
+		const e = await refus(generer(vus));
+		expect([e.message, e.champ]).toEqual([SANS_ENTREPRISE, grosOeuvre]);
+		expect([faux.mock.calls.length, await prisma.document.count()]).toEqual([0, 0]);
+		// Rouvert, « tous les lots » ne le compte plus.
+		const tous = await genererTous();
 		expect(tous).toHaveLength(11);
 		expect(tous.some((r) => r.lotId === grosOeuvre)).toBe(false);
+	});
+
+	it('un lot attribué après l\'ouverture n\'est pas généré : on génère les pages qu\'on a vues', async () => {
+		const vus = await affiches();
+		const enduit = p.lots['ENDUIT EXTÉRIEUR'];
+		await prisma.lot.update({ where: { id: enduit }, data: { artisanId: p.artisans.MATELEC } });
+		const r = await generer(vus);
+		expect(r).toHaveLength(12);
+		expect(r.some((x) => x.lotId === enduit)).toBe(false);
+	});
+
+	it('lot inconnu ou d\'un autre chantier, liste vide : refusés', async () => {
+		await expect(generer(['inconnu'])).rejects.toThrow('Lot introuvable.');
+		await expect(generer([])).rejects.toThrow(AUCUN_LOT_RECEPTIONNABLE);
 	});
 
 	it('données changées pendant le rendu : rien d\'écrit', async () => {
@@ -2825,7 +2848,7 @@ describe('procès-verbaux de réception', () => {
 			await prisma.artisan.update({ where: { id: p.artisans['CONSTRUCTIONS REBOURS'] }, data: { nom: 'REBOURS SAS' } });
 			return faux();
 		});
-		await expect(generer(grosOeuvre, { rendrePdf: renomme })).rejects.toThrow(DONNEES_CHANGEES);
+		await expect(generer([grosOeuvre], { rendrePdf: renomme })).rejects.toThrow(DONNEES_CHANGEES);
 		expect(await prisma.document.count()).toBe(0);
 	});
 
@@ -2834,8 +2857,8 @@ describe('procès-verbaux de réception', () => {
 		await expect(leverReserves(peinture, '2026-10-20')).rejects.toThrow(PAS_DE_RESERVES);
 		await modifierChampReception(peinture, 'decision', 'AVEC_RESERVES');
 		await modifierChampReception(peinture, 'reserves', 'Reprise des joints');
-		await generer(peinture);
-		await generer(grosOeuvre);
+		await generer([peinture]);
+		await generer([grosOeuvre]);
 		await expect(leverReserves(grosOeuvre, '2026-10-20')).rejects.toThrow(PAS_DE_RESERVES);
 		await expect(leverReserves(peinture, '2026-10-11')).rejects.toThrow(LEVEE_AVANT);
 		await expect(leverReserves(peinture, '')).rejects.toThrow('Date : choisissez une date.');
@@ -2843,10 +2866,10 @@ describe('procès-verbaux de réception', () => {
 		const levee = async () => (await reception(peinture))?.reservesLeveesLe?.toISOString().slice(0, 10) ?? null;
 		expect(await levee()).toBe('2026-10-20');
 
-		await generer(peinture);
+		await generer([peinture]);
 		expect(await levee()).toBe('2026-10-20');
 		await modifierChampReception(peinture, 'reserves', 'Reprise des joints\nNettoyage');
-		await generer(peinture);
+		await generer([peinture]);
 		expect(await levee()).toBeNull();
 
 		await leverReserves(peinture, '2026-10-21');
@@ -2855,13 +2878,13 @@ describe('procès-verbaux de réception', () => {
 
 		await modifierChampReception(peinture, 'decision', 'DIFFEREE');
 		await modifierChampReception(peinture, 'motifs', 'Peinture fraîche');
-		await generer(peinture);
+		await generer([peinture]);
 		await expect(leverReserves(peinture, '2026-10-22')).rejects.toThrow(PAS_DE_RESERVES);
 	});
 
 	it('PDF assemblé : une page par lot dans l\'ordre de saisie ; rien d\'un autre chantier ni d\'un autre type', async () => {
 		await preparerReceptions(p.chantierId, TOUS_LES_LOTS);
-		const [a, b] = [await generer(peinture), await generer(grosOeuvre)].map(([r]) => r);
+		const [a, b] = [await generer([peinture]), await generer([grosOeuvre])].map(([r]) => r);
 		const assemble = await assemblerReceptions(p.chantierId, [a.documentId, b.documentId]);
 		expect(assemble?.nomFichier).toBe('PERRIER-LOUISFERT-Receptions.pdf');
 		expect((await PDFDocument.load(assemble!.pdf)).getPageCount()).toBe(2);
@@ -2871,7 +2894,8 @@ describe('procès-verbaux de réception', () => {
 		});
 		const lot = await prisma.lot.create({ data: { chantierId: autre.id, ordre: 1, designation: 'PEINTURE', artisanId: p.artisans.MATELEC } });
 		await preparerReceptions(autre.id, lot.id);
-		const [etranger] = await genererReceptions(autre.id, lot.id, p.utilisateurId, deps);
+		const [etranger] = await genererReceptions(autre.id, [lot.id], p.utilisateurId, deps);
+		await expect(genererReceptions(p.chantierId, [lot.id], p.utilisateurId, deps)).rejects.toThrow('Lot introuvable.');
 		expect(await assemblerReceptions(p.chantierId, [a.documentId, etranger.documentId])).toBeNull();
 		expect(await assemblerReceptions(p.chantierId, [])).toBeNull();
 		expect(await assemblerReceptions(p.chantierId, ['inconnu'])).toBeNull();
@@ -3071,14 +3095,18 @@ export async function modifierChampReceptionCommun(chantierId: string, champ: Ch
 
 type Feuille = { lot: LotReception; entreprise: string; donnees: DonneesReception };
 
-/** Les feuilles des lots visés, contrôlées ; le refus d'un lot porte son id dans `champ` (l'aperçu passe sur lui). */
-async function construire(client: Tx, chantierId: string, cible: string): Promise<{ chantier: ChantierReception; feuilles: Feuille[] }> {
+/**
+ * Les feuilles des lots demandés (ceux que l'aperçu affichait), dans l'ordre de saisie, contrôlées.
+ * Le refus d'un lot porte son id dans `champ` : l'aperçu passe sur lui. `DATE_RECEPTION` porte le nom du champ.
+ */
+async function construire(client: Tx, chantierId: string, lotIds: string[]): Promise<{ chantier: ChantierReception; feuilles: Feuille[] }> {
 	const lu = await lire(client, chantierId);
 	if (!lu) throw new ErreurMetier(INTROUVABLE);
 	const { chantier, parametres } = lu;
-	const vises = cible === TOUS_LES_LOTS ? chantier.lots.filter((l) => l.artisan) : chantier.lots.filter((l) => l.id === cible);
-	if (cible !== TOUS_LES_LOTS && !vises.length) throw new ErreurMetier('Lot introuvable.');
-	if (!vises.length) throw new ErreurMetier(AUCUN_LOT_RECEPTIONNABLE);
+	const demandes = new Set(lotIds);
+	if (!demandes.size) throw new ErreurMetier(AUCUN_LOT_RECEPTIONNABLE);
+	const vises = chantier.lots.filter((l) => demandes.has(l.id));
+	if (vises.length !== demandes.size) throw new ErreurMetier('Lot introuvable.');
 	const commun = communDe(chantier);
 	if (!commun.date) throw new ErreurMetier(DATE_RECEPTION, 'date');
 	const feuilles = vises.map((l) => {
@@ -3092,12 +3120,13 @@ async function construire(client: Tx, chantierId: string, cible: string): Promis
 }
 
 /**
- * Un lot ou tous (spec § 6) : feuilles contrôlées, PDF rendus hors transaction pour les seules feuilles changées,
- * puis sous le verrou de tous les lots : feuilles refaites (`DONNEES_CHANGEES` si l'une diffère), versions
- * insérées, levée effacée pour chaque nouvelle version. Un refus n'écrit rien.
+ * Un lot ou tous (spec § 6). `lotIds` : les pages de l'aperçu ; un lot attribué depuis n'est pas ajouté, un lot
+ * qui a perdu son entreprise refuse tout. Feuilles contrôlées, PDF rendus hors transaction pour les seules
+ * feuilles changées, puis sous le verrou de tous les lots : feuilles refaites (`DONNEES_CHANGEES` si l'une
+ * diffère), versions insérées, levée effacée pour chaque nouvelle version. Un refus n'écrit rien.
  */
-export async function genererReceptions(chantierId: string, cible: string, utilisateurId: string, deps: Dependances = {}): Promise<ResultatReception[]> {
-	const { feuilles } = await construire(prisma, chantierId, cible);
+export async function genererReceptions(chantierId: string, lotIds: string[], utilisateurId: string, deps: Dependances = {}): Promise<ResultatReception[]> {
+	const { feuilles } = await construire(prisma, chantierId, lotIds);
 	const prets = new Map<string, { empreinte: string; pdf: Uint8Array | null }>();
 	for (const f of feuilles) {
 		const empreinte = empreinteDocument(f.donnees);
@@ -3107,7 +3136,7 @@ export async function genererReceptions(chantierId: string, cible: string, utili
 		prets.set(f.lot.id, { empreinte, pdf: derniere?.empreinte === empreinte ? null : await rendrePdfDocument(f.donnees, deps.rendrePdf ?? imprimerReception) });
 	}
 	return sousVerrouLots([...prets.keys()], async (tx) => {
-		const { chantier, feuilles: fraiches } = await construire(tx, chantierId, cible);
+		const { chantier, feuilles: fraiches } = await construire(tx, chantierId, lotIds);
 		if (fraiches.length !== prets.size || fraiches.some((f) => prets.get(f.lot.id)?.empreinte !== empreinteDocument(f.donnees))) {
 			throw new ErreurMetier(DONNEES_CHANGEES);
 		}
@@ -3220,10 +3249,10 @@ export async function modifierChampReceptionCommunAction(chantierId: string, cha
 	});
 }
 
-/** `cible` : l'id d'un lot, ou « tous ». */
-export async function genererReceptionsAction(chantierId: string, cible: string): Promise<Resultat<ResultatReception[]>> {
+/** `lotIds` : les pages que l'aperçu affiche, et elles seules. */
+export async function genererReceptionsAction(chantierId: string, lotIds: string[]): Promise<Resultat<ResultatReception[]>> {
 	return executer({}, async (u) => {
-		const r = await genererReceptions(id.parse(chantierId), id.parse(cible), u.id);
+		const r = await genererReceptions(id.parse(chantierId), z.array(id).max(200).parse(lotIds), u.id);
 		rafraichir(chantierId);
 		return r;
 	});
@@ -3359,10 +3388,10 @@ describe('page Documents : comptes rendus et réceptions', () => {
 
 	it('case Réception : avec réserves (orangé), levée (bleu), différée (orangé) ; les PV dans l\'historique', async () => {
 		const peinture = p.lots.PEINTURE;
-		await preparerReceptions(p.chantierId, TOUS_LES_LOTS, LE_12_OCTOBRE);
+		const tous = (await preparerReceptions(p.chantierId, TOUS_LES_LOTS, LE_12_OCTOBRE))!.pages.map((x) => x.lotId);
 		await modifierChampReception(peinture, 'decision', 'AVEC_RESERVES');
 		await modifierChampReception(peinture, 'reserves', 'Reprise des joints');
-		await genererReceptions(p.chantierId, TOUS_LES_LOTS, p.utilisateurId, deps);
+		await genererReceptions(p.chantierId, tous, p.utilisateurId, deps);
 
 		expect((await ligne('GROS ŒUVRE')).reception).toMatchObject({ etat: 'sans-reserves', texte: 'Sans réserves · 12/10', alerte: false });
 		let l = await ligne('PEINTURE');
@@ -3375,7 +3404,7 @@ describe('page Documents : comptes rendus et réceptions', () => {
 
 		await modifierChampReception(peinture, 'decision', 'DIFFEREE');
 		await modifierChampReception(peinture, 'motifs', 'Peinture fraîche');
-		await genererReceptions(p.chantierId, peinture, p.utilisateurId, deps);
+		await genererReceptions(p.chantierId, [peinture], p.utilisateurId, deps);
 		l = await ligne('PEINTURE');
 		expect(l.reception).toMatchObject({ etat: 'differee', texte: 'Différée · 12/10', alerte: true, leveeLe: null, derniere: { version: 2 } });
 		expect(l.historique.map((h) => [h.libelle, h.version])).toEqual([['PV', 2], ['PV', 1]]);
@@ -3386,7 +3415,7 @@ describe('page Documents : comptes rendus et réceptions', () => {
 		await modifierChampCompteRendu(b.id, 'avancement', 'x');
 		await enregistrerCompteRendu(b.id, p.utilisateurId, deps);
 		await preparerReceptions(p.chantierId, p.lots['GROS ŒUVRE']);
-		await genererReceptions(p.chantierId, p.lots['GROS ŒUVRE'], p.utilisateurId, deps);
+		await genererReceptions(p.chantierId, [p.lots['GROS ŒUVRE']], p.utilisateurId, deps);
 		const avant = await vue();
 		await prisma.artisan.update({ where: { id: p.artisans['CONSTRUCTIONS REBOURS'] }, data: { nom: 'REBOURS SAS' } });
 		const apres = await vue();
@@ -3450,11 +3479,16 @@ Dans `VueDocuments`, après `visa: SerieVisa;` :
 	resume: { nombre: number; dernierLe: string | null };
 ```
 
-3. Dans `etatsDocumentsChantier`, compléter le `Promise.all` (déstructuration et tableau) :
+3. Dans `etatsDocumentsChantier`, remplacer le `Promise.all` et la ligne `numeroLettre` qui le suit (les cinq premières lectures sont celles du code livré, inchangées ; les trois dernières sont nouvelles) :
 
 ```ts
 	const [{ chantier, lots, parametres }, docs, empreinteDuPlanning, acomptes, lettres, comptesRendus, proces, receptions] = await Promise.all([
-		// … les cinq lectures existantes, inchangées …
+		lireSources(chantierId),
+		prisma.document.findMany({ where: { chantierId }, orderBy: { version: 'desc' }, select: SELECTION }),
+		empreintePlanning(chantierId, maintenant),
+		prisma.acompte.findMany({ where: { lot: { chantierId } }, orderBy: { numero: 'asc' }, select: { id: true, lotId: true, numero: true, manuel: true } }),
+		// Le numéro imprimé d'une lettre survit à son avenant : il sert à l'historique des avenants supprimés.
+		prisma.document.findMany({ where: { chantierId, type: 'AVENANT' }, select: { id: true, donnees: true } }),
 		prisma.compteRendu.findMany({
 			where: { chantierId }, orderBy: { numero: 'desc' },
 			select: { id: true, numero: true, statut: true, date: true, rdvDate: true, rdvHeure: true },
@@ -3463,6 +3497,7 @@ Dans `VueDocuments`, après `visa: SerieVisa;` :
 		prisma.document.findMany({ where: { chantierId, type: 'PV_RECEPTION' }, select: { id: true, donnees: true } }),
 		prisma.reception.findMany({ where: { lot: { chantierId } }, select: { lotId: true, reservesLeveesLe: true } }),
 	]);
+	const numeroLettre = new Map(lettres.map((d) => [d.id, (d.donnees as { contenu?: { numero?: string } }).contenu?.numero ?? '?']));
 	const contenuPv = new Map(proces.map((d) => [d.id, (d.donnees as unknown as DonneesReception).contenu]));
 	const levees = new Map(receptions.map((r) => [r.lotId, r.reservesLeveesLe ? versIso(r.reservesLeveesLe) : null]));
 ```
@@ -3673,6 +3708,15 @@ test('comptes rendus : brouillon repris, enregistré, suivant, abandon, correcti
 	await expect(cr).toContainText('Correction du n° 01');
 	await cr.getByRole('textbox', { name: 'Avancement' }).fill('Fondations coulées, dalle faite');
 	expect(await telecharger(page, () => cr.getByRole('button', { name: 'Générer la v2' }).click())).toBe('SUIVI-CompteRendu01-v2.pdf');
+	await expect(cr).toBeHidden();
+	await expect(page.getByText('Version 2 générée.')).toBeVisible();
+
+	// Correction sans changement : pas de v3, la v2 est téléchargée.
+	await carteCr(page).getByRole('link', { name: 'Corriger le n° 01' }).click();
+	cr = dialogueCr(page);
+	await expect(cr.getByRole('textbox', { name: 'Avancement' })).toHaveValue('Fondations coulées, dalle faite');
+	expect(await telecharger(page, () => cr.getByRole('button', { name: 'Générer la v3' }).click())).toBe('SUIVI-CompteRendu01-v2.pdf');
+	await expect(page.getByText("Rien n'a changé depuis la version 2 : elle est téléchargée.")).toBeVisible();
 	await expect(cr).toBeHidden();
 });
 ```
@@ -3926,8 +3970,9 @@ export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOu
 				toast.error(r.erreur);
 				return;
 			}
+			// Libellés du certificat (écart assumé) : la spec § 5 ne fixe que « Rien n'a changé depuis la version N ».
 			toast.success(r.donnees.nouvelle
-				? `Compte rendu n° ${n} : version ${r.donnees.version} générée.`
+				? `Version ${r.donnees.version} générée.`
 				: `Rien n'a changé depuis la version ${r.donnees.version} : elle est téléchargée.`);
 			telecharger(r.donnees.documentId);
 			fermer(false);
@@ -4336,11 +4381,12 @@ export function ApercuReception({ ouvert, reference }: { ouvert: ReceptionsOuver
 			// La saisie encore ouverte part d'abord : le PDF ne perd jamais une saisie.
 			(document.activeElement as HTMLElement | null)?.blur();
 			await Promise.all(enregistrements.current);
-			const r = await genererReceptionsAction(ouvert.chantierId, ouvert.cible);
+			// Les pages affichées, et elles seules : un lot attribué depuis l'ouverture n'est pas ajouté.
+			const r = await genererReceptionsAction(ouvert.chantierId, ouvert.pages.map((p) => p.lotId));
 			if (!r.ok) {
 				toast.error(r.erreur);
-				// Le refus d'un lot porte son id : l'aperçu passe sur lui.
-				const enCause = Object.keys(r.champs ?? {}).find((cle) => ouvert.options.some((o) => o.lotId === cle));
+				// Refus de génération propre à un lot : son id est la clé du champ en erreur ; l'aperçu passe sur lui.
+				const enCause = Object.keys(r.champs ?? {}).find((cle) => ouvert.pages.some((p) => p.lotId === cle));
 				if (tous && enCause) aller(enCause);
 				return;
 			}
@@ -4565,7 +4611,7 @@ describe('archive du chantier', () => {
 		await creerBrouillon(p.chantierId);
 
 		await preparerReceptions(p.chantierId, p.lots.PEINTURE);
-		await genererReceptions(p.chantierId, p.lots.PEINTURE, p.utilisateurId, deps);
+		await genererReceptions(p.chantierId, [p.lots.PEINTURE], p.utilisateurId, deps);
 
 		const archive = await construireArchive(p.chantierId, LE_6_OCTOBRE);
 		expect(archive?.nomFichier).toBe('PERRIER-LOUISFERT-Documents-2026-10-06.zip');
