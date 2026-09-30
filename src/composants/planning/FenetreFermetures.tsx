@@ -43,9 +43,9 @@ export function FenetreFermetures({ ouverte, onFermer, fermetures, onAjouter, on
 								return (
 									<tr key={f.id} className="border-t">
 										<td><ChampEnLigne libelle="Libellé" placeholder="Congés d'été" valeur={f.libelle} enregistrer={(v) => onModifier(f.id, 'libelle', v)} /></td>
-										<td><ChampEnLigne libelle="Semaine" alignement="droite" valeur={String(s.semaine)} enregistrer={(v) => onModifier(f.id, 'semaine', v)} /></td>
-										<td><ChampEnLigne libelle="Année" alignement="droite" valeur={String(s.annee)} enregistrer={(v) => onModifier(f.id, 'annee', v)} /></td>
-										<td><ChampEnLigne libelle="Durée" alignement="droite" valeur={String(f.duree)} enregistrer={(v) => onModifier(f.id, 'duree', v)} /></td>
+										<td><ChampEnLigne libelle="Semaine" variante="montant" valeur={String(s.semaine)} enregistrer={(v) => onModifier(f.id, 'semaine', v)} /></td>
+										<td><ChampEnLigne libelle="Année" variante="montant" valeur={String(s.annee)} enregistrer={(v) => onModifier(f.id, 'annee', v)} /></td>
+										<td><ChampEnLigne libelle="Durée" variante="montant" valeur={String(f.duree)} enregistrer={(v) => onModifier(f.id, 'duree', v)} /></td>
 										<td>
 											<Button size="icon-sm" variant="ghost" title="Supprimer cette fermeture"
 												aria-label={`Supprimer la fermeture ${f.libelle || 'sans libellé'}`} onClick={() => onSupprimer(f.id)}>

@@ -68,9 +68,9 @@ export function TableauLots({ vue, actions }: { vue: VueMarches; actions?: React
 										? <>{l.entreprise}{l.artisanArchive && ' (archivée)'}<small className="block text-muted-foreground">{l.commune}</small></>
 										: <span className="italic text-muted-foreground">à attribuer</span>}
 								</td>
-								<td className="p-1" onClick={arreter}><ChampEnLigne libelle="Montant HT" alignement="droite" valeur={formatMontantSaisie(l.htInitial)} enregistrer={champ(l.id, 'montantHt')} /></td>
-								<td className="p-1" onClick={arreter}><ChampEnLigne libelle="Taux de TVA" alignement="droite" valeur={formatTauxSaisie(l.tauxTva)} enregistrer={champ(l.id, 'tauxTva')} /></td>
-								<td className="p-1" onClick={arreter}><ChampEnLigne libelle="Montant TTC" alignement="droite" valeur={formatMontantSaisie(l.ttcEngage)} enregistrer={champ(l.id, 'montantTtc')} /></td>
+								<td className="p-1" onClick={arreter}><ChampEnLigne libelle="Montant HT" variante="montant" valeur={formatMontantSaisie(l.htInitial)} enregistrer={champ(l.id, 'montantHt')} /></td>
+								<td className="p-1" onClick={arreter}><ChampEnLigne libelle="Taux de TVA" variante="montant" valeur={formatTauxSaisie(l.tauxTva)} enregistrer={champ(l.id, 'tauxTva')} /></td>
+								<td className="p-1" onClick={arreter}><ChampEnLigne libelle="Montant TTC" variante="montant" valeur={formatMontantSaisie(l.ttcEngage)} enregistrer={champ(l.id, 'montantTtc')} /></td>
 							</tr>
 						))}
 						{!vus.length && <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">{requete ? `Aucun lot ne correspond à « ${requete} ».` : 'Aucun lot pour l\'instant.'}</td></tr>}

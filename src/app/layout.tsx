@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { Toaster } from '@/components/ui/sonner';
 import { SCRIPT_THEME } from '@/composants/maquette/theme';
+import { Toasts } from '@/composants/maquette/Toasts';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export default function LayoutRacine({ children }: { children: React.ReactNode }
 			</head>
 			<body>
 				{children}
-				<Toaster position="bottom-right" richColors />
+				<Toasts />
 			</body>
 		</html>
 	);

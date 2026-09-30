@@ -83,9 +83,9 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 						<h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Marché</h3>
 						<dl className="grid grid-cols-[9rem_1fr] items-center gap-x-3 gap-y-1">
 							<dt>{avecAvenants ? 'Montant initial HT' : 'Montant HT'}</dt>
-							<dd><ChampEnLigne libelle="Montant HT du marché" alignement="droite" valeur={formatMontantSaisie(lot.htInitial)} enregistrer={champ('montantHt')} /></dd>
+							<dd><ChampEnLigne libelle="Montant HT du marché" variante="montant" valeur={formatMontantSaisie(lot.htInitial)} enregistrer={champ('montantHt')} /></dd>
 							<dt>T.V.A. (%)</dt>
-							<dd><ChampEnLigne libelle="Taux de T.V.A." alignement="droite" valeur={formatTauxSaisie(lot.tauxTva)} enregistrer={champ('tauxTva')} /></dd>
+							<dd><ChampEnLigne libelle="Taux de T.V.A." variante="montant" valeur={formatTauxSaisie(lot.tauxTva)} enregistrer={champ('tauxTva')} /></dd>
 							{avecAvenants && (
 								<>
 									<dt>Avenants</dt>
@@ -94,12 +94,12 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 							)}
 							<dt className="font-semibold">{avecAvenants ? 'Montant actuel TTC' : 'Montant TTC'}</dt>
 							<dd>
-								<ChampEnLigne libelle="Montant TTC du marché" alignement="droite" className="font-semibold" valeur={formatMontantSaisie(lot.ttcEngage)} enregistrer={champ('montantTtc')} />
+								<ChampEnLigne libelle="Montant TTC du marché" variante="montant" className="font-semibold" valeur={formatMontantSaisie(lot.ttcEngage)} enregistrer={champ('montantTtc')} />
 								{avecAvenants && <p className="px-1.5 text-right text-xs text-muted-foreground">avenants compris : le montant initial HT est recalculé</p>}
 							</dd>
 							<dt>Retenue de garantie (%)</dt>
 							<dd className="flex items-center gap-2">
-								<ChampEnLigne libelle="Taux de retenue de garantie" alignement="droite" valeur={formatTauxSaisie(lot.retenueGarantie)} enregistrer={champ('retenueGarantie')} />
+								<ChampEnLigne libelle="Taux de retenue de garantie" variante="montant" valeur={formatTauxSaisie(lot.retenueGarantie)} enregistrer={champ('retenueGarantie')} />
 								<span className="whitespace-nowrap font-mono text-xs text-muted-foreground">{formatEuros(htEngage(lot.htInitial, lot.sommeAvenants).times(lot.retenueGarantie).div(100))}</span>
 							</dd>
 							<dt>Exemplaires</dt>
@@ -146,7 +146,7 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 											<tr key={a.id} data-avenant={n} className="border-t">
 												<td className="py-1 font-mono">{n}</td>
 												<td><ChampEnLigne libelle={`Devis de l'avenant n° ${n}`} placeholder="n° du devis" valeur={a.devis} enregistrer={modifierAvenantAction.bind(null, a.id, 'devis')} /></td>
-												<td><ChampEnLigne libelle={`Montant HT de l'avenant n° ${n}`} alignement="droite" valeur={formatMontantSaisie(a.montantHt)} enregistrer={modifierAvenantAction.bind(null, a.id, 'montantHt')} /></td>
+												<td><ChampEnLigne libelle={`Montant HT de l'avenant n° ${n}`} variante="montant" valeur={formatMontantSaisie(a.montantHt)} enregistrer={modifierAvenantAction.bind(null, a.id, 'montantHt')} /></td>
 												<td><ChampEnLigne libelle={`Date de l'avenant n° ${n}`} type="date" valeur={a.date} enregistrer={modifierAvenantAction.bind(null, a.id, 'date')} /></td>
 												<td className="whitespace-nowrap text-right">
 													<Link href={`?avenant=${a.id}`} scroll={false} onClick={onFermer} aria-label={`Ouvrir la lettre de l'avenant n° ${n}`}

@@ -94,9 +94,9 @@ function LignePeriode({ periode: x, vise, options, onModifier, onLier, onSupprim
 		<tbody data-periode={x.id} className={cn('border-t', vise && 'bg-accent')}>
 			<tr>
 				<td><ChampEnLigne libelle="Intitulé" placeholder="sans intitulé" valeur={x.intitule} enregistrer={(v) => onModifier(x.id, 'intitule', v)} /></td>
-				<td><ChampEnLigne libelle="Semaine" alignement="droite" valeur={String(s.semaine)} enregistrer={(v) => onModifier(x.id, 'semaine', v)} /></td>
-				<td><ChampEnLigne libelle="Année" alignement="droite" valeur={String(s.annee)} enregistrer={(v) => onModifier(x.id, 'annee', v)} /></td>
-				<td><ChampEnLigne libelle="Durée" alignement="droite" valeur={String(x.duree)} enregistrer={(v) => onModifier(x.id, 'duree', v)} /></td>
+				<td><ChampEnLigne libelle="Semaine" variante="montant" valeur={String(s.semaine)} enregistrer={(v) => onModifier(x.id, 'semaine', v)} /></td>
+				<td><ChampEnLigne libelle="Année" variante="montant" valeur={String(s.annee)} enregistrer={(v) => onModifier(x.id, 'annee', v)} /></td>
+				<td><ChampEnLigne libelle="Durée" variante="montant" valeur={String(x.duree)} enregistrer={(v) => onModifier(x.id, 'duree', v)} /></td>
 				<td>
 					<Button size="icon-sm" variant="ghost" title="Supprimer cette période" aria-label={`Supprimer la période ${x.intitule || 'sans intitulé'}`}
 						onClick={() => onSupprimer(x.id)}>
