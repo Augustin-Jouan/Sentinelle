@@ -30,6 +30,9 @@ export function ApercuDocument({ titre, sousTitre, donnees, source, manques = []
 	const [enCours, demarrer] = useTransition();
 
 	function saisir(cle: CleZone, texte: string) {
+		// Même garde que Zone : un blur sans changement n'écrit pas (évite d'écraser la feuille avec une colonne périmée).
+		const contenu = 'contenu' in donnees ? donnees.contenu : undefined;
+		if (contenu && cle in contenu && (contenu as Record<string, unknown>)[cle] === texte) return null;
 		// La lettre d'avenant n'a qu'une zone, son objet ; le marché écrit dans le lot.
 		let envoi: Promise<Resultat> | null = null;
 		if (source.type === 'marche' && cle !== 'objet') envoi = modifierChampLotAction(source.lotId, cle, texte);
@@ -94,7 +97,10 @@ export function ApercuDocument({ titre, sousTitre, donnees, source, manques = []
 		<CadreApercu libelle={titre} surtitre={titre} titre={sousTitre} notes={notes} actions={actions} onFermer={fermer}
 			aide={ecrit ? `Les zones bleues s'écrivent directement sur ${source.type === 'avenant' ? 'la lettre' : 'le marché'} — le bleu ne s'imprime pas.` : undefined}
 			disposition={estMarche && source.type === 'marche' ? 'champs' : 'simple'}
-			champs={(donnees.type === 'MARCHE_GRE_A_GRE' || donnees.type === 'MARCHE_SOUS_TRAITANCE') && source.type === 'marche' ? <ChampsMarche donnees={donnees} saisir={saisirPuisRafraichir} /> : undefined}>
+			champs={(donnees.type === 'MARCHE_GRE_A_GRE' || donnees.type === 'MARCHE_SOUS_TRAITANCE') && source.type === 'marche' ? (
+				<ChampsMarche key={'clauseParticuliere' in donnees.contenu ? donnees.contenu.clauseParticuliere : `${donnees.contenu.corpsEtat}\0${donnees.contenu.travaux}`}
+					donnees={donnees} saisir={saisirPuisRafraichir} />
+			) : undefined}>
 			{donnees.type === 'PLANNING' || donnees.type === 'VISA_PLANNING' ? (
 				<FeuilleUnique key={sousTitre}><Gabarit donnees={donnees} mode="lecture" /></FeuilleUnique>
 			) : (
