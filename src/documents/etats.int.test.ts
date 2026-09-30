@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { prisma } from '@/donnees/prisma';
 import { viderBase } from '../../tests/integration/aide';
 import { insererPerrier } from '../../tests/integration/perrier';
-import { etatsDocumentsChantier } from './etats';
+import { etatsDocumentsChantier, versionsDeLaSerie } from './etats';
 import { genererMarche, genererRecap } from './generer';
 
 const deps = { maintenant: new Date('2026-09-29T08:00:00Z'), rendrePdf: async () => new Uint8Array([1]) };
@@ -52,6 +52,16 @@ describe('états des documents', () => {
 
 	it('chantier inconnu : nul', async () => {
 		expect(await etatsDocumentsChantier('inconnu')).toBeNull();
+	});
+
+	it('liste les versions d\'une série, de la plus récente à la plus ancienne', async () => {
+		await genererMarche(p.lots['GROS ŒUVRE'], p.utilisateurId, deps);
+		await prisma.lot.update({ where: { id: p.lots['GROS ŒUVRE'] }, data: { clauseParticuliere: 'Autre clause' } });
+		await genererMarche(p.lots['GROS ŒUVRE'], p.utilisateurId, deps);
+		const versions = await versionsDeLaSerie(p.chantierId, p.lots['GROS ŒUVRE']);
+		expect(versions.map((v) => v.version)).toEqual([2, 1]);
+		expect(versions[0]).toMatchObject({ type: 'MARCHE_GRE_A_GRE', auteur: 'Augustin Jouan' });
+		expect(await versionsDeLaSerie(p.chantierId, 'serie-inconnue')).toEqual([]);
 	});
 
 	it('liste les lots dans l\'ordre du chantier, avec numéro, désignation, nature, entreprise et montant des avenants', async () => {

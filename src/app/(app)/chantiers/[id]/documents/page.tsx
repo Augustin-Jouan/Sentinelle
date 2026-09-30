@@ -8,8 +8,9 @@ import { AutresDocuments, TableauDocuments } from '@/composants/documents/Tablea
 import { Ecran } from '@/composants/maquette/Ecran';
 import * as Icone from '@/composants/maquette/icones';
 import { construireDonneesRecap } from '@/documents/donnees';
-import { etatsDocumentsChantier, lireDocument, type VueDocuments } from '@/documents/etats';
-import { TITRES_TYPES } from '@/documents/libelles';
+import { etatsDocumentsChantier, lireDocument, versionsDeLaSerie, type VueDocuments } from '@/documents/etats';
+import { TITRES_TYPES, type TypeDocument } from '@/documents/libelles';
+import { avenantDeLaSerie, SERIES } from '@/documents/series';
 import { lireBrouillon, ouvrirCompteRendu } from '@/donnees/comptesRendus';
 import { lirePlanning } from '@/donnees/planning';
 import { lireReceptionsOuvertes } from '@/donnees/receptions';
@@ -28,6 +29,17 @@ function texteResume({ nombre, dernierLe }: VueDocuments['resume']): string {
 	return `${nombre} document${nombre > 1 ? 's' : ''} produit${nombre > 1 ? 's' : ''} · dernier le ${dateDuJourTexte(new Date(dernierLe))}`;
 }
 
+/** D'une version, le lien vers l'aperçu des données actuelles de sa série ; aucun pour un acte figé (certificat, compte rendu, PV). */
+function retourActuel(chantierId: string, doc: { serie: string; type: TypeDocument; lotId: string | null }): string | undefined {
+	const base = `/chantiers/${chantierId}`;
+	if (doc.type === 'MARCHE_GRE_A_GRE' || doc.type === 'MARCHE_SOUS_TRAITANCE') return doc.lotId ? `${base}/marches?apercu=${doc.lotId}` : undefined;
+	if (doc.type === 'AVENANT') { const a = avenantDeLaSerie(doc.serie); return a ? `${base}/marches?avenant=${a}` : undefined; }
+	if (doc.type === 'RECAPITULATIF') return `${base}/documents?apercu=recap`;
+	if (doc.type === 'PLANNING') return `${base}/planning?apercu=planning`;
+	if (doc.type === 'VISA_PLANNING') return `${base}/planning?apercu=visa`;
+	return undefined;
+}
+
 export default async function PageDocuments({ params, searchParams }: Props) {
 	await exigerPage();
 	const { id } = await params;
@@ -40,7 +52,8 @@ export default async function PageDocuments({ params, searchParams }: Props) {
 	let apercuDocument: React.ReactNode = null;
 	if (apercu === 'recap') {
 		const { donnees } = await construireDonneesRecap(id);
-		apercuDocument = <ApercuDocument titre={TITRES_TYPES.RECAPITULATIF} sousTitre={vue.reference} donnees={donnees} source={{ type: 'recap', chantierId: id }} />;
+		apercuDocument = <ApercuDocument titre={TITRES_TYPES.RECAPITULATIF} sousTitre={vue.reference} donnees={donnees} source={{ type: 'recap', chantierId: id }}
+			chantierId={id} versions={await versionsDeLaSerie(id, SERIES.RECAPITULATIF)} />;
 	} else if (cr || corrigerCr) {
 		// Lien périmé ou d'un autre chantier : rien ne s'ouvre.
 		const ouvert = cr === 'brouillon' ? await lireBrouillon(id) : await ouvrirCompteRendu(corrigerCr ?? cr ?? '', id, corrigerCr ? 'correction' : 'lecture');
@@ -53,7 +66,8 @@ export default async function PageDocuments({ params, searchParams }: Props) {
 		if (doc && doc.chantierId === id) {
 			apercuDocument = (
 				<ApercuDocument titre={`${TITRES_TYPES[doc.donnees.type]} — version ${doc.version}`} sousTitre={doc.nomFichier}
-					donnees={doc.donnees} source={{ type: 'version', documentId: doc.id }} />
+					donnees={doc.donnees} source={{ type: 'version', documentId: doc.id }}
+					chantierId={id} versions={await versionsDeLaSerie(id, doc.serie)} retourActuel={retourActuel(id, doc)} />
 			);
 		}
 	}

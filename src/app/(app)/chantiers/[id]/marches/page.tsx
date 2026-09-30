@@ -8,7 +8,9 @@ import { Ecran } from '@/composants/maquette/Ecran';
 import * as Icone from '@/composants/maquette/icones';
 import { BoutonAjouterLot, TableauLots } from '@/composants/TableauLots';
 import { construireDonneesAvenant, construireDonneesMarche } from '@/documents/donnees';
+import { versionsDeLaSerie } from '@/documents/etats';
 import { TITRES_TYPES } from '@/documents/libelles';
+import { serieAvenant } from '@/documents/series';
 import { ouvrirCorrection, ouvrirNouveauCertificat } from '@/donnees/acomptes';
 import { lireEnTeteChantier, listerChargesAffaire } from '@/donnees/chantiers';
 import { lireVueMarches } from '@/donnees/marches';
@@ -41,6 +43,7 @@ async function apercuAvenant(chantierId: string, avenantId: string) {
 			donnees={a.donnees}
 			source={{ type: 'avenant', avenantId }}
 			manques={manquesAvenant({ artisanId: a.lot.artisanId, montantHt: a.avenant.montantHt }).map((m) => LIBELLES_MANQUES_AVENANT[m])}
+			chantierId={chantierId} versions={await versionsDeLaSerie(chantierId, serieAvenant(avenantId))}
 		/>
 	);
 }
@@ -82,7 +85,8 @@ export default async function PageMarches({ params, searchParams }: Props) {
 			<TableauLots vue={vue} />
 			{lot && donnees && (
 				<ApercuDocument titre={TITRES_TYPES[donnees.type]} sousTitre={`Lot ${lot.numero ?? '—'} — ${lot.designation} — ${lot.entreprise ?? 'non attribué'}`}
-					donnees={donnees} source={{ type: 'marche', lotId: lot.id }} manques={lot.manques.map((m) => LIBELLES_MANQUES[m])} />
+					donnees={donnees} source={{ type: 'marche', lotId: lot.id }} manques={lot.manques.map((m) => LIBELLES_MANQUES[m])}
+					chantierId={id} versions={await versionsDeLaSerie(id, lot.id)} />
 			)}
 			{autreApercu}
 		</Ecran>
