@@ -1,3 +1,4 @@
+import { Button, buttonVariants } from '@/components/ui/button';
 import { ApercuCompteRendu } from '@/composants/ApercuCompteRendu';
 import { ApercuDocument } from '@/composants/ApercuDocument';
 import { ApercuReception } from '@/composants/ApercuReception';
@@ -52,6 +53,11 @@ export default async function PageDocuments({ params, searchParams }: Props) {
 					<h2 className="text-lg font-semibold">Documents du chantier</h2>
 					<p data-testid="resume-documents" className="text-sm text-muted-foreground">{texteResume(vue.resume)}</p>
 				</div>
+				{vue.resume.nombre ? (
+					<a href={`/api/chantiers/${id}/archive`} download className={`ml-auto ${buttonVariants({ variant: 'outline' })}`}>Tout télécharger</a>
+				) : (
+					<span title="Aucun document à télécharger" className="ml-auto"><Button variant="outline" disabled>Tout télécharger</Button></span>
+				)}
 			</div>
 			<TableauDocuments vue={vue} />
 			{apercuDocument}

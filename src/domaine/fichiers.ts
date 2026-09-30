@@ -53,6 +53,11 @@ export function nomFichierTableur(reference: string): string {
 	return `${slugifier(reference)}-RecapMarches.xlsx`;
 }
 
+/** `jour` : AAAA-MM-JJ, le jour du téléchargement à Châteaubriant. */
+export function nomFichierArchive(reference: string, jour: string): string {
+	return `${slugifier(reference)}-Documents-${jour}.zip`;
+}
+
 /** `filename` en ASCII pour les vieux clients, `filename*` encodé pour les autres. */
 export function enTeteTelechargement(nomFichier: string): string {
 	const ascii = nomFichier.replace(/[^\x20-\x7e]|["\\]/g, '_').replace(/_+/g, '_');
