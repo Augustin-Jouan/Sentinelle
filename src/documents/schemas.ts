@@ -143,6 +143,58 @@ export const contenuAvenantSchema = z.object({
 	}),
 });
 
+/** Montants déjà formatés ; `''` pour une ligne vide (lignes de complément, ou cumul pas encore saisi dans l'aperçu). */
+export const contenuCertificatSchema = z.object({
+	numero: texte,
+	maitreOuvrage: texte,
+	objet: texte,
+	adresseChantier: texte,
+	lotNumero: texte,
+	lot: texte,
+	titulaire: texte,
+	marcheHt: texte,
+	avenants: z.array(z.object({ libelle: texte, montant: texte })),
+	totalHt: texte,
+	totalTva: texte,
+	totalTtc: texte,
+	/** « Juillet 2026 ». */
+	mois: texte,
+	precedents: z.array(z.object({ numero: texte, montant: texte })),
+	precedentsHt: texte,
+	precedentsTva: texte,
+	precedentsTtc: texte,
+	realise: texte,
+	presentHt: texte,
+	presentTva: texte,
+	presentTtc: texte,
+	mandate: texte,
+	caution: z.enum(['OUI', 'NON']),
+	retenue: texte,
+	/** « 30/09/2026 ». */
+	faitLe: texte,
+	/** Les valeurs d'où viennent les montants, figées avec le certificat (spec § 6). */
+	valeurs: z.object({
+		htInitial: texte,
+		tauxTva: texte,
+		tauxRetenue: texte,
+		caution: z.boolean(),
+		avenants: z.array(z.object({ numero: entier, montantHt: texte })),
+		precedents: z.array(z.object({ numero: entier, montantHt: texte, manuel: z.boolean() })),
+		cumul: texte.nullable(),
+		mois: texte,
+		date: texte,
+	}),
+});
+
+/** En-tête SOCOREVE du certificat : figé avec le document, exclu de l'empreinte (comme le cadre des autres documents). */
+export const societeSchema = z.object({
+	adresseLigne: texte,
+	contactLigne: texte,
+	rcsLigne: texte,
+	tvaLigne: texte,
+	villeSignature: texte,
+});
+
 export const donneesDocumentSchema = z.discriminatedUnion('type', [
 	z.object({ type: z.literal('MARCHE_GRE_A_GRE'), contenu: contenuMarcheGreAGreSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('MARCHE_SOUS_TRAITANCE'), contenu: contenuMarcheSousTraitanceSchema, cadre: cadreSchema }),
@@ -150,6 +202,7 @@ export const donneesDocumentSchema = z.discriminatedUnion('type', [
 	z.object({ type: z.literal('PLANNING'), contenu: contenuPlanningSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('VISA_PLANNING'), contenu: contenuVisaSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('AVENANT'), contenu: contenuAvenantSchema, cadre: cadreSchema }),
+	z.object({ type: z.literal('CERTIFICAT_PAIEMENT'), contenu: contenuCertificatSchema, societe: societeSchema }),
 ]);
 
 export type Cadre = z.infer<typeof cadreSchema>;
@@ -166,6 +219,9 @@ export type EntetePlanning = z.infer<typeof entetePlanningSchema>;
 export type ContenuPlanning = z.infer<typeof contenuPlanningSchema>;
 export type ContenuVisa = z.infer<typeof contenuVisaSchema>;
 export type ContenuAvenant = z.infer<typeof contenuAvenantSchema>;
+export type ContenuCertificat = z.infer<typeof contenuCertificatSchema>;
+export type Societe = z.infer<typeof societeSchema>;
 export type DonneesPlanning = Extract<DonneesDocument, { type: 'PLANNING' }>;
 export type DonneesVisa = Extract<DonneesDocument, { type: 'VISA_PLANNING' }>;
 export type DonneesAvenant = Extract<DonneesDocument, { type: 'AVENANT' }>;
+export type DonneesCertificat = Extract<DonneesDocument, { type: 'CERTIFICAT_PAIEMENT' }>;

@@ -10,6 +10,7 @@ import { htmlVersPdf, type RendrePdf } from './pdf';
 import { rendreHtml } from './rendu';
 import type { DonneesDocument } from './schemas';
 import { serieAvenant, SERIES } from './series';
+import { TROP_DE_LIGNES } from './uneFeuille';
 
 export type ResultatGeneration = { documentId: string; version: number; nomFichier: string; nouvelle: boolean };
 type Dependances = { maintenant?: Date; rendrePdf?: RendrePdf };
@@ -18,6 +19,9 @@ const imprimerParDefaut: RendrePdf = (html) => htmlVersPdf(html, { paysage: true
 
 /** Lettre d'avenant et certificat de paiement : A4 portrait (spec § 2, « Formats »). */
 export const imprimerPortrait: RendrePdf = (html) => htmlVersPdf(html, { paysage: false });
+
+/** Certificat : portrait, toujours une page ; une feuille longue (10 avenants, 24 acomptes) est réduite à l'échelle. */
+export const imprimerCertificat: RendrePdf = (html) => htmlVersPdf(html, { paysage: false, uneSeuleFeuille: true, tropLong: TROP_DE_LIGNES });
 
 /** Planning et visa : A4 paysage, toujours une seule page (échelle mesurée, refus sous 0,4). */
 const imprimerUneFeuille: RendrePdf = (html) => htmlVersPdf(html, { paysage: true, uneSeuleFeuille: true });
