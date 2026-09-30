@@ -7,8 +7,8 @@ test.describe('écran Planning', () => {
 	});
 
 	test('onglet, résumé, grille, fermetures, entreprises, infobulles et flèches', async ({ page }) => {
-		const onglets = page.locator('nav', { has: page.getByRole('link', { name: 'Planning', exact: true }) }).getByRole('link');
-		await expect(onglets).toHaveText(['Marchés', 'Planning', 'Documents']);
+		const onglets = page.locator('.nav-o');
+		await expect(onglets).toHaveText([/Marchés/, /Planning/, /Documents/]);
 		await expect(page.locator('#g-resume')).toHaveText('23 périodes · semaine 15 de 2026 à la semaine 13 de 2027');
 		await expect(page.locator('.g-row[data-lot]')).toHaveCount(13);
 		await expect(page.locator('.g-bar')).toHaveCount(23);
@@ -35,7 +35,8 @@ test.describe('écran Planning', () => {
 		await expect(page.getByText('Durée : saisissez un nombre entier.')).toBeVisible();
 		await expect(duree).toHaveAttribute('aria-invalid', 'true');
 
-		await panneau.getByRole('combobox', { name: 'Commence après' }).selectOption({ label: '— rien, date libre —' });
+		await panneau.getByRole('button', { name: /Commence après/ }).click();
+		await panneau.getByRole('option', { name: '— rien, date libre —' }).click();
 		await expect(page.getByText('Lien retiré — la période redevient libre.')).toBeVisible();
 	});
 
@@ -60,7 +61,7 @@ test.describe('écran Planning', () => {
 		await expect.poll(largeurSemaine).toBe('68px');
 
 		await page.getByRole('button', { name: 'Tous les lots' }).click();
-		await page.getByRole('checkbox', { name: /ESCALIER/ }).uncheck();
+		await page.locator('#lots-vus').getByRole('option', { name: /ESCALIER/ }).click();
 		await expect(page.locator('#g-resume')).toHaveText('22 périodes sur 23 · semaine 15 de 2026 à la semaine 13 de 2027');
 		await page.keyboard.press('Escape');
 
@@ -69,7 +70,7 @@ test.describe('écran Planning', () => {
 		await expect.poll(largeurSemaine).toBe('68px');
 
 		await page.getByRole('button', { name: '12 lots sur 13' }).click();
-		await page.getByRole('button', { name: 'Tout afficher' }).click();
+		await page.locator('#lots-vus').getByRole('option', { name: 'Tout afficher' }).click();
 		await expect(page.locator('.g-row[data-lot]')).toHaveCount(13);
 	});
 });

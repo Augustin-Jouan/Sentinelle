@@ -9,8 +9,9 @@ import {
 	ajouterFermetureAction, changerCouleurLotAction, creerPeriodeAction, deplacerPeriodesAction, lierPeriodeAction,
 	modifierFermetureAction, modifierPeriodeAction, supprimerFermetureAction, supprimerPeriodesAction,
 } from '@/actions/planning';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useConfirmation } from '@/composants/maquette/Confirmation';
+import { Ecran } from '@/composants/maquette/Ecran';
+import * as Icone from '@/composants/maquette/icones';
 import * as regles from '@/domaine/planning';
 import { appliquerPeriodes, etendueDuPlanning, isoRang, periodesDuPlanning, rangIso, type PlanningVue, type ReponsePlanning } from '@/domaine/planningVue';
 import type { ChampFermeture, ChampPeriode } from '@/donnees/planning';
@@ -30,7 +31,7 @@ type Appel = () => Promise<Resultat<ReponsePlanning>>;
  * Écran Planning. Un geste s'affiche aussitôt, calculé par les règles du domaine, puis part au serveur
  * comme une intention ; la réponse (le planning relu en base) remplace l'état, changements des collègues compris.
  */
-export function Planning({ planningInitial, aujourdhui }: { planningInitial: PlanningVue; aujourdhui: string }) {
+export function Planning({ planningInitial, aujourdhui, contexte }: { planningInitial: PlanningVue; aujourdhui: string; contexte: React.ReactNode }) {
 	const router = useRouter();
 	// Un planning neuf venu du serveur (rafraîchissement de la page) remplace l'état.
 	const [recu, setRecu] = useState(planningInitial);
@@ -47,7 +48,7 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 	const [principale, setPrincipale] = useState<string | null>(null);
 	const [panneauLot, setPanneauLot] = useState<string | null>(null);
 	const [fermeturesOuvertes, setFermeturesOuvertes] = useState(false);
-	const [confirmation, setConfirmation] = useState(false);
+	const confirmer = useConfirmation();
 	const { preferences, masques, changerPreferences, basculerLot, toutAfficher } = usePreferencesPlanning(planning.chantierId);
 
 	const periodes = useMemo(() => periodesDuPlanning(planning), [planning]);
@@ -192,7 +193,12 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 		nbSelection: choisies.length,
 		panneauOuvert: panneauLot !== null,
 		onDecaler: decalerSelection,
-		onSupprimer: () => (choisies.length === 1 ? supprimer(choisies) : setConfirmation(true)),
+		onSupprimer: () => {
+			if (choisies.length === 1) { supprimer(choisies); return; }
+			const ids = choisies;
+			void confirmer({ texte: `Supprimer les ${ids.length} périodes sélectionnées ?`, libelle: 'Supprimer', dangereux: true })
+				.then((oui) => { if (oui) supprimer(ids); });
+		},
 		onVider: () => selectionner([]),
 	});
 
@@ -202,15 +208,15 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 	const lotOuvert = planning.lots.find((l) => l.id === panneauLot) ?? null;
 
 	return (
-		<div className="planning space-y-4">
-			<div className="flex flex-wrap items-center gap-3">
-				<h2 className="text-lg font-semibold">Planning des travaux</h2>
-				<div className="ml-auto flex flex-wrap gap-2">
-					<Button variant="outline" onClick={() => setFermeturesOuvertes(true)}>Fermetures</Button>
-					<Link href="?apercu=visa" scroll={false} className={buttonVariants({ variant: 'outline' })}>Feuille de visa</Link>
-					<Link href="?apercu=planning" scroll={false} className={buttonVariants()}>Planning imprimable</Link>
-				</div>
-			</div>
+		<Ecran
+			titre="Planning des travaux"
+			actions={<>
+				<button type="button" className="btn" onClick={() => setFermeturesOuvertes(true)}><Icone.Calendrier />Fermetures</button>
+				<Link className="btn" href="?apercu=visa" scroll={false}><Icone.Visa />Feuille de visa</Link>
+				<Link className="btn btn-primary" href="?apercu=planning" scroll={false}><Icone.Imprimer />Planning imprimable</Link>
+			</>}
+			contexte={contexte}
+		>
 			<BarreOutilsPlanning
 				resume={resume(nbAffichees, periodes.length, e.debut, e.fin)}
 				nbSelection={choisies.length}
@@ -263,18 +269,6 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 				onModifier={modifierFermeture}
 				onSupprimer={supprimerFermeture}
 			/>
-			<Dialog open={confirmation} onOpenChange={(o) => { if (!o) setConfirmation(false); }}>
-				<DialogContent className="planning sm:max-w-md" data-bloque-clavier="">
-					<DialogHeader>
-						<DialogTitle>Supprimer les périodes</DialogTitle>
-						<DialogDescription>Supprimer les {choisies.length} périodes sélectionnées ?</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
-						<Button variant="outline" onClick={() => setConfirmation(false)}>Annuler</Button>
-						<Button variant="destructive" onClick={() => { setConfirmation(false); supprimer(choisies); }}>Supprimer</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-		</div>
+		</Ecran>
 	);
 }
