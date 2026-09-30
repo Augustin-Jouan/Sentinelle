@@ -52,11 +52,40 @@ const onglet = (nom: string) => async (page: Page) => {
 	await page.locator('.nav-o', { hasText: nom }).click();
 };
 
+/**
+ * Playwright peint le masque sur la boîte de l'élément. Le menu compte de l'app est plus haut
+ * (écart 1 : Paramètres, Comptes) : un masque sur `.compte-menu` diffère. Clip de taille fixe,
+ * ancré sur le menu, assez grand pour l'app et son ombre (--ombre-h).
+ */
+async function poserMasqueCompte(page: Page) {
+	const menu = page.locator('.compte-menu');
+	await expect(menu).toBeVisible();
+	await menu.evaluate((el) => {
+		const r = el.getBoundingClientRect();
+		const clip = document.createElement('div');
+		clip.id = 'conformite-masque';
+		const marge = 24;
+		Object.assign(clip.style, {
+			position: 'fixed',
+			top: `${r.top - marge}px`,
+			left: `${r.left - marge}px`,
+			width: `${r.width + marge * 2}px`,
+			height: '280px',
+			zIndex: '99999',
+			pointerEvents: 'none',
+		});
+		document.body.appendChild(clip);
+	});
+}
+
 export const ECRANS: Ecran[] = [
 	{ nom: 'connexion', masques: ['.login-foot'] },
 	{ nom: 'chantiers', aller: async () => {} },
 	{ nom: 'selecteur', aller: async (page) => { await page.locator('.picker-btn').click(); } },
-	{ nom: 'compte', masques: ['.compte-menu'], aller: async (page) => { await page.locator('.avatar').click(); } },
+	{ nom: 'compte', masques: ['#conformite-masque'], aller: async (page) => {
+		await page.locator('.avatar').click();
+		await poserMasqueCompte(page);
+	} },
 	// Chargé d'affaire : un menu de comptes dans l'app, un champ texte dans la maquette (écart 4). Le même cadre est masqué des deux côtés.
 	{ nom: 'nouveau', masques: ['.field:has(#f-ca)'], aller: async (page) => { await page.locator('.topbar-actions .btn-primary', { hasText: 'Nouveau chantier' }).click(); } },
 	{ nom: 'marches', aller: ouvrirPerrier },
