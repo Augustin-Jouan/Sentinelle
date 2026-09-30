@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { enTeteTelechargement, nomFichierAvenant, nomFichierCertificat, nomFichierCompteRendu, nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierTableur, nomFichierVisa, slugifier } from './fichiers';
+import { enTeteTelechargement, nomFichierAvenant, nomFichierCertificat, nomFichierCompteRendu, nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierReception, nomFichierReceptions, nomFichierTableur, nomFichierVisa, slugifier } from './fichiers';
 
 describe('noms de fichiers', () => {
 	it('slugifie accents, ligatures et ponctuation', () => {
@@ -41,6 +41,13 @@ describe('noms de fichiers', () => {
 	it('compte rendu : numéro sur deux chiffres', () => {
 		expect(nomFichierCompteRendu('PERRIER — Louisfert', 4, 1)).toBe('PERRIER-LOUISFERT-CompteRendu04-v1.pdf');
 		expect(nomFichierCompteRendu('SUIVI', 12, 3)).toBe('SUIVI-CompteRendu12-v3.pdf');
+	});
+	it('PV de réception : un par lot, puis le PDF assemblé', () => {
+		expect(nomFichierReception({ reference: 'PERRIER — Louisfert', numero: '02', designation: 'GROS ŒUVRE', nature: 'GRE_A_GRE', version: 1 }))
+			.toBe('PERRIER-LOUISFERT-Lot02-GROS-OEUVRE-Reception-v1.pdf');
+		expect(nomFichierReception({ reference: 'SUIVI', numero: null, designation: 'ESCALIER', nature: 'SOUS_TRAITANCE', version: 2 }))
+			.toBe('SUIVI-ST-ESCALIER-Reception-v2.pdf');
+		expect(nomFichierReceptions('PERRIER — Louisfert')).toBe('PERRIER-LOUISFERT-Receptions.pdf');
 	});
 	it('en-tête de téléchargement ASCII et encodé', () => {
 		expect(enTeteTelechargement('A-Lot02-B-Marche-v1.pdf'))

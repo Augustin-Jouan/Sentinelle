@@ -24,6 +24,18 @@ export async function sousVerrouLot<T>(lotId: string, operation: (tx: Tx, lot: L
 	});
 }
 
+/**
+ * « Tous les lots » (PV de réception) : une seule transaction, les lots verrouillés dans l'ordre de saisie
+ * (`ORDER BY` avant `FOR UPDATE`) pour que deux générations simultanées ne s'interbloquent pas.
+ */
+export async function sousVerrouLots<T>(lotIds: string[], operation: (tx: Tx) => Promise<T>): Promise<T> {
+	return prisma.$transaction(async (tx) => {
+		const verrou = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM "Lot" WHERE id = ANY(${lotIds}) ORDER BY "chantierId", ordre FOR UPDATE`;
+		if (verrou.length !== new Set(lotIds).size) throw new ErreurMetier('Lot introuvable.');
+		return operation(tx);
+	}, { timeout: 20000 });
+}
+
 /** Les montants en texte : le `Decimal` de Prisma n'est pas celui de decimal.js. */
 export function montantsAvenants(lot: { avenants: { numero: number; montantHt: { toString(): string } }[] }): { numero: number; montantHt: string }[] {
 	return lot.avenants.map((a) => ({ numero: a.numero, montantHt: a.montantHt.toString() }));
