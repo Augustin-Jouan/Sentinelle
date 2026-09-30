@@ -84,6 +84,7 @@ export function EnTeteChantier({ chantier, chargesAffaire }: { chantier: EnTeteC
 			</div>
 			<nav className="flex gap-6 border-b">
 				{onglet('marches', 'Marchés')}
+				{onglet('planning', 'Planning')}
 				{onglet('documents', 'Documents')}
 			</nav>
 		</header>
