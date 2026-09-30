@@ -21,5 +21,6 @@ test('l\'admin crée un compte, le collègue change son mot de passe provisoire'
 	await page.getByRole('button', { name: 'Enregistrer' }).click();
 	await expect(page.getByRole('heading', { name: 'Mes chantiers' })).toBeVisible();
 	await page.locator('.avatar').click();
+	await expect(page.getByRole('menuitem', { name: 'Se déconnecter' })).toBeVisible();
 	await expect(page.getByRole('menuitem', { name: 'Comptes' })).toHaveCount(0);
 });
