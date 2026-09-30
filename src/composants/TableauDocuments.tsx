@@ -5,6 +5,7 @@ import type { CaseAvenant, LigneDocuments, SerieDocuments, SerieVisa, VersionRes
 import { LIBELLES_TYPES } from '@/documents/libelles';
 import type { ManqueAvenant } from '@/domaine/avenants';
 import { dateDuJourTexte, LIBELLES_MANQUES } from '@/domaine/regles';
+import { ActionsLevee } from './ActionsLevee';
 import { BoutonMarchesManquants } from './BoutonMarchesManquants';
 import { CarteComptesRendus } from './CarteComptesRendus';
 
@@ -164,8 +165,32 @@ function CasesCertificats({ chantierId, ligne }: { chantierId: string; ligne: Li
 	);
 }
 
+/** Case Réception (spec § 7) : pointillé tant qu'aucun PV ; le dernier PV émis sinon, orangé s'il demande un suivi. */
+function CaseReception({ ligne }: { ligne: LigneDocuments }) {
+	const r = ligne.reception;
+	if (!r) return <span className="text-xs text-muted-foreground">—</span>;
+	const brouillon = `?pv=${ligne.lotId}`;
+	if (!r.derniere) {
+		return (
+			<Link data-case="reception" data-etat={r.etat} href={brouillon} scroll={false}
+				className="inline-block rounded-md border border-dashed px-2 py-1 text-xs hover:bg-accent">{r.texte}</Link>
+		);
+	}
+	return (
+		<span data-case="reception" data-etat={r.etat} className="inline-flex flex-col items-start gap-0.5">
+			<Link href={`?version=${r.derniere.id}`} scroll={false}
+				className={`rounded-md px-2 py-1 text-xs ${r.alerte ? 'bg-alerte text-alerte-foreground' : 'bg-primary text-primary-foreground'}`}>{r.texte}</Link>
+			<span className="inline-flex items-center gap-2">
+				<Link href={brouillon} scroll={false} className="text-xs underline">Nouveau PV</Link>
+				<ActionsLevee lotId={ligne.lotId} etat={r.etat} />
+			</span>
+		</span>
+	);
+}
+
 export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 	const recap = vue.recap;
+	const tousLesLots = vue.entreprises.flatMap((g) => g.lots).filter((l) => l.reception).length >= 2;
 	return (
 		<div className="space-y-6">
 			<CarteComptesRendus chantierId={vue.chantierId} carte={vue.comptesRendus} />
@@ -196,7 +221,12 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 						<thead>
 							<tr className="text-left text-muted-foreground">
 								<th className="w-1/4 px-4 py-2">Lot</th><th className="px-4 py-2">Marché</th><th className="px-4 py-2">Avenants</th>
-								<th className="px-4 py-2">Certificats</th><th className="px-4 py-2">Historique</th>
+								<th className="px-4 py-2">Certificats</th>
+								<th className="px-4 py-2">
+									Réception
+									{tousLesLots && <Link href="?pv=tous" scroll={false} className="ml-2 text-xs font-normal underline">Tous les lots</Link>}
+								</th>
+								<th className="px-4 py-2">Historique</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -212,6 +242,7 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 										) : <span className="text-xs text-muted-foreground">—</span>}
 									</td>
 									<td className="px-4 py-2"><CasesCertificats chantierId={vue.chantierId} ligne={ligne} /></td>
+									<td className="px-4 py-2"><CaseReception ligne={ligne} /></td>
 									<td className="px-4 py-2"><Historique versions={ligne.historique} /></td>
 								</tr>
 							))}
@@ -224,6 +255,7 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 				Pointillé : à produire. Bleu : à jour, s&apos;ouvre en lecture seule. Pastille « modifié » : les données ont changé depuis la dernière version — régénérez-la.
 				Pastille « périmé » : le visa fait signer une version du planning qui n&apos;est plus la dernière.
 				Gris : acompte antérieur à l&apos;application, saisi sans document.
+				{' '}Orangé : réserves à lever ou réception différée.
 			</p>
 		</div>
 	);

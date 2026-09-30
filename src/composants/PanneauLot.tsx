@@ -182,6 +182,13 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 							)}
 						</div>
 					</section>
+
+					<section className="space-y-2">
+						<h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Réception</h3>
+						{lot.artisanId ? (
+							<Link href={`/chantiers/${vue.chantierId}/documents?pv=${lot.id}`} onClick={onFermer} className={buttonVariants({ variant: 'outline' })}>PV de réception</Link>
+						) : <p className="text-xs text-muted-foreground">Attribuez une entreprise au lot pour préparer son PV de réception.</p>}
+					</section>
 				</div>
 			</SheetContent>
 		</Sheet>
