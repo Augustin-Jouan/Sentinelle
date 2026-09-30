@@ -22,9 +22,6 @@ function telecharger(documentId: string) {
 	lien.click();
 }
 
-/** Champs contrôlés : un refus du serveur les remet à leur valeur d'avant. */
-const CONTROLES: ChampCompteRendu[] = ['date', 'rdvDate', 'rdvHeure'];
-
 /**
  * Aperçu plein écran du compte rendu (spec § 5).
  * - brouillon : chaque champ s'enregistre en base quand on le quitte (partagé avec les collègues) ;
@@ -84,7 +81,9 @@ export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOu
 		suivre(modifierChampCompteRenduAction(ouvert.id, champ, valeur).then((r) => {
 			if (r.ok) return;
 			toast.error(r.erreur);
-			if (CONTROLES.includes(champ)) changer({ ...courant.current, [champ]: avant[champ], rdvHeure: avant.rdvHeure });
+			// L'écran ne doit pas garder une valeur refusée : la base a l'ancienne, « Enregistrer » la relirait.
+			changer({ ...courant.current, [champ]: avant[champ], ...(champ === 'rdvDate' ? { rdvHeure: avant.rdvHeure } : {}) });
+			setGeneration((g) => g + 1);
 		}));
 	}
 
