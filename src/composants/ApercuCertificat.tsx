@@ -10,6 +10,7 @@ import {
 } from '@/actions/certificats';
 import type { Resultat } from '@/actions/executer';
 import { Button } from '@/components/ui/button';
+import { telecharger } from '@/composants/telecharger';
 import { batirCertificat, entreeCalcul } from '@/documents/certificat';
 import { CertificatPaiement, type EditionCertificat } from '@/documents/gabarits/CertificatPaiement';
 import { TITRES_TYPES } from '@/documents/libelles';
@@ -27,14 +28,6 @@ function lireSaisieCumul(texte: string): { cumul: Decimal | null; erreur: string
 		if (e instanceof ErreurMetier) return { cumul: null, erreur: e.message };
 		throw e;
 	}
-}
-
-/** Téléchargement sans quitter la page (l'aperçu se ferme juste après). */
-function telecharger(documentId: string) {
-	const lien = document.createElement('a');
-	lien.href = `/api/documents/${documentId}/pdf`;
-	lien.download = '';
-	lien.click();
 }
 
 /**
@@ -118,7 +111,7 @@ export function ApercuCertificat({ ouvert, sousTitre }: { ouvert: CertificatOuve
 			toast.success(r.donnees.nouvelle
 				? `Version ${r.donnees.version} générée.`
 				: `Rien n'a changé depuis la version ${r.donnees.version} : elle est téléchargée.`);
-			telecharger(r.donnees.documentId);
+			telecharger(`/api/documents/${r.donnees.documentId}/pdf`);
 			fermer();
 			router.refresh();
 		});

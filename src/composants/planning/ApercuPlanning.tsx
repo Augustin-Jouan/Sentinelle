@@ -6,6 +6,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { genererPlanningAction, genererVisaAction } from '@/actions/documents';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { telecharger } from '@/composants/telecharger';
 import { Gabarit } from '@/documents/gabarits/Gabarit';
 import { TITRES_TYPES } from '@/documents/libelles';
 import type { DonneesPlanning, DonneesVisa } from '@/documents/schemas';
@@ -54,7 +55,7 @@ export function ApercuPlanning(props: Props) {
 			toast.success(r.donnees.nouvelle
 				? `Version ${r.donnees.version} générée.`
 				: `Rien n'a changé depuis la version ${r.donnees.version} : elle est téléchargée.`);
-			window.location.assign(`/api/documents/${r.donnees.documentId}/pdf`);
+			telecharger(`/api/documents/${r.donnees.documentId}/pdf`);
 			router.refresh();
 		});
 	}
