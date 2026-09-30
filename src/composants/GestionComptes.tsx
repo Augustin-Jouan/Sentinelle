@@ -2,7 +2,8 @@
 
 import { useState, useTransition, type FormEvent } from 'react';
 import { toast } from 'sonner';
-import { bloquerCompteAction, changerRoleAction, creerCompteAction, reinitialiserMotDePasseAction } from '@/actions/comptes';
+import { bloquerCompteAction, changerRoleAction, creerCompteAction, modifierTelephoneAction, reinitialiserMotDePasseAction } from '@/actions/comptes';
+import { ChampEnLigne } from './ChampEnLigne';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -73,7 +74,7 @@ export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moi
 			<table className="w-full rounded-xl border bg-card text-sm">
 				<thead>
 					<tr className="border-b text-left text-muted-foreground">
-						<th className="p-3">Nom</th><th className="p-3">E-mail</th><th className="p-3">Rôle</th><th className="p-3">État</th><th className="p-3" />
+						<th className="p-3">Nom</th><th className="p-3">E-mail</th><th className="p-3">Portable</th><th className="p-3">Rôle</th><th className="p-3">État</th><th className="p-3" />
 					</tr>
 				</thead>
 				<tbody>
@@ -81,6 +82,10 @@ export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moi
 						<tr key={c.id} className="border-b last:border-0">
 							<td className="p-3 font-medium">{c.nom}</td>
 							<td className="p-3">{c.email}</td>
+							<td className="p-3">
+								<ChampEnLigne libelle={`Portable de ${c.nom}`} type="tel" placeholder="06 …" valeur={c.telephone}
+									enregistrer={modifierTelephoneAction.bind(null, c.id)} />
+							</td>
 							<td className="p-3">{c.role === 'admin' ? 'Administrateur' : 'Utilisateur'}</td>
 							<td className="p-3">
 								{c.bloque ? <Badge variant="destructive">Bloqué</Badge>

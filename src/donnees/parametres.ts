@@ -17,6 +17,7 @@ export const PARAMETRES_PAR_DEFAUT = {
 	rcs: '328999503',
 	ape: '4120A',
 	tvaIntracommunautaire: 'FR47328999503',
+	siteWeb: 'socoreve-chateaubriant.com',
 } satisfies Parametres;
 
 export async function lireParametres(): Promise<Parametres> {
@@ -25,9 +26,9 @@ export async function lireParametres(): Promise<Parametres> {
 
 export type ChampParametres =
 	| 'raisonSociale' | 'libelleActivite' | 'adresse' | 'cp' | 'ville' | 'telephone' | 'fax' | 'email' | 'villeSignature'
-	| 'rcs' | 'ape' | 'tvaIntracommunautaire';
+	| 'rcs' | 'ape' | 'tvaIntracommunautaire' | 'siteWeb';
 
-const FACULTATIFS: ChampParametres[] = ['fax', 'email'];
+const FACULTATIFS: ChampParametres[] = ['fax', 'email', 'siteWeb'];
 
 export async function modifierParametre(champ: ChampParametres, valeur: string): Promise<void> {
 	const texte = valeur.trim();

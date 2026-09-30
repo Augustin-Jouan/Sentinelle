@@ -7,7 +7,7 @@ import { executer, type Resultat } from './executer';
 
 const CHAMPS = [
 	'raisonSociale', 'libelleActivite', 'adresse', 'cp', 'ville', 'telephone', 'fax', 'email', 'villeSignature',
-	'rcs', 'ape', 'tvaIntracommunautaire',
+	'rcs', 'ape', 'tvaIntracommunautaire', 'siteWeb',
 ] as const;
 
 export async function modifierParametreAction(champ: ChampParametres, valeur: string): Promise<Resultat> {
