@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { exigerPage } from '@/auth/session';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ApercuCompteRendu } from '@/composants/ApercuCompteRendu';
@@ -8,7 +9,7 @@ import { construireDonneesRecap } from '@/documents/donnees';
 import { etatsDocumentsChantier, lireDocument, type VueDocuments } from '@/documents/etats';
 import { TITRES_TYPES } from '@/documents/libelles';
 import { lireBrouillon, ouvrirCompteRendu } from '@/donnees/comptesRendus';
-import { preparerReceptions } from '@/donnees/receptions';
+import { lireReceptionsOuvertes } from '@/donnees/receptions';
 import { dateDuJourTexte } from '@/domaine/regles';
 
 type Props = {
@@ -27,6 +28,7 @@ export default async function PageDocuments({ params, searchParams }: Props) {
 	const { id } = await params;
 	const { apercu, version, cr, 'corriger-cr': corrigerCr, pv } = await searchParams;
 	const vue = await etatsDocumentsChantier(id);
+	if (!vue) notFound();
 	let apercuDocument: React.ReactNode = null;
 	if (apercu === 'recap') {
 		const { donnees } = await construireDonneesRecap(id);
@@ -36,8 +38,7 @@ export default async function PageDocuments({ params, searchParams }: Props) {
 		const ouvert = cr === 'brouillon' ? await lireBrouillon(id) : await ouvrirCompteRendu(corrigerCr ?? cr ?? '', id, corrigerCr ? 'correction' : 'lecture');
 		if (ouvert) apercuDocument = <ApercuCompteRendu key={`${ouvert.id}:${ouvert.mode}`} ouvert={ouvert} reference={vue.reference} />;
 	} else if (pv) {
-		// Lot inconnu ou d'un autre chantier : rien ne s'ouvre, aucune ligne créée.
-		const ouvert = await preparerReceptions(id, pv);
+		const ouvert = await lireReceptionsOuvertes(id, pv);
 		if (ouvert) apercuDocument = <ApercuReception key={ouvert.cible} ouvert={ouvert} reference={vue.reference} />;
 	} else if (version) {
 		const doc = await lireDocument(version);

@@ -4,6 +4,7 @@ import { PrismaClient } from '@/generated/prisma/client';
 const globalPourPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function creerClient() {
+	if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL est absente.');
 	return new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 }
 

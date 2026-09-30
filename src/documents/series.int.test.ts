@@ -46,6 +46,7 @@ describe('séries de documents', () => {
 		await genererMarche(p.lots['GROS ŒUVRE'], p.utilisateurId, deps);
 		await genererRecap(p.chantierId, p.utilisateurId, deps);
 		const vue = await etatsDocumentsChantier(p.chantierId, deps.maintenant);
+		if (!vue) throw new Error('attendu');
 		expect(vue.recap.etat).toBe('a-jour');
 		const go = vue.entreprises.flatMap((g) => g.lots).find((l) => l.lotTexte === '02 — GROS ŒUVRE')!;
 		expect(go.marche).toMatchObject({ etat: 'a-jour', versions: [{ version: 1 }] });

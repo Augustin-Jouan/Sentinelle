@@ -17,7 +17,7 @@ import type { Parametres, Prisma, Reception } from '@/generated/prisma/client';
 import { versDateCalendaire, versSaisieDate } from './chantiers';
 import { PARAMETRES_PAR_DEFAUT } from './parametres';
 import { prisma } from './prisma';
-import { sousVerrouLot, sousVerrouLots, type Tx } from './verrouLot';
+import { sousVerrouChantier, sousVerrouLot, sousVerrouLots, verrouillerChantier, type Tx } from './verrouLot';
 
 export type PageReception = { lotId: string; entreprise: string; source: SourceReception; saisies: SaisiesReception };
 
@@ -70,20 +70,46 @@ const communDe = (c: ChantierReception): SaisiesReceptionCommunes => ({
 	date: versSaisieDate(c.receptionDate), signataire: c.receptionSignataire, contrat: versSaisieDate(c.contratMoeDate), maitreOeuvre: c.receptionMaitreOeuvre,
 });
 
+function ouverture(lu: { chantier: ChantierReception; parametres: Parametres }, cible: string, blocage: string | null): ReceptionsOuvertes {
+	const { chantier, parametres } = lu;
+	const lots = chantier.lots.filter((l) => l.artisan && (cible === TOUS_LES_LOTS || l.id === cible));
+	return {
+		chantierId: chantier.id, cible,
+		options: chantier.lots.filter((l) => l.artisan).map((l) => ({ lotId: l.id, libelle: libelleLot(l), entreprise: l.artisan?.nom ?? '' })),
+		commun: communDe(chantier),
+		pages: blocage ? [] : lots.map((l) => ({ lotId: l.id, entreprise: l.artisan?.nom ?? '', source: sourceReception(chantier, l, parametres), saisies: saisiesDe(l) })),
+		blocage,
+	};
+}
+
+function visee(chantier: ChantierReception, cible: string): { receptionnables: LotReception[]; vises: LotReception[]; blocage: string | null } | null {
+	if (cible !== TOUS_LES_LOTS && !chantier.lots.some((l) => l.id === cible)) return null;
+	const receptionnables = chantier.lots.filter((l) => l.artisan);
+	const vises = receptionnables.filter((l) => cible === TOUS_LES_LOTS || l.id === cible);
+	const blocage = !receptionnables.length ? AUCUN_LOT_RECEPTIONNABLE : !vises.length ? SANS_ENTREPRISE : null;
+	return { receptionnables, vises, blocage };
+}
+
+/** Lecture seule : ce que l'aperçu affiche avant le remplissage déclenché par l'action de montage. */
+export async function lireReceptionsOuvertes(chantierId: string, cible: string): Promise<ReceptionsOuvertes | null> {
+	const lu = await lire(prisma, chantierId);
+	if (!lu) return null;
+	const vis = visee(lu.chantier, cible);
+	if (!vis) return null;
+	return ouverture(lu, cible, vis.blocage);
+}
+
 /**
- * Appelée par la page Documents à chaque ouverture (`?pv=`) : champs communs vides remplis (aujourd'hui, date de
- * signature prévue, chargé d'affaire), brouillons des lots visés créés. Nul si le lot n'est pas de ce chantier.
+ * Remplit les champs communs vides et crée les brouillons des lots visés. À appeler depuis une Server Action,
+ * jamais depuis le GET de la page.
  */
 export async function preparerReceptions(chantierId: string, cible: string, maintenant = new Date()): Promise<ReceptionsOuvertes | null> {
 	const avant = await lire(prisma, chantierId);
 	if (!avant) return null;
-	if (cible !== TOUS_LES_LOTS && !avant.chantier.lots.some((l) => l.id === cible)) return null;
-	const receptionnables = avant.chantier.lots.filter((l) => l.artisan);
-	const vises = receptionnables.filter((l) => cible === TOUS_LES_LOTS || l.id === cible);
-	const blocage = !receptionnables.length ? AUCUN_LOT_RECEPTIONNABLE : !vises.length ? SANS_ENTREPRISE : null;
-	if (!blocage) {
+	const vis = visee(avant.chantier, cible);
+	if (!vis) return null;
+	if (!vis.blocage) {
 		const { name } = await prisma.utilisateur.findUniqueOrThrow({ where: { id: avant.chantier.chargeAffaireId }, select: { name: true } });
-		// La date du jour passe en texte : `::date` la prend telle quelle, sans décalage de fuseau.
 		await prisma.$executeRaw`
 			UPDATE "Chantier" SET
 				"receptionDate" = COALESCE("receptionDate", ${versIso(dateParis(maintenant))}::date),
@@ -91,21 +117,13 @@ export async function preparerReceptions(chantierId: string, cible: string, main
 				"receptionMaitreOeuvre" = CASE WHEN "receptionMaitreOeuvre" = '' THEN ${name} ELSE "receptionMaitreOeuvre" END
 			WHERE id = ${chantierId}`;
 		await prisma.reception.createMany({
-			data: vises.filter((l) => !l.reception).map((l) => ({ lotId: l.id, representant: l.artisan?.interlocuteur ?? '' })),
+			data: vis.vises.filter((l) => !l.reception).map((l) => ({ lotId: l.id, representant: l.artisan?.interlocuteur ?? '' })),
 			skipDuplicates: true,
 		});
 	}
 	const apres = await lire(prisma, chantierId);
 	if (!apres) return null;
-	const { chantier, parametres } = apres;
-	const lots = chantier.lots.filter((l) => l.artisan && (cible === TOUS_LES_LOTS || l.id === cible));
-	return {
-		chantierId, cible,
-		options: chantier.lots.filter((l) => l.artisan).map((l) => ({ lotId: l.id, libelle: libelleLot(l), entreprise: l.artisan?.nom ?? '' })),
-		commun: communDe(chantier),
-		pages: blocage ? [] : lots.map((l) => ({ lotId: l.id, entreprise: l.artisan?.nom ?? '', source: sourceReception(chantier, l, parametres), saisies: saisiesDe(l) })),
-		blocage,
-	};
+	return ouverture(apres, cible, vis.blocage);
 }
 
 type ChampsReception = Partial<Pick<Reception, 'decision' | 'dateEffet' | 'reserves' | 'delai' | 'motifs' | 'representant'>>;
@@ -143,8 +161,10 @@ export async function modifierChampReceptionCommun(chantierId: string, champ: Ch
 		: champ === 'contrat' ? { contratMoeDate: versDateCalendaire(valeur) }
 		: champ === 'signataire' ? { receptionSignataire: verifierTexteCourt(valeur, champ) }
 		: { receptionMaitreOeuvre: verifierTexteCourt(valeur, champ) };
-	const { count } = await prisma.chantier.updateMany({ where: { id: chantierId }, data });
-	if (!count) throw new ErreurMetier(INTROUVABLE);
+	await sousVerrouChantier(chantierId, async (tx) => {
+		const { count } = await tx.chantier.updateMany({ where: { id: chantierId }, data });
+		if (!count) throw new ErreurMetier(INTROUVABLE);
+	});
 }
 
 type Feuille = { lot: LotReception; entreprise: string; donnees: DonneesReception };
@@ -181,22 +201,23 @@ async function construire(client: Tx, chantierId: string, lotIds: string[]): Pro
  */
 export async function genererReceptions(chantierId: string, lotIds: string[], utilisateurId: string, deps: Dependances = {}): Promise<ResultatReception[]> {
 	const { feuilles } = await construire(prisma, chantierId, lotIds);
-	const prets = new Map<string, { empreinte: string; pdf: Uint8Array | null }>();
+	const prets = new Map<string, { empreinte: string; pdf: Uint8Array | null; donnees: DonneesReception }>();
 	for (const f of feuilles) {
 		const empreinte = empreinteDocument(f.donnees);
 		const derniere = await prisma.document.findFirst({
 			where: { chantierId, serie: serieReception(f.lot.id) }, orderBy: { version: 'desc' }, select: { empreinte: true },
 		});
-		prets.set(f.lot.id, { empreinte, pdf: derniere?.empreinte === empreinte ? null : await rendrePdfDocument(f.donnees, deps.rendrePdf ?? imprimerReception) });
+		prets.set(f.lot.id, { empreinte, pdf: derniere?.empreinte === empreinte ? null : await rendrePdfDocument(f.donnees, deps.rendrePdf ?? imprimerReception), donnees: f.donnees });
 	}
 	return sousVerrouLots([...prets.keys()], async (tx) => {
+		if (!(await verrouillerChantier(tx, chantierId))) throw new ErreurMetier(INTROUVABLE);
 		const { chantier, feuilles: fraiches } = await construire(tx, chantierId, lotIds);
 		if (fraiches.length !== prets.size || fraiches.some((f) => prets.get(f.lot.id)?.empreinte !== empreinteDocument(f.donnees))) {
 			throw new ErreurMetier(DONNEES_CHANGEES);
 		}
 		const resultats: ResultatReception[] = [];
 		for (const f of fraiches) {
-			const { empreinte, pdf } = prets.get(f.lot.id)!;
+			const { empreinte, pdf, donnees } = prets.get(f.lot.id)!;
 			const serie = { chantierId, serie: serieReception(f.lot.id) };
 			const courante = await tx.document.findFirst({ where: serie, orderBy: { version: 'desc' } });
 			if (courante?.empreinte === empreinte) {
@@ -211,12 +232,15 @@ export async function genererReceptions(chantierId: string, lotIds: string[], ut
 			});
 			const doc = await tx.document.create({
 				data: {
-					...serie, lotId: f.lot.id, type: 'PV_RECEPTION', version, donnees: jsonDe(f.donnees), empreinte,
+					...serie, lotId: f.lot.id, type: 'PV_RECEPTION', version, donnees: jsonDe(donnees), empreinte,
 					pdf: new Uint8Array(pdf), nomFichier, creeParId: utilisateurId,
 				},
 			});
-			// Nouveau PV : l'ancienne levée ne vaut plus pour lui (spec § 6).
-			await tx.reception.update({ where: { lotId: f.lot.id }, data: { reservesLeveesLe: null } });
+			await tx.reception.upsert({
+				where: { lotId: f.lot.id },
+				create: { lotId: f.lot.id, representant: f.lot.artisan?.interlocuteur ?? '' },
+				update: { reservesLeveesLe: null },
+			});
 			resultats.push({ documentId: doc.id, version, nomFichier, nouvelle: true, lotId: f.lot.id, entreprise: f.entreprise });
 		}
 		return resultats;

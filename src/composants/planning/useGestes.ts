@@ -159,7 +159,7 @@ export function useGestes(options: OptionsGestes) {
 					if (g.bouge) o.onSelection(g.ids);
 					return;
 				case 'tracer':
-					if (g.bouge) o.onTracer(g.lotId, g.d0 + Math.min(g.debut, g.fin), Math.abs(g.fin - g.debut) + 1);
+					if (g.bouge && g.fin !== g.debut) o.onTracer(g.lotId, g.d0 + Math.min(g.debut, g.fin), Math.abs(g.fin - g.debut) + 1);
 					return;
 				case 'deplacer':
 					if (g.delta) return o.onDeplacer(g.groupe.map((x) => ({ id: x.id, debut: g.d0 + x.r0 + g.delta })));
@@ -200,6 +200,7 @@ export function useGestes(options: OptionsGestes) {
 				periodeId: bar?.dataset.periode ?? null, lotId: bar?.dataset.lot ?? null, ajout, bouge: false,
 			};
 			setRendu({ ...REPOS, saisi: true });
+			e.currentTarget.setPointerCapture(e.pointerId);
 			e.preventDefault();
 			return;
 		}
@@ -238,6 +239,7 @@ export function useGestes(options: OptionsGestes) {
 		} else {
 			geste.current = { ...repere, mode: 'tracer', lotId: piste.dataset.lot!, x0: e.clientX, debut: col, fin: col, bouge: false };
 		}
+		if (geste.current) e.currentTarget.setPointerCapture(e.pointerId);
 		e.preventDefault();
 	}
 

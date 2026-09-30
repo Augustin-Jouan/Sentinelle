@@ -59,6 +59,14 @@ export async function modifierChampLot(lotId: string, champ: ChampLot, valeur: s
 		});
 	}
 
+	if (champ === 'tauxTva' || champ === 'retenueGarantie') {
+		const data = champ === 'tauxTva' ? { tauxTva: taux(valeur, champ) } : { retenueGarantie: taux(valeur, champ) };
+		return sousVerrouLot(lotId, async (tx, lot) => {
+			await tx.lot.update({ where: { id: lotId }, data });
+			return { chantierId: lot.chantierId };
+		});
+	}
+
 	const lot = await prisma.lot.findUniqueOrThrow({ where: { id: lotId } });
 	let donnees: Record<string, unknown>;
 	switch (champ) {
@@ -71,12 +79,6 @@ export async function modifierChampLot(lotId: string, champ: ChampLot, valeur: s
 			donnees = { designation: d };
 			break;
 		}
-		case 'tauxTva':
-			donnees = { tauxTva: taux(valeur, champ) };
-			break;
-		case 'retenueGarantie':
-			donnees = { retenueGarantie: taux(valeur, champ) };
-			break;
 		case 'dateSignature':
 			donnees = { dateSignature: versDateCalendaire(valeur) };
 			break;
@@ -100,6 +102,7 @@ export async function ajouterLot(chantierId: string): Promise<string> {
 }
 
 export const LOT_AVEC_DOCUMENTS = 'Ce lot a déjà des documents générés : il ne peut plus être supprimé.';
+export const LOT_DISPARU = "Ce lot n'existe plus.";
 
 /** Un document (marché, lettre, certificat, PV) interdit la suppression, même inséré pendant qu'elle s'exécute. */
 export async function supprimerLot(lotId: string): Promise<{ chantierId: string }> {
@@ -115,14 +118,15 @@ export async function supprimerLot(lotId: string): Promise<{ chantierId: string 
 }
 
 export async function attribuerArtisan(lotId: string, artisanId: string | null): Promise<{ chantierId: string }> {
-	const lot = await prisma.lot.findUniqueOrThrow({ where: { id: lotId } });
-	if (artisanId && artisanId !== lot.artisanId) {
-		const artisan = await prisma.artisan.findUnique({ where: { id: artisanId } });
-		if (!artisan) throw new ErreurMetier('Entreprise introuvable.');
-		if (!artisan.actif) throw new ErreurMetier('Cette entreprise est archivée.');
-	}
-	await prisma.lot.update({ where: { id: lotId }, data: { artisanId } });
-	return { chantierId: lot.chantierId };
+	return sousVerrouLot(lotId, async (tx, lot) => {
+		if (artisanId && artisanId !== lot.artisanId) {
+			const artisan = await tx.artisan.findUnique({ where: { id: artisanId } });
+			if (!artisan) throw new ErreurMetier('Entreprise introuvable.');
+			if (!artisan.actif) throw new ErreurMetier('Cette entreprise est archivée.');
+		}
+		await tx.lot.update({ where: { id: lotId }, data: { artisanId } });
+		return { chantierId: lot.chantierId };
+	});
 }
 
 /** Change le gabarit imprimé ; la série de versions du marché reste la même (spec § 4). */

@@ -35,6 +35,8 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: https://${DOMAINE}
       TZ: Europe/Paris
+      # Si Chromium refuse de démarrer (namespaces), décommenter :
+      # CHROMIUM_NO_SANDBOX: '1'
     depends_on:
       migration: { condition: service_completed_successfully }
 

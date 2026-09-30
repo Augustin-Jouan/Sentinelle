@@ -22,7 +22,7 @@ const COLONNES: { champ: ChampArtisan; titre: string }[] = [
 
 export function ReferentielArtisans({ artisans }: { artisans: ArtisanFiche[] }) {
 	const [requete, setRequete] = useState('');
-	const [, demarrer] = useTransition();
+	const [enCours, demarrer] = useTransition();
 
 	function ajouter(e: FormEvent<HTMLFormElement>) {
 		e.preventDefault();
@@ -48,7 +48,7 @@ export function ReferentielArtisans({ artisans }: { artisans: ArtisanFiche[] }) 
 				<Input className="max-w-sm" placeholder="Rechercher : nom, commune…" value={requete} onChange={(e) => setRequete(e.target.value)} aria-label="Rechercher une entreprise" />
 				<form onSubmit={ajouter} className="ml-auto flex gap-2">
 					<Input name="nom" placeholder="Nom de la nouvelle entreprise" aria-label="Nom de la nouvelle entreprise" required />
-					<Button type="submit">Ajouter une entreprise</Button>
+					<Button type="submit" disabled={enCours}>Ajouter une entreprise</Button>
 				</form>
 			</div>
 			<div className="overflow-x-auto rounded-xl border bg-card">

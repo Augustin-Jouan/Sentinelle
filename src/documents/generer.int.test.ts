@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { LOT_DISPARU } from '@/donnees/lots';
 import { prisma } from '@/donnees/prisma';
 import { viderBase } from '../../tests/integration/aide';
 import { insererPerrier } from '../../tests/integration/perrier';
@@ -104,5 +105,17 @@ describe('génération et versions', () => {
 		expect(r.generes).toContain('ESCALIER');
 		expect(r.ignores).toEqual([{ lot: 'Lot 12', raison: "pas d'entreprise, montant nul" }]);
 		expect(await prisma.document.count()).toBe(12);
+	});
+
+	it('lot supprimé pendant le rendu : message métier, pas d\'erreur inattendue', async () => {
+		const lotId = p.lots.PEINTURE;
+		await expect(genererMarche(lotId, p.utilisateurId, {
+			...deps,
+			rendrePdf: async () => {
+				await prisma.lot.delete({ where: { id: lotId } });
+				return new Uint8Array([37, 80, 68, 70]);
+			},
+		})).rejects.toThrow(LOT_DISPARU);
+		expect(await prisma.document.count()).toBe(0);
 	});
 });
