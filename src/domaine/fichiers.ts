@@ -24,6 +24,10 @@ export function nomFichierCertificat(p: { reference: string; numero: string | nu
 	return `${slugifier(p.reference)}-${prefixeLot(p.nature, p.numero)}-${slugifier(p.designation)}-Certificat${String(p.numeroCertificat).padStart(2, '0')}-v${p.version}.pdf`;
 }
 
+export function nomFichierCompteRendu(reference: string, numero: number, version: number): string {
+	return `${slugifier(reference)}-CompteRendu${String(numero).padStart(2, '0')}-v${version}.pdf`;
+}
+
 export function nomFichierRecap(reference: string, version: number): string {
 	return `${slugifier(reference)}-RecapMarches-v${version}.pdf`;
 }
