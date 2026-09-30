@@ -1,6 +1,7 @@
 import type { DonneesDocument } from '../schemas';
 import { CertificatPaiement } from './CertificatPaiement';
 import { CompteRendu } from './CompteRendu';
+import { ProcesVerbalReception } from './ProcesVerbalReception';
 import { LettreAvenant } from './LettreAvenant';
 import { MarcheGreAGre } from './MarcheGreAGre';
 import { MarcheSousTraitance } from './MarcheSousTraitance';
@@ -31,5 +32,8 @@ export function Gabarit({ donnees, mode, onSaisie }: { donnees: DonneesDocument;
 		case 'COMPTE_RENDU':
 			// Les saisies passent par ApercuCompteRendu, qui rend CompteRendu directement.
 			return <CompteRendu donnees={donnees} mode={mode === 'edition' ? 'lecture' : mode} />;
+		case 'PV_RECEPTION':
+			// Les saisies passent par ApercuReception, qui rend ProcesVerbalReception directement.
+			return <ProcesVerbalReception donnees={donnees} mode={mode === 'edition' ? 'lecture' : mode} />;
 	}
 }
