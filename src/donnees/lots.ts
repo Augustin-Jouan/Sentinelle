@@ -4,6 +4,7 @@ import { ErreurMetier } from '@/domaine/erreurs';
 import { htDepuisTtc, lireNombreFr } from '@/domaine/montants';
 import { exemplairesParDefaut, type Nature } from '@/domaine/regles';
 import { versDateCalendaire } from './chantiers';
+import { estCleEtrangere } from './erreursPrisma';
 import { prisma } from './prisma';
 import { montantsAvenants, sousVerrouLot, verrouillerChantier } from './verrouLot';
 
@@ -98,10 +99,18 @@ export async function ajouterLot(chantierId: string): Promise<string> {
 	});
 }
 
+export const LOT_AVEC_DOCUMENTS = 'Ce lot a déjà des documents générés : il ne peut plus être supprimé.';
+
+/** Un document (marché, lettre, certificat, PV) interdit la suppression, même inséré pendant qu'elle s'exécute. */
 export async function supprimerLot(lotId: string): Promise<{ chantierId: string }> {
 	const lot = await prisma.lot.findUniqueOrThrow({ where: { id: lotId }, include: { _count: { select: { documents: true } } } });
-	if (lot._count.documents > 0) throw new ErreurMetier('Ce lot a déjà un marché généré : il ne peut plus être supprimé.');
-	await prisma.lot.delete({ where: { id: lotId } });
+	if (lot._count.documents > 0) throw new ErreurMetier(LOT_AVEC_DOCUMENTS);
+	try {
+		await prisma.lot.delete({ where: { id: lotId } });
+	} catch (e) {
+		if (estCleEtrangere(e)) throw new ErreurMetier(LOT_AVEC_DOCUMENTS);
+		throw e;
+	}
 	return { chantierId: lot.chantierId };
 }
 
