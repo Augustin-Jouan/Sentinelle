@@ -36,6 +36,9 @@ export const imprimerPortrait: RendrePdf = (html) => htmlVersPdf(html, { paysage
 /** Certificat : portrait, toujours une page ; une feuille longue (10 avenants, 24 acomptes) est réduite à l'échelle. */
 export const imprimerCertificat: RendrePdf = (html) => htmlVersPdf(html, { paysage: false, uneSeuleFeuille: true, tropLong: TROP_DE_LIGNES });
 
+/** PV de réception : portrait, toujours une page ; des réserves longues sont réduites à l'échelle (spec § 6). */
+export const imprimerReception: RendrePdf = (html) => htmlVersPdf(html, { paysage: false, uneSeuleFeuille: true, tropLong: TROP_DE_LIGNES });
+
 /** Planning et visa : A4 paysage, toujours une seule page (échelle mesurée, refus sous 0,4). */
 const imprimerUneFeuille: RendrePdf = (html) => htmlVersPdf(html, { paysage: true, uneSeuleFeuille: true });
 

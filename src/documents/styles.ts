@@ -174,6 +174,40 @@ textarea.cr-saisie { display: block; width: 100%; min-height: 3rem; resize: vert
 .cr-conv-bt:hover { background: #dce8f4; }
 .cr-conv-bt.est-c { color: #b3261e; }
 
+/* PV de réception : A4 portrait, une page (maquette pagePv). */
+.sheet-doc.sheet-pv { width: 46rem; font-size: .75rem; line-height: 1.55; }
+.pv-pages { display: flex; flex-direction: column; align-items: center; gap: 1.75rem; }
+.pv-tete { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1rem; align-items: start; }
+.pv-tete img { width: 6.25rem; height: auto; }
+.pv-adr { text-align: right; font-weight: 700; font-size: .75rem; }
+.pv-titre { text-align: center; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: .9375rem; letter-spacing: .02em; margin: 1.25rem 0 0 5rem; line-height: 1.35; }
+.sheet .pv-date { margin: .25rem 0 0 1rem; }
+.pv-cadre { border: 1px solid #16191b; display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: .125rem .5rem; padding: .25rem .375rem 1rem; margin: 0 0 1.25rem; }
+.pv-cadre dt { font-style: italic; }
+.pv-cadre dt.fort { font-weight: 700; font-style: normal; }
+.pv-cadre dd { margin: 0; }
+.pv-cadre dd.fort { font-weight: 700; }
+.sheet .pv-corps p { margin: 0 0 .125rem; }
+.pv-v { font-weight: 600; padding: 0 .375rem; }
+.pv-blanc { display: inline-block; min-width: 6rem; border-bottom: 1px solid #16191b; text-align: center; font-weight: 600; }
+.pv-choix { margin: .875rem 0 .75rem .25rem; }
+.pv-choix div { display: flex; gap: .375rem; align-items: baseline; }
+.pv-case { flex: none; display: inline-grid; place-items: center; width: 1.625rem; height: .8125rem; border: 1px solid #16191b;
+	font-size: .625rem; font-weight: 700; line-height: 1; transform: translateY(2px); background: #fff; padding: 0; }
+.pv-case-bt { cursor: pointer; }
+.pv-case-bt:hover { background: #e8f0f8; }
+/* « .sheet hr » l'emporterait sans le double sélecteur. */
+.sheet hr.pv-sep { border: 0; border-top: 2px dashed #16191b; margin: .25rem 0; }
+.pv-rubrique { text-align: center; font-weight: 700; margin: .375rem 0; }
+.pv-reserves { min-height: 6.5rem; padding: .375rem .5rem; white-space: pre-wrap; }
+.sheet .pv-phrase { margin: .625rem 0; }
+.pv-signs { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; margin: 1rem 0 0; min-height: 4.5rem; }
+.pv-fait { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 1rem; margin-top: .75rem; }
+/* Saisies de l'aperçu : jamais imprimées. */
+.pv-saisie { font: inherit; font-weight: 600; color: inherit; background: #e8f0f8; border: 0; box-shadow: inset 0 -1px 0 #1c4e80; padding: 0 .25rem; }
+textarea.pv-saisie { display: block; width: 100%; min-height: 6rem; resize: vertical; field-sizing: content; font-weight: 400; }
+.sheet .pv-aide { margin: 0; font-size: .6875rem; font-style: italic; color: #5a6062; }
+
 /* PDF : la page A4 (marges 10 mm) porte la feuille, sans cadre ni ombre. */
 .mode-impression { margin: 0; background: #fff; }
 .mode-impression .sheet { width: 100%; max-width: none; min-height: 0; border: 0; box-shadow: none; padding: 0; background: #fff; }

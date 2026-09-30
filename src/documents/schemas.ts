@@ -1,4 +1,5 @@
 import { CONVOCATIONS } from '@/domaine/compteRendu';
+import { DECISIONS } from '@/domaine/reception';
 import { z } from 'zod';
 
 const texte = z.string();
@@ -225,6 +226,40 @@ export const contenuCompteRenduSchema = z.object({
 	coordination: z.array(z.object({ titre: texte, suite: segmentsSchema, lignes: z.array(segmentsSchema) })),
 });
 
+export const contenuReceptionSchema = z.object({
+	/** « 12/10/2026 ». */
+	enDateDu: texte,
+	maitreOuvrage: texte,
+	adresseTravaux: texte,
+	/** « 44110 – LOUISFERT ». */
+	cpCommune: texte,
+	/** Le signataire saisi, sinon le maître d'ouvrage. */
+	soussigne: texte,
+	/** Le maître d'ouvrage quand un signataire est saisi, sinon ''. */
+	representantDe: texte,
+	maitreOeuvre: texte,
+	entreprise: texte,
+	representant: texte,
+	/** « 02 — GROS ŒUVRE » ; sans numéro (sous-traitance), la désignation seule. */
+	lot: texte,
+	mission: z.enum(['complète', 'partielle']),
+	/** Date du contrat de maîtrise d'œuvre, « 03/04/2026 » ou ''. */
+	contrat: texte,
+	decision: z.enum(DECISIONS),
+	/** Imprimée sur la ligne cochée « sans » ou « avec » ; '' si différée. */
+	effet: texte,
+	/** Imprimés si différée, '' sinon. */
+	motifs: texte,
+	/** Une réserve par ligne si avec réserves, [] sinon. */
+	reserves: z.array(texte),
+	/** Imprimé si avec réserves, '' sinon. */
+	delai: texte,
+	/** Taux de la retenue de garantie du lot : « 5 », « 2,5 ». */
+	retenue: texte,
+	/** Date de réception AAAA-MM-JJ : la levée des réserves ne peut la précéder. */
+	dateReception: texte,
+});
+
 export const donneesDocumentSchema = z.discriminatedUnion('type', [
 	z.object({ type: z.literal('MARCHE_GRE_A_GRE'), contenu: contenuMarcheGreAGreSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('MARCHE_SOUS_TRAITANCE'), contenu: contenuMarcheSousTraitanceSchema, cadre: cadreSchema }),
@@ -234,6 +269,7 @@ export const donneesDocumentSchema = z.discriminatedUnion('type', [
 	z.object({ type: z.literal('AVENANT'), contenu: contenuAvenantSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('CERTIFICAT_PAIEMENT'), contenu: contenuCertificatSchema, societe: societeSchema }),
 	z.object({ type: z.literal('COMPTE_RENDU'), contenu: contenuCompteRenduSchema, societe: lignesSocieteSchema }),
+	z.object({ type: z.literal('PV_RECEPTION'), contenu: contenuReceptionSchema, societe: lignesSocieteSchema }),
 ]);
 
 export type Cadre = z.infer<typeof cadreSchema>;
@@ -259,3 +295,5 @@ export type DonneesCertificat = Extract<DonneesDocument, { type: 'CERTIFICAT_PAI
 export type LignesSociete = z.infer<typeof lignesSocieteSchema>;
 export type ContenuCompteRendu = z.infer<typeof contenuCompteRenduSchema>;
 export type DonneesCompteRendu = Extract<DonneesDocument, { type: 'COMPTE_RENDU' }>;
+export type ContenuReception = z.infer<typeof contenuReceptionSchema>;
+export type DonneesReception = Extract<DonneesDocument, { type: 'PV_RECEPTION' }>;
