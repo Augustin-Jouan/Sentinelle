@@ -17,7 +17,8 @@ test('un mauvais mot de passe est refusé', async ({ page }) => {
 test('l\'admin se connecte puis se déconnecte', async ({ page }) => {
 	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
 	await expect(page.getByRole('heading', { name: 'Mes chantiers' })).toBeVisible();
-	await expect(page.getByRole('link', { name: 'Comptes' })).toBeVisible();
-	await page.getByRole('button', { name: 'Se déconnecter' }).click();
+	await page.locator('.avatar').click();
+	await expect(page.getByRole('menuitem', { name: 'Comptes' })).toBeVisible();
+	await page.getByRole('menuitem', { name: 'Se déconnecter' }).click();
 	await expect(page).toHaveURL(/\/connexion$/);
 });

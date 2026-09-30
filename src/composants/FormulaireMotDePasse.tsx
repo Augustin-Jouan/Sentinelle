@@ -3,9 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition, type FormEvent } from 'react';
 import { changerMotDePasseAction, deconnexionAction } from '@/actions/session';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Sigle, SigleDefs } from '@/composants/maquette/Sigle';
 
 export function FormulaireMotDePasse() {
 	const router = useRouter();
@@ -27,29 +25,34 @@ export function FormulaireMotDePasse() {
 	}
 
 	const champ = (nom: string, libelle: string, autoComplete: string) => (
-		<div className="space-y-2">
-			<Label htmlFor={nom}>{libelle}</Label>
-			<Input id={nom} name={nom} type="password" autoComplete={autoComplete} required aria-invalid={Boolean(erreurs[nom])} />
-			{erreurs[nom] && <p className="text-sm text-destructive">{erreurs[nom]}</p>}
+		<div className="field">
+			<label htmlFor={nom}>{libelle}</label>
+			<input id={nom} name={nom} type="password" autoComplete={autoComplete} required aria-invalid={Boolean(erreurs[nom])} className={erreurs[nom] ? 'est-erreur' : undefined} />
+			{erreurs[nom] && <span className="erreur">{erreurs[nom]}</span>}
 		</div>
 	);
 
 	return (
-		<div className="w-full max-w-sm space-y-3">
-			<form onSubmit={soumettre} className="space-y-5 rounded-xl border bg-card p-8 shadow-sm">
-				<div>
-					<h1 className="text-2xl font-bold">Choisissez votre mot de passe</h1>
-					<p className="text-sm text-muted-foreground">Le mot de passe provisoire ne sert qu&apos;une fois. 12 caractères au moins.</p>
+		<div className="screen is-on">
+			<SigleDefs />
+			<div className="login">
+				<div className="login-card">
+					<div className="login-brand">
+						<div className="login-mark"><Sigle grand />Sentinelle</div>
+						<p className="login-tag">Choisissez votre mot de passe. Le mot de passe provisoire ne sert qu&apos;une fois. 12 caractères au moins.</p>
+					</div>
+					<form className="login-form" onSubmit={soumettre}>
+						{champ('ancien', 'Mot de passe actuel', 'current-password')}
+						{champ('nouveau', 'Nouveau mot de passe', 'new-password')}
+						{champ('confirmation', 'Confirmer le nouveau mot de passe', 'new-password')}
+						{erreurs.general && <p role="alert" className="erreur">{erreurs.general}</p>}
+						<button className="btn btn-primary" type="submit" disabled={enCours} style={{ justifyContent: 'center', padding: '0.5625rem' }}>Enregistrer</button>
+					</form>
+					<form action={deconnexionAction} className="login-foot">
+						<button type="submit" className="btn btn-ghost btn-sm">Se déconnecter</button>
+					</form>
 				</div>
-				{champ('ancien', 'Mot de passe actuel', 'current-password')}
-				{champ('nouveau', 'Nouveau mot de passe', 'new-password')}
-				{champ('confirmation', 'Confirmer le nouveau mot de passe', 'new-password')}
-				{erreurs.general && <p role="alert" className="text-sm text-destructive">{erreurs.general}</p>}
-				<Button type="submit" className="w-full" disabled={enCours}>Enregistrer</Button>
-			</form>
-			<form action={deconnexionAction} className="text-center">
-				<Button type="submit" variant="ghost" size="sm">Se déconnecter</Button>
-			</form>
+			</div>
 		</div>
 	);
 }

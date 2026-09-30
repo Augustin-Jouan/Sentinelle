@@ -8,6 +8,12 @@
 .text-input.est-erreur, .money-input.est-erreur, .field input.est-erreur { border-color: var(--danger); background: var(--danger-soft); }
 .field .erreur { font-size: 0.6875rem; color: var(--danger); }
 
+/* Message d'erreur d'un formulaire (connexion, mot de passe, création) : la maquette n'échouait jamais. */
+.erreur { margin: 0; font-size: 0.75rem; color: var(--danger); }
+
+/* Tailwind (preflight) annule la marge des <p> ; la maquette s'appuie sur celle du navigateur. */
+.login-tag, .login-foot { margin: 1em 0; }
+
 /* Pendant l'enregistrement d'une saisie. */
 .est-en-cours { opacity: 0.7; }
 

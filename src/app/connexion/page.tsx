@@ -3,9 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { authClient } from '@/auth/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Sigle, SigleDefs } from '@/composants/maquette/Sigle';
 
 export default function PageConnexion() {
 	const router = useRouter();
@@ -35,27 +33,31 @@ export default function PageConnexion() {
 	}
 
 	return (
-		<main className="grid min-h-screen place-items-center px-4">
-			<form onSubmit={soumettre} className="w-full max-w-sm space-y-5 rounded-xl border bg-card p-8 shadow-sm">
-				<div>
-					<h1 className="text-2xl font-bold">Sentinelle</h1>
-					<p className="text-sm text-muted-foreground">
-						Les marchés de vos chantiers, saisis une fois et imprimés autant de fois qu&apos;il le faut.
-					</p>
+		<div className="screen is-on">
+			<SigleDefs />
+			<div className="login">
+				<div className="login-card">
+					<div className="login-brand">
+						<div className="login-mark"><Sigle grand />Sentinelle</div>
+						<p className="login-tag">Les marchés de vos chantiers, saisis une fois et imprimés autant de fois qu&apos;il le faut.</p>
+					</div>
+					<form className="login-form" onSubmit={soumettre}>
+						<div className="field">
+							<label htmlFor="email">Adresse e-mail</label>
+							<input id="email" name="email" type="email" autoComplete="username" required />
+						</div>
+						<div className="field">
+							<label htmlFor="motDePasse">Mot de passe</label>
+							<input id="motDePasse" name="motDePasse" type="password" autoComplete="current-password" required />
+						</div>
+						{erreur && <p role="alert" className="erreur">{erreur}</p>}
+						<button className="btn btn-primary" type="submit" disabled={envoi} style={{ justifyContent: 'center', padding: '0.5625rem' }}>
+							{envoi ? 'Connexion…' : 'Ouvrir mes chantiers'}
+						</button>
+					</form>
+					<p className="login-foot">Accès réservé aux comptes SOCOREVE.</p>
 				</div>
-				<div className="space-y-2">
-					<Label htmlFor="email">Adresse e-mail</Label>
-					<Input id="email" name="email" type="email" autoComplete="username" required />
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="motDePasse">Mot de passe</Label>
-					<Input id="motDePasse" name="motDePasse" type="password" autoComplete="current-password" required />
-				</div>
-				{erreur && <p role="alert" className="text-sm text-destructive">{erreur}</p>}
-				<Button type="submit" className="w-full" disabled={envoi}>
-					{envoi ? 'Connexion…' : 'Ouvrir mes chantiers'}
-				</Button>
-			</form>
-		</main>
+			</div>
+		</div>
 	);
 }

@@ -10,7 +10,8 @@ test('l\'admin crée un compte, le collègue change son mot de passe provisoire'
 	const provisoire = (await page.getByTestId('mot-de-passe-provisoire').textContent()) ?? '';
 	expect(provisoire).toHaveLength(16);
 	await page.getByRole('button', { name: 'Fermer' }).click();
-	await page.getByRole('button', { name: 'Se déconnecter' }).click();
+	await page.locator('.avatar').click();
+	await page.getByRole('menuitem', { name: 'Se déconnecter' }).click();
 
 	await seConnecter(page, 'jean.martin@socoreve.local', provisoire);
 	await expect(page).toHaveURL(/\/mot-de-passe$/);
@@ -19,5 +20,6 @@ test('l\'admin crée un compte, le collègue change son mot de passe provisoire'
 	await page.getByLabel('Confirmer le nouveau mot de passe').fill('nouveau-mot-de-passe-jean');
 	await page.getByRole('button', { name: 'Enregistrer' }).click();
 	await expect(page.getByRole('heading', { name: 'Mes chantiers' })).toBeVisible();
-	await expect(page.getByRole('link', { name: 'Comptes' })).toHaveCount(0);
+	await page.locator('.avatar').click();
+	await expect(page.getByRole('menuitem', { name: 'Comptes' })).toHaveCount(0);
 });
