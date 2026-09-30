@@ -1,3 +1,4 @@
+import { exigerPage } from '@/auth/session';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ApercuCompteRendu } from '@/composants/ApercuCompteRendu';
 import { ApercuDocument } from '@/composants/ApercuDocument';
@@ -22,6 +23,7 @@ function texteResume({ nombre, dernierLe }: VueDocuments['resume']): string {
 }
 
 export default async function PageDocuments({ params, searchParams }: Props) {
+	await exigerPage();
 	const { id } = await params;
 	const { apercu, version, cr, 'corriger-cr': corrigerCr, pv } = await searchParams;
 	const vue = await etatsDocumentsChantier(id);
