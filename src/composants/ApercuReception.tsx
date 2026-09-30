@@ -3,7 +3,6 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import type { Resultat } from '@/actions/executer';
 import { genererReceptionsAction, modifierChampReceptionAction, modifierChampReceptionCommunAction } from '@/actions/receptions';
 import { Button } from '@/components/ui/button';
 import { ProcesVerbalReception, type EditionReception } from '@/documents/gabarits/ProcesVerbalReception';
@@ -29,7 +28,9 @@ export function ApercuReception({ ouvert, reference }: { ouvert: ReceptionsOuver
 	const router = useRouter();
 	const chemin = usePathname();
 	const [commun, setCommun] = useState(ouvert.commun);
+	const communCourant = useRef(ouvert.commun);
 	const [saisies, setSaisies] = useState<Record<string, SaisiesReception>>(() => Object.fromEntries(ouvert.pages.map((p) => [p.lotId, p.saisies])));
+	const saisiesCourantes = useRef(saisies);
 	const [enCours, demarrer] = useTransition();
 	const enregistrements = useRef(new Set<Promise<unknown>>());
 	const tous = ouvert.cible === TOUS_LES_LOTS;
@@ -45,15 +46,31 @@ export function ApercuReception({ ouvert, reference }: { ouvert: ReceptionsOuver
 		};
 	}, [router, chemin]);
 
-	function suivre(envoi: Promise<Resultat>) {
-		const suivi = envoi.then((r) => { if (!r.ok) toast.error(r.erreur); });
-		enregistrements.current.add(suivi);
-		void suivi.finally(() => enregistrements.current.delete(suivi));
+	function suivre(envoi: Promise<unknown>) {
+		enregistrements.current.add(envoi);
+		void envoi.finally(() => enregistrements.current.delete(envoi));
+	}
+
+	function changerLot(lotId: string, suivantes: SaisiesReception) {
+		const toutes = { ...saisiesCourantes.current, [lotId]: suivantes };
+		saisiesCourantes.current = toutes;
+		setSaisies(toutes);
+	}
+
+	function changerCommun(suivantes: typeof commun) {
+		communCourant.current = suivantes;
+		setCommun(suivantes);
 	}
 
 	function surChamp(lotId: string, champ: ChampReception, valeur: string) {
-		setSaisies((s) => ({ ...s, [lotId]: { ...s[lotId], [champ]: valeur } }));
-		suivre(modifierChampReceptionAction(lotId, champ, valeur));
+		const avant = saisiesCourantes.current[lotId];
+		changerLot(lotId, { ...avant, [champ]: valeur });
+		suivre(modifierChampReceptionAction(lotId, champ, valeur).then((r) => {
+			if (r.ok) return;
+			toast.error(r.erreur);
+			// Remonter le champ : la clé du gabarit suit la valeur, donc l'ancienne saisie réapparaît.
+			changerLot(lotId, { ...saisiesCourantes.current[lotId], [champ]: avant[champ] });
+		}));
 	}
 
 	const edition = (lotId: string): EditionReception => ({
@@ -62,8 +79,13 @@ export function ApercuReception({ ouvert, reference }: { ouvert: ReceptionsOuver
 		surChamp: (champ, valeur) => surChamp(lotId, champ, valeur),
 		surDecision: (decision) => surChamp(lotId, 'decision', decision),
 		surCommun: (champ, valeur) => {
-			setCommun((c) => ({ ...c, [champ]: valeur }));
-			suivre(modifierChampReceptionCommunAction(ouvert.chantierId, champ, valeur));
+			const avant = communCourant.current;
+			changerCommun({ ...avant, [champ]: valeur });
+			suivre(modifierChampReceptionCommunAction(ouvert.chantierId, champ, valeur).then((r) => {
+				if (r.ok) return;
+				toast.error(r.erreur);
+				changerCommun({ ...communCourant.current, [champ]: avant[champ] });
+			}));
 		},
 	});
 
