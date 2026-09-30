@@ -93,6 +93,43 @@ table.d-avenant tr.total td { border-top: 1px solid #16191b; font-weight: 600; }
 table.d-avenant tr.apres td { border-top: 2px solid #16191b; font-weight: 600; font-size: .75rem; }
 .av-sign { margin-top: 2.5rem; }
 
+/* Certificat de paiement : A4 portrait (maquette renderCpSheet). Double classe : « .sheet-doc » fixerait 68rem. */
+.sheet-doc.sheet-cp { width: 46rem; }
+.cp-tete { display: flex; align-items: center; gap: 1.25rem; margin-bottom: .875rem; }
+.cp-tete img { width: 5.5rem; height: auto; flex: none; }
+.cp-adr { font-style: italic; font-size: .8125rem; line-height: 1.45; }
+.cp-cadre { border: 1px solid #16191b; margin-bottom: .625rem; }
+.cp-titre { text-align: center; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.0625rem; letter-spacing: .03em; padding: .375rem; border-bottom: 1px solid #16191b; }
+.cp-kv { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: .25rem .5rem; margin: 0; padding: .5rem .75rem .625rem; font-size: .75rem; }
+.cp-kv dt { text-align: right; }
+.cp-kv dd { margin: 0; font-weight: 700; }
+.cp-montants { display: grid; grid-template-columns: 11rem 9rem; gap: .125rem 1.5rem; padding: .5rem .75rem .625rem; font-size: .75rem; }
+.cp-montants .k { text-align: right; }
+.cp-montants .v { text-align: right; font-weight: 700; font-family: 'Spline Sans Mono', monospace; font-variant-numeric: tabular-nums; }
+.cp-montants .av-titre { grid-column: 1 / -1; font-weight: 700; text-decoration: underline; margin-top: .375rem; }
+.cp-bande { background: #bfc2c4; border: 1px solid #16191b; text-align: center; font-weight: 700; font-size: .8125rem; padding: .4375rem; margin: .625rem 0 .75rem; }
+.cp-deux { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+table.cp-t { width: 100%; border-collapse: collapse; font-size: .6875rem; }
+table.cp-t th, table.cp-t td { border: 1px solid #16191b; padding: .1875rem .375rem; }
+table.cp-t th { font-weight: 400; text-align: center; }
+table.cp-t td.m { text-align: right; font-family: 'Spline Sans Mono', monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.cp-t td.cp-centre { text-align: center; }
+table.cp-prec td:first-child { text-align: center; width: 4.75rem; white-space: nowrap; }
+table.cp-titu td.k { text-align: right; border-left: 0; }
+table.cp-titu td.m { width: 7.5rem; }
+table.cp-titu tr.mandat td { background: #cfe2ee; font-weight: 700; }
+table.cp-titu th.vide { border: 0; }
+.cp-certif { display: flex; align-items: center; justify-content: flex-end; gap: .75rem; margin: 1.25rem 0 .75rem; font-size: .75rem; }
+.cp-somme { background: #cfe2ee; font-weight: 700; font-family: 'Spline Sans Mono', monospace; font-size: .9375rem; padding: .3125rem 1.25rem; }
+.cp-fait { margin: .5rem 0 0; font-size: .75rem; }
+.cp-sign { margin: .25rem 0 0 1rem; font-size: .75rem; min-height: 5rem; }
+/* Saisies de l'aperçu : jamais imprimées (le PDF est rendu en mode impression, sans champ). */
+.cp-saisie { width: 100%; min-width: 0; font: inherit; text-align: right; border: 0; padding: 0 .25rem; }
+.cp-saisie.cp-date { width: auto; text-align: left; background: #e8f0f8; box-shadow: inset 0 -1px 0 #1c4e80; }
+.cp-caution { font: inherit; font-weight: 700; cursor: pointer; background: #e8f0f8; border: 0; box-shadow: inset 0 -1px 0 #1c4e80; padding: 0 .5rem; }
+.cp-vide { color: #5f7285; font-style: italic; font-weight: 400; }
+.cp-note { display: block; white-space: normal; font-family: 'Figtree', system-ui, sans-serif; font-size: .5625rem; line-height: 1.3; color: #5a6062; margin-top: .125rem; }
+
 /* PDF : la page A4 (marges 10 mm) porte la feuille, sans cadre ni ombre. */
 .mode-impression { margin: 0; background: #fff; }
 .mode-impression .sheet { width: 100%; max-width: none; min-height: 0; border: 0; box-shadow: none; padding: 0; background: #fff; }

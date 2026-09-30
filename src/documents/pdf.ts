@@ -1,6 +1,6 @@
 import { chromium, type Browser, type BrowserContext } from 'playwright';
 import { ErreurMetier } from '@/domaine/erreurs';
-import { ajusterUneFeuille, ECHELLE_MIN, HAUTEUR_UTILE_PX, LARGEUR_UTILE_PX, OPTIONS_UNE_FEUILLE, TROP_DE_LOTS } from './uneFeuille';
+import { ajusterUneFeuille, ECHELLE_MIN, HAUTEUR_UTILE_PORTRAIT_PX, HAUTEUR_UTILE_PX, LARGEUR_UTILE_PORTRAIT_PX, LARGEUR_UTILE_PX, OPTIONS_UNE_FEUILLE, TROP_DE_LOTS } from './uneFeuille';
 
 export type RendrePdf = (html: string) => Promise<Uint8Array>;
 
@@ -33,7 +33,7 @@ function avecDelai<T>(travail: Promise<T>, ms: number): Promise<T> {
 
 export async function htmlVersPdf(
 	html: string,
-	opts: { paysage?: boolean; delaiMs?: number; uneSeuleFeuille?: boolean } = {},
+	opts: { paysage?: boolean; delaiMs?: number; uneSeuleFeuille?: boolean; tropLong?: string } = {},
 ): Promise<Uint8Array> {
 	if (enCours >= MAX_SIMULTANEES) throw new ErreurMetier('Génération en cours, réessayez dans quelques secondes.');
 	enCours++;
@@ -45,18 +45,21 @@ export async function htmlVersPdf(
 		// Aucune requête ne sort : polices et CSS sont déjà dans la page (setContent ne passe pas par le réseau).
 		await contexte.route('**/*', (route) => route.abort());
 		const page = await contexte.newPage();
-		// Une seule feuille : la mise en page se fait à la largeur utile d'une A4 paysage, comme dans l'aperçu.
-		if (opts.uneSeuleFeuille) await page.setViewportSize({ width: LARGEUR_UTILE_PX, height: HAUTEUR_UTILE_PX });
+		const paysage = opts.paysage ?? true;
+		const utile = paysage
+			? { largeur: LARGEUR_UTILE_PX, hauteur: HAUTEUR_UTILE_PX }
+			: { largeur: LARGEUR_UTILE_PORTRAIT_PX, hauteur: HAUTEUR_UTILE_PORTRAIT_PX };
+		// Une seule feuille : la mise en page se fait à la largeur utile de la page, comme dans l'aperçu.
+		if (opts.uneSeuleFeuille) await page.setViewportSize({ width: utile.largeur, height: utile.hauteur });
 		await page.setContent(html, { waitUntil: 'load' });
 		await page.evaluate(async () => { await document.fonts.ready; });
 		let echelle = 1;
 		if (opts.uneSeuleFeuille) {
 			// Mesures comprises dans le même créneau Chromium que l'impression.
-			echelle = (await page.evaluate(ajusterUneFeuille, OPTIONS_UNE_FEUILLE)).echelle;
-			if (echelle < ECHELLE_MIN) throw new ErreurMetier(TROP_DE_LOTS);
+			echelle = (await page.evaluate(ajusterUneFeuille, { ...OPTIONS_UNE_FEUILLE, hauteurUtile: utile.hauteur })).echelle;
+			if (echelle < ECHELLE_MIN) throw new ErreurMetier(opts.tropLong ?? TROP_DE_LOTS);
 		}
 		// ISO A4 mm : format:'A4' de Chromium 1243 donne 842.88 pt (Math.round → 843).
-		const paysage = opts.paysage ?? true;
 		return page.pdf({
 			width: paysage ? '297mm' : '210mm',
 			height: paysage ? '210mm' : '297mm',

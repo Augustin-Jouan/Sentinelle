@@ -1,4 +1,5 @@
 import type { DonneesDocument } from '../schemas';
+import { CertificatPaiement } from './CertificatPaiement';
 import { LettreAvenant } from './LettreAvenant';
 import { MarcheGreAGre } from './MarcheGreAGre';
 import { MarcheSousTraitance } from './MarcheSousTraitance';
@@ -23,5 +24,8 @@ export function Gabarit({ donnees, mode, onSaisie }: { donnees: DonneesDocument;
 			return <VisaPlanning donnees={donnees} />;
 		case 'AVENANT':
 			return <LettreAvenant donnees={donnees} mode={mode} onSaisie={onSaisie} />;
+		case 'CERTIFICAT_PAIEMENT':
+			// Les saisies de l'aperçu passent par ApercuCertificat, qui rend CertificatPaiement directement.
+			return <CertificatPaiement donnees={donnees} mode={mode === 'edition' ? 'lecture' : mode} />;
 	}
 }

@@ -2,11 +2,16 @@
 export const LARGEUR_UTILE_PX = 1046;
 /** 190 mm = 718,1 px, arrondi par défaut : la feuille ne déborde jamais d'un pixel. */
 export const HAUTEUR_UTILE_PX = 717;
+/** A4 portrait moins les marges de 10 mm : 190 × 277 mm, arrondis par défaut comme en paysage. */
+export const LARGEUR_UTILE_PORTRAIT_PX = 718;
+export const HAUTEUR_UTILE_PORTRAIT_PX = 1045;
 /** La place qu'il faut à un numéro de semaine lisible (maquette : LARGEUR_NUMERO). */
 export const LARGEUR_NUMERO_PX = 13;
 /** En dessous, la feuille serait illisible : on refuse. */
 export const ECHELLE_MIN = 0.4;
 export const TROP_DE_LOTS = 'Trop de lots pour une seule feuille.';
+/** Certificat de paiement trop long, même réduit (plus d'une centaine d'acomptes). */
+export const TROP_DE_LIGNES = 'Trop de lignes pour une seule feuille.';
 
 export type OptionsUneFeuille = { selecteur: string; largeurNumero: number; hauteurUtile: number };
 
