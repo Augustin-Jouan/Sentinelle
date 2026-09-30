@@ -90,4 +90,20 @@ describe('lireNombreFr', () => {
 	it.each(['', 'abc', '12,3,4', '1 2x'])('refuse « %s »', (saisie) => {
 		expect(() => lireNombreFr(saisie)).toThrow(ErreurMetier);
 	});
+
+	it.each([
+		['96.250', '« 96.250 » est ambigu : écrivez 96 250 ou 96,25.'],
+		['1.500', '« 1.500 » est ambigu : écrivez 1 500 ou 1,5.'],
+		['2.000 €', '« 2.000 € » est ambigu : écrivez 2 000 ou 2.'],
+		['-300.000', '« -300.000 » est ambigu : écrivez -300 000 ou -300.'],
+	])('%s : ambigu, refusé plutôt que deviné', (saisie, message) => {
+		expect(() => lireNombreFr(saisie)).toThrow(message);
+	});
+
+	it.each([['12.5', '12.5'], ['0.125', '0.125'], ['1234.500', '1234.5'], ['1.234,50', '1234.5'], ['96 250', '96250']])(
+		'%s : non ambigu, lu %s',
+		(saisie, attendu) => {
+			expect(lireNombreFr(saisie).toString()).toBe(attendu);
+		},
+	);
 });
