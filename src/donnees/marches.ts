@@ -8,6 +8,7 @@ import { prisma } from './prisma';
 
 export type ArtisanOption = {
 	id: string; nom: string; commune: string; actif: boolean;
+	adresse: string; cp: string;
 	adresseComplete: string; interlocuteur: string; telephone: string;
 };
 
@@ -77,6 +78,7 @@ export async function lireVueMarches(chantierId: string): Promise<VueMarches | n
 		lots,
 		artisans: artisans.map((a) => ({
 			id: a.id, nom: a.nom, commune: a.commune, actif: a.actif,
+			adresse: a.adresse, cp: a.cp,
 			adresseComplete: adresseArtisan(a), interlocuteur: a.interlocuteur, telephone: a.telephone,
 		})),
 		totalHtTexte: formatEuros(totalHt),

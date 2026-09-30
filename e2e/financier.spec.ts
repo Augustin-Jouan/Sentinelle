@@ -20,7 +20,7 @@ test('avenant, lettre, acomptes antérieurs, certificat et correction', async ({
 	test.setTimeout(180_000);
 	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
 	await page.goto('/chantiers');
-	await page.getByRole('link', { name: 'FINANCIER', exact: true }).click();
+	await page.locator('.chantier', { hasText: 'FINANCIER' }).click();
 	await expect(page).toHaveURL(/\/marches$/);
 	const ttc = lignePeinture(page).getByLabel('Montant TTC');
 	await expect(ttc).toHaveValue(saisie('11 340,00'));
@@ -100,7 +100,7 @@ test('avenant, lettre, acomptes antérieurs, certificat et correction', async ({
 	await expect(cp).toBeHidden();
 
 	// 5. Documents : colonnes Avenants et Certificats ; « n° 01 · hors appli », « n° 03 · v2 », sans pastille « modifié ».
-	await page.getByRole('link', { name: 'Documents', exact: true }).click();
+	await page.getByRole('link', { name: 'Documents' }).click();
 	const ligneDoc = page.locator('tr[data-lot="11 — PEINTURE"]');
 	const colonne = (i: number) => ligneDoc.locator('td').nth(i);
 	await expect(page.getByRole('columnheader', { name: 'Avenants' }).first()).toBeVisible();
