@@ -1,8 +1,9 @@
 import { lireParametres } from '@/donnees/parametres';
 import { prisma } from '@/donnees/prisma';
+import { AVENANT_DISPARU } from '@/domaine/avenants';
 import { ErreurMetier } from '@/domaine/erreurs';
-import { batirMarche, batirPlanning, batirRecap, batirVisa, type SourceChantier, type SourceLot, type SourceParametres, type SourcePlanning } from './batir';
-import { donneesDocumentSchema, type DonneesMarche, type DonneesPlanning, type DonneesRecap, type DonneesVisa } from './schemas';
+import { batirAvenant, batirMarche, batirPlanning, batirRecap, batirVisa, type SourceAvenant, type SourceChantier, type SourceLot, type SourceParametres, type SourcePlanning } from './batir';
+import { donneesDocumentSchema, type DonneesAvenant, type DonneesMarche, type DonneesPlanning, type DonneesRecap, type DonneesVisa } from './schemas';
 import { SERIES } from './series';
 
 const includeChantier = {
@@ -51,6 +52,16 @@ export async function construireDonneesMarche(lotId: string, maintenant = new Da
 	const { chantier, lots, parametres } = await lireSources(chantierId);
 	const lot = lots.find((l) => l.id === lotId)!;
 	return { chantierId, chantier, lot, donnees: batirMarche(chantier, lot, parametres, maintenant) };
+}
+
+export async function construireDonneesAvenant(avenantId: string, maintenant = new Date()): Promise<{ chantierId: string; chantier: SourceChantier; lot: SourceLot; avenant: SourceAvenant; donnees: DonneesAvenant }> {
+	const a = await prisma.avenant.findUnique({ where: { id: avenantId }, select: { lot: { select: { id: true, chantierId: true } } } });
+	if (!a) throw new ErreurMetier(AVENANT_DISPARU);
+	const { chantier, lots, parametres } = await lireSources(a.lot.chantierId);
+	const lot = lots.find((l) => l.id === a.lot.id)!;
+	// Supprimé entre les deux lectures : batirAvenant le dit.
+	const donnees = batirAvenant(chantier, lot, avenantId, parametres, maintenant);
+	return { chantierId: a.lot.chantierId, chantier, lot, avenant: lot.avenants.find((x) => x.id === avenantId)!, donnees };
 }
 
 export async function construireDonneesRecap(chantierId: string, maintenant = new Date()): Promise<{ chantier: SourceChantier; donnees: DonneesRecap }> {

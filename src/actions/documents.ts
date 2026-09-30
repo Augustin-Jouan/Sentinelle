@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { genererMarche, genererMarchesManquants, genererPlanning, genererRecap, genererVisa, type ResultatGeneration } from '@/documents/generer';
+import { genererAvenant, genererMarche, genererMarchesManquants, genererPlanning, genererRecap, genererVisa, type ResultatGeneration } from '@/documents/generer';
 import { prisma } from '@/donnees/prisma';
 import { executer, type Resultat } from './executer';
 
@@ -11,6 +11,15 @@ export async function genererMarcheAction(lotId: string): Promise<Resultat<Resul
 	return executer({}, async (u) => {
 		const r = await genererMarche(lotId, u.id);
 		const { chantierId } = await prisma.lot.findUniqueOrThrow({ where: { id: lotId }, select: { chantierId: true } });
+		rafraichir(chantierId);
+		return r;
+	});
+}
+
+export async function genererAvenantAction(avenantId: string): Promise<Resultat<ResultatGeneration>> {
+	return executer({}, async (u) => {
+		const r = await genererAvenant(avenantId, u.id);
+		const { chantierId } = await prisma.document.findUniqueOrThrow({ where: { id: r.documentId }, select: { chantierId: true } });
 		rafraichir(chantierId);
 		return r;
 	});

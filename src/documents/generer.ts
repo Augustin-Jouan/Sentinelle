@@ -1,19 +1,23 @@
+import { LIBELLES_MANQUES_AVENANT, manquesAvenant } from '@/domaine/avenants';
 import { ErreurMetier } from '@/domaine/erreurs';
-import { nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierVisa } from '@/domaine/fichiers';
+import { nomFichierAvenant, nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierVisa } from '@/domaine/fichiers';
 import { LIBELLES_MANQUES, manquesPourGenerer } from '@/domaine/regles';
 import { prisma } from '@/donnees/prisma';
 import type { Prisma } from '@/generated/prisma/client';
 import { empreinteDocument } from './batir';
-import { construireDonneesMarche, construireDonneesPlanning, construireDonneesRecap, construireDonneesVisa, lireSources } from './donnees';
+import { construireDonneesAvenant, construireDonneesMarche, construireDonneesPlanning, construireDonneesRecap, construireDonneesVisa, lireSources } from './donnees';
 import { htmlVersPdf, type RendrePdf } from './pdf';
 import { rendreHtml } from './rendu';
 import type { DonneesDocument } from './schemas';
-import { SERIES } from './series';
+import { serieAvenant, SERIES } from './series';
 
 export type ResultatGeneration = { documentId: string; version: number; nomFichier: string; nouvelle: boolean };
 type Dependances = { maintenant?: Date; rendrePdf?: RendrePdf };
 
 const imprimerParDefaut: RendrePdf = (html) => htmlVersPdf(html, { paysage: true });
+
+/** Lettre d'avenant et certificat de paiement : A4 portrait (spec § 2, « Formats »). */
+export const imprimerPortrait: RendrePdf = (html) => htmlVersPdf(html, { paysage: false });
 
 /** Planning et visa : A4 paysage, toujours une seule page (échelle mesurée, refus sous 0,4). */
 const imprimerUneFeuille: RendrePdf = (html) => htmlVersPdf(html, { paysage: true, uneSeuleFeuille: true });
@@ -92,6 +96,23 @@ export async function genererMarche(lotId: string, utilisateurId: string, deps: 
 		empreinteActuelle: async () => empreinteDocument((await construireDonneesMarche(lotId, maintenant)).donnees),
 		nomFichier: (version) => nomFichierMarche({
 			reference: chantier.reference, numero: lot.numero, designation: lot.designation, nature: lot.nature, version,
+		}),
+	});
+}
+
+export async function genererAvenant(avenantId: string, utilisateurId: string, deps: Dependances = {}): Promise<ResultatGeneration> {
+	const maintenant = deps.maintenant ?? new Date();
+	const { chantierId, chantier, lot, avenant, donnees } = await construireDonneesAvenant(avenantId, maintenant);
+	const manques = manquesAvenant({ artisanId: lot.artisanId, montantHt: avenant.montantHt });
+	if (manques.length) {
+		throw new ErreurMetier(`Impossible de générer la lettre : ${manques.map((m) => LIBELLES_MANQUES_AVENANT[m]).join(', ')}.`);
+	}
+	return enregistrerVersion({
+		chantierId, lotId: lot.id, serie: serieAvenant(avenantId), donnees, utilisateurId, rendrePdf: deps.rendrePdf ?? imprimerPortrait,
+		empreinteActuelle: async () => empreinteDocument((await construireDonneesAvenant(avenantId, maintenant)).donnees),
+		nomFichier: (version) => nomFichierAvenant({
+			reference: chantier.reference, numero: lot.numero, designation: lot.designation, nature: lot.nature,
+			numeroAvenant: avenant.numero, version,
 		}),
 	});
 }

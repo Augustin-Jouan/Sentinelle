@@ -34,7 +34,7 @@ export function ApercuDocument({ titre, sousTitre, donnees, source, manques = []
 	}, [router, chemin]);
 
 	function saisir(cle: CleZone, texte: string) {
-		if (source.type !== 'marche') return;
+		if (source.type !== 'marche' || cle === 'objet') return;
 		const enregistrement = modifierChampLotAction(source.lotId, cle, texte).then((r) => {
 			if (!r.ok) toast.error(r.erreur);
 			return r;
