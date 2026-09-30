@@ -90,7 +90,7 @@ describe('lots', () => {
 		const autre = await ajouterLot(chantierId);
 		await supprimerLot(autre);
 		await prisma.document.create({ data: {
-			chantierId, lotId, type: 'MARCHE_GRE_A_GRE', version: 1, donnees: {}, empreinte: 'x',
+			chantierId, lotId, serie: lotId, type: 'MARCHE_GRE_A_GRE', version: 1, donnees: {}, empreinte: 'x',
 			pdf: new Uint8Array([1]), nomFichier: 'x.pdf', creeParId: utilisateurId,
 		} });
 		await expect(supprimerLot(lotId)).rejects.toThrow('Ce lot a déjà un marché généré : il ne peut plus être supprimé.');

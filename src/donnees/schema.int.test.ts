@@ -15,6 +15,7 @@ async function chantierAvecLot() {
 
 const documentDe = (chantierId: string, creeParId: string, lotId: string | null, version: number) => ({
 	chantierId, creeParId, lotId, version,
+	serie: lotId ?? 'RECAPITULATIF',
 	type: lotId ? ('MARCHE_GRE_A_GRE' as const) : ('RECAPITULATIF' as const),
 	donnees: {}, empreinte: 'x', pdf: new Uint8Array([1]), nomFichier: 'x.pdf',
 });
@@ -28,7 +29,7 @@ describe('schéma', () => {
 		expect(relu.montantHtInitial.toString()).toBe('833.33333333');
 	});
 
-	it('un seul récapitulatif par version (NULLS NOT DISTINCT)', async () => {
+	it('un seul récapitulatif par version (série RECAPITULATIF)', async () => {
 		const { u, chantier } = await chantierAvecLot();
 		await prisma.document.create({ data: documentDe(chantier.id, u.id, null, 1) });
 		await expect(prisma.document.create({ data: documentDe(chantier.id, u.id, null, 1) })).rejects.toThrow();

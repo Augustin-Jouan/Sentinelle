@@ -21,6 +21,8 @@ enum TypeDocument {
   MARCHE_GRE_A_GRE
   MARCHE_SOUS_TRAITANCE
   RECAPITULATIF
+  PLANNING
+  VISA_PLANNING
 }
 
 // ---------- Better Auth (noms de champs imposés par la bibliothèque) ----------
@@ -145,6 +147,7 @@ model Chantier {
   creePar             Utilisateur @relation("CreePar", fields: [creeParId], references: [id])
   lots                Lot[]
   documents           Document[]
+  fermetures          Fermeture[]
 }
 
 model Lot {
@@ -167,6 +170,7 @@ model Lot {
   couleur            String     @default("noir")
   dateSignature      DateTime?  @db.Date
   documents          Document[]
+  periodes           Periode[]
 
   @@unique([chantierId, ordre])
 }
@@ -177,6 +181,12 @@ model Document {
   chantier   Chantier     @relation(fields: [chantierId], references: [id], onDelete: Restrict)
   lotId      String?
   lot        Lot?         @relation(fields: [lotId], references: [id], onDelete: Restrict)
+  /// Id du lot pour un marché ; RECAPITULATIF, PLANNING ou VISA pour les documents du chantier entier.
+  serie      String
+  /// Pour un visa : la version du planning qu'il fait signer.
+  sourceId   String?
+  source     Document?    @relation("Source", fields: [sourceId], references: [id], onDelete: Restrict)
+  derives    Document[]   @relation("Source")
   type       TypeDocument
   version    Int
   donnees    Json
@@ -187,6 +197,36 @@ model Document {
   creeParId  String
   creePar    Utilisateur  @relation(fields: [creeParId], references: [id])
 
-  /// Rendu NULLS NOT DISTINCT par la migration : une seule série de récapitulatifs par chantier.
-  @@unique([chantierId, lotId, version])
+  @@unique([chantierId, serie, version])
+}
+
+model Periode {
+  id         String    @id @default(cuid())
+  lotId      String
+  lot        Lot       @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  intitule   String    @default("")
+  /// Lundi de la semaine ISO (contrainte CHECK écrite dans la migration).
+  debut      DateTime  @db.Date
+  /// En semaines, de 1 à 104.
+  duree      Int
+  dependDeId String?
+  dependDe   Periode?  @relation("Dependance", fields: [dependDeId], references: [id], onDelete: SetNull)
+  suites     Periode[] @relation("Dependance")
+  creeLe     DateTime  @default(now())
+
+  @@index([lotId])
+  @@index([dependDeId])
+}
+
+model Fermeture {
+  id         String   @id @default(cuid())
+  chantierId String
+  chantier   Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  libelle    String   @default("Congés")
+  /// Lundi de la semaine ISO (contrainte CHECK écrite dans la migration).
+  debut      DateTime @db.Date
+  /// En semaines, de 1 à 52.
+  duree      Int
+
+  @@index([chantierId])
 }

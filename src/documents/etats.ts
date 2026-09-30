@@ -2,11 +2,13 @@ import { manquesPourGenerer, type Manque } from '@/domaine/regles';
 import { prisma } from '@/donnees/prisma';
 import { batirMarche, batirRecap, empreinteDocument } from './batir';
 import { lireSources } from './donnees';
+import type { TypeDocument } from './libelles';
 import { donneesDocumentSchema, type DonneesDocument } from './schemas';
+import { SERIES } from './series';
 
 export type EtatSerie = 'a-produire' | 'a-jour' | 'modifie';
 export type VersionResume = {
-	id: string; version: number; type: 'MARCHE_GRE_A_GRE' | 'MARCHE_SOUS_TRAITANCE' | 'RECAPITULATIF';
+	id: string; version: number; type: TypeDocument;
 	creeLe: string; auteur: string; nomFichier: string;
 };
 export type SerieDocuments = { etat: EtatSerie; versions: VersionResume[] };
@@ -16,7 +18,10 @@ export type VueDocuments = {
 	entreprises: { entreprise: string | null; lots: LigneDocuments[] }[];
 };
 
-type DocLu = { id: string; lotId: string | null; version: number; type: VersionResume['type']; creeLe: Date; nomFichier: string; empreinte: string; creePar: { name: string } };
+type DocLu = {
+	id: string; serie: string; version: number; type: TypeDocument; creeLe: Date; nomFichier: string; empreinte: string;
+	creePar: { name: string };
+};
 
 function serie(docs: DocLu[], empreinteActuelle: string): SerieDocuments {
 	const versions = docs.map((d) => ({
@@ -33,10 +38,10 @@ export async function etatsDocumentsChantier(chantierId: string, maintenant = ne
 		prisma.document.findMany({
 			where: { chantierId },
 			orderBy: { version: 'desc' },
-			select: { id: true, lotId: true, version: true, type: true, creeLe: true, nomFichier: true, empreinte: true, creePar: { select: { name: true } } },
+			select: { id: true, serie: true, version: true, type: true, creeLe: true, nomFichier: true, empreinte: true, creePar: { select: { name: true } } },
 		}),
 	]);
-	const docsDe = (lotId: string | null) => docs.filter((d) => d.lotId === lotId);
+	const docsDe = (serie: string) => docs.filter((d) => d.serie === serie);
 	const groupes = new Map<string | null, LigneDocuments[]>();
 	for (const lot of lots) {
 		const cle = lot.artisan?.nom ?? null;
@@ -54,7 +59,7 @@ export async function etatsDocumentsChantier(chantierId: string, maintenant = ne
 	return {
 		chantierId,
 		reference: chantier.reference,
-		recap: serie(docsDe(null), empreinteDocument(batirRecap(chantier, lots, parametres, maintenant))),
+		recap: serie(docsDe(SERIES.RECAPITULATIF), empreinteDocument(batirRecap(chantier, lots, parametres, maintenant))),
 		entreprises: [...groupes.entries()]
 			.sort(([a], [b]) => (a === null ? 1 : b === null ? -1 : a.localeCompare(b, 'fr')))
 			.map(([entreprise, l]) => ({ entreprise, lots: l })),
