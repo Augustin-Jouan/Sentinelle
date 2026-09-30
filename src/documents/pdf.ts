@@ -1,5 +1,6 @@
 import { chromium, type Browser, type BrowserContext } from 'playwright';
 import { ErreurMetier } from '@/domaine/erreurs';
+import { ajusterUneFeuille, ECHELLE_MIN, HAUTEUR_UTILE_PX, LARGEUR_UTILE_PX, OPTIONS_UNE_FEUILLE, TROP_DE_LOTS } from './uneFeuille';
 
 export type RendrePdf = (html: string) => Promise<Uint8Array>;
 
@@ -30,7 +31,10 @@ function avecDelai<T>(travail: Promise<T>, ms: number): Promise<T> {
 	return Promise.race([travail, expiration]).finally(() => clearTimeout(minuterie));
 }
 
-export async function htmlVersPdf(html: string, opts: { paysage?: boolean; delaiMs?: number } = {}): Promise<Uint8Array> {
+export async function htmlVersPdf(
+	html: string,
+	opts: { paysage?: boolean; delaiMs?: number; uneSeuleFeuille?: boolean } = {},
+): Promise<Uint8Array> {
 	if (enCours >= MAX_SIMULTANEES) throw new ErreurMetier('Génération en cours, réessayez dans quelques secondes.');
 	enCours++;
 	let contexte: BrowserContext | undefined;
@@ -41,8 +45,16 @@ export async function htmlVersPdf(html: string, opts: { paysage?: boolean; delai
 		// Aucune requête ne sort : polices et CSS sont déjà dans la page (setContent ne passe pas par le réseau).
 		await contexte.route('**/*', (route) => route.abort());
 		const page = await contexte.newPage();
+		// Une seule feuille : la mise en page se fait à la largeur utile d'une A4 paysage, comme dans l'aperçu.
+		if (opts.uneSeuleFeuille) await page.setViewportSize({ width: LARGEUR_UTILE_PX, height: HAUTEUR_UTILE_PX });
 		await page.setContent(html, { waitUntil: 'load' });
 		await page.evaluate(async () => { await document.fonts.ready; });
+		let echelle = 1;
+		if (opts.uneSeuleFeuille) {
+			// Mesures comprises dans le même créneau Chromium que l'impression.
+			echelle = (await page.evaluate(ajusterUneFeuille, OPTIONS_UNE_FEUILLE)).echelle;
+			if (echelle < ECHELLE_MIN) throw new ErreurMetier(TROP_DE_LOTS);
+		}
 		// ISO A4 mm : format:'A4' de Chromium 1243 donne 842.88 pt (Math.round → 843).
 		const paysage = opts.paysage ?? true;
 		return page.pdf({
@@ -50,6 +62,7 @@ export async function htmlVersPdf(html: string, opts: { paysage?: boolean; delai
 			height: paysage ? '210mm' : '297mm',
 			margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' },
 			printBackground: true,
+			scale: echelle,
 		});
 	})();
 	// La place ne se libère qu'à la fin réelle du travail de Chromium, jamais au moment du délai.
