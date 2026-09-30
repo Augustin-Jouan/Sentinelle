@@ -1,6 +1,6 @@
 # Sentinelle Marchés — Sous-projet 3 : Suivi financier
 
-Date : 2026-09-30 · Statut : design validé, en attente de relecture de la spec
+Date : 2026-09-30 · Statut : design validé, spec relue et corrigée après audit
 
 Référence visuelle et fonctionnelle : `docs/maquette/sentinelle-marches.html` (notes en tête, § 5 et
 § 6 ; montant engagé lignes 3296-3302 et 4180-4200 ; avenants du panneau du lot lignes 4216-4260 et
@@ -54,8 +54,10 @@ Certificats / Réception). Ce sous-projet en fait de vraies données partagées 
 | Brouillon du certificat | Aucun : les trois saisies vivent dans l'aperçu ouvert |
 | Caution bancaire | Oui/non propre au lot, basculée sur la feuille, gardée pour les certificats suivants |
 | Arrondis | `Decimal`, au centime, **à chaque ligne**, demi-centime arrondi au-dessus (`ROUND_HALF_UP`, comme `arrondiCentime` du Socle) |
-| Formats | Lettre d'avenant et certificat en A4 portrait, une page, marges 12 mm |
+| Formats | Lettre d'avenant et certificat en A4 **portrait** (`htmlVersPdf(html, { paysage: false })`), une page, marges de 10 mm du Socle |
 | Coordonnées SOCOREVE du certificat | Paramètres du Socle, complétés de RCS, APE, TVA intracommunautaire ; logo repris de la maquette |
+| Verrou | Toute écriture d'avenant ou d'acompte d'un lot (création, modification, suppression, correction, caution) se fait sous `SELECT … FOR UPDATE` sur la ligne du lot, avec relecture sous verrou |
+| Versions | Règle du Socle : pas de nouvelle version si l'empreinte n'a pas changé (« Rien n'a changé depuis la version N ») |
 
 ## 3. Architecture
 
@@ -120,8 +122,8 @@ model Acompte {
 ```
 
 Contraintes `CHECK` écrites à la main dans la migration : `numero >= 1` ; `montantHt > 0` pour tout
-acompte ; pour un acompte non manuel, `cumulRealiseHt`, `mois` et `date` non nuls ; `mois` au format
-`AAAA-MM`.
+acompte ; pour un acompte non manuel, `cumulRealiseHt`, `mois` et `date` non nuls ; `mois` conforme à
+`^(20[0-9]{2})-(0[1-9]|1[0-2])$`. Zod applique la même expression avant l'écriture.
 
 ### Modifications du Socle
 
@@ -133,8 +135,18 @@ acompte ; pour un acompte non manuel, `cumulRealiseHt`, `mois` et `date` non nul
   « Certificat de paiement ») et `TITRES_TYPES` (« Avenant », « Certificat de paiement »).
 - Séries : `AVENANT:<avenantId>` et `CERTIFICAT:<acompteId>` ; `Document.lotId` = le lot. Pas de clé
   étrangère vers l'avenant : ses documents lui survivent.
+- **Un marché généré, c'est un document dont la `serie` est l'id du lot.** Avenants et certificats
+  portent aussi `lotId` : `genererMarchesManquants` (qui compte aujourd'hui tout document ayant un
+  `lotId`) et l'état du marché dans `etatsDocumentsChantier` filtrent sur `serie = lotId`, sinon un lot
+  dont seul un avenant a été imprimé ne sortirait plus dans « générer les marchés manquants ».
 - `Parametres` + `rcs`, `ape`, `tvaIntracommunautaire` (texte, modifiables par l'admin dans la page
-  Paramètres), valeurs par défaut de la maquette : `328999503`, `4120A`, `FR4732899950300027`.
+  Paramètres), valeurs par défaut `328999503`, `4120A`, `FR47328999503`. La maquette imprimait
+  `FR4732899950300027`, qui a cinq chiffres de trop : le numéro de TVA intracommunautaire français est
+  « FR » + clé (47, calculée sur le SIREN) + SIREN, 13 caractères. À relire sur le KBIS avant la mise
+  en service.
+- `Parametres.email` passe à `contact@socoreve-chateaubriant.com` (valeur par défaut, et migration de
+  la ligne existante si elle vaut encore l'ancienne valeur par défaut en `.fr`) : c'est l'adresse du
+  certificat SOCOREVE.
 - Supprimer un lot reste soumis à la règle du Socle sur ses documents ; ses avenants et acomptes
   partent avec lui (`Cascade`).
 
@@ -151,7 +163,11 @@ acompte ; pour un acompte non manuel, `cumulRealiseHt`, `mois` et `date` non nul
   un avenant).
 - **Saisie d'un TTC** (tableau ou panneau) : HT initial = TTC / (1 + TVA) − avenants. Résultat
   négatif : « Ce TTC est inférieur aux seuls avenants. », rien n'est écrit.
-- **Montant d'un avenant** : lu avec `lireNombreFr` (signe accepté) ; illisible : « Montant :
+- **Avenant ou TTC, deux effets distincts sur le marché** : ajouter, modifier ou supprimer un avenant ne
+  touche pas au HT initial, donc le marché reste « à jour » ; saisir un TTC réécrit le HT initial (le
+  montant signé), donc le marché passe « modifié », comme au Socle.
+- **Montant d'un avenant** : lu avec `lireNombreFr` (signe accepté), contrôlé sous le verrou du lot
+  (deux moins-values simultanées ne peuvent pas rendre le lot négatif) ; illisible : « Montant :
   saisissez un nombre. » ; s'il rend le montant engagé HT négatif : « Cette moins-value rendrait le
   montant du lot négatif. » ; rien n'est écrit. Un montant nul est permis (ligne tout juste ajoutée).
 - **Ajout** : numéro = `dernierNumeroAvenant + 1`, date du jour (Châteaubriant), montant 0, message
@@ -215,8 +231,10 @@ sous-traitance, comme les marchés).
   d'acomptes du lot + 1.
 - **Acomptes antérieurs** (`manuel`) : pour reprendre un chantier en cours. On les saisit (montant HT)
   dans le tableau « Acomptes précédents » de la feuille **tant que le lot n'a aucun certificat** :
-  ajout (numéro suivant), modification, suppression (les suivants sont renumérotés). Dès qu'un
-  certificat existe : « Des certificats existent : les acomptes antérieurs ne se modifient plus. »
+  ajout (numéro suivant), modification, suppression (les suivants sont renumérotés). Chacune de ces
+  écritures prend le verrou du lot, relit ses acomptes et vérifie sous verrou qu'aucun certificat
+  n'existe ; la renumérotation se fait dans la même transaction. Dès qu'un certificat existe : « Des
+  certificats existent : les acomptes antérieurs ne se modifient plus. »
 - Un acompte manuel n'a pas de document ; il n'apparaît que comme acompte précédent et dans la
   colonne Certificats (« n° 01 · hors appli »).
 
@@ -261,11 +279,17 @@ avenants. », non imprimé, non bloquant ; lot sans entreprise ou montant engag�
   n'est écrit), calcul, insertion de l'`Acompte`, puis version 1 du document par la chaîne du Socle.
 - **Correction** : seul le **dernier** acompte du lot, s'il n'est pas manuel, se rouvre en édition
   (bouton « Corriger le certificat n° 03 » du panneau du lot, ou depuis la page Documents), avec ses
-  saisies. `corrigerCertificat(acompteId, { cumul, mois, date })` refait le calcul avec les acomptes
-  précédents et le lot actuels, met à jour l'`Acompte` et crée une nouvelle version de la même série.
-  Sinon : « Seul le dernier certificat du lot peut être corrigé. »
+  saisies. `corrigerCertificat(acompteId, { cumul, mois, date })` prend le verrou du lot, relit ses
+  acomptes et vérifie **sous verrou** que celui-ci est toujours le dernier et n'est pas manuel (sinon
+  « Seul le dernier certificat du lot peut être corrigé. », rien n'est écrit) ; il refait le calcul avec
+  les acomptes précédents et le lot actuels, met à jour l'`Acompte` et enregistre une version de la
+  même série. Si l'empreinte n'a pas changé, il n'y a pas de nouvelle version (règle du Socle :
+  « Rien n'a changé depuis la version N : elle est téléchargée. »).
 - Les autres certificats s'ouvrent en lecture seule, tels qu'émis. Un certificat **n'a pas d'état
-  « modifié »** : c'est un acte de paiement, pas le reflet des données actuelles.
+  « modifié »** : c'est un acte de paiement, pas le reflet des données actuelles. `etatsDocumentsChantier`
+  ne reconstruit donc jamais le contenu d'un certificat et ne compare pas son empreinte : la dernière
+  version est en lecture seule, sans pastille « modifié » ni « Régénérer » ; seul « Corriger » (dernier
+  numéro du lot) crée une version.
 - Le document fige tout : marché, avenants (numéro et montant), TVA, taux de retenue, caution,
   acomptes précédents, cumul, mois, date, lot, entreprise, chantier.
 
@@ -277,23 +301,29 @@ Fac-similé du certificat SOCOREVE (maquette `renderCpSheet`), A4 portrait, une 
   dans les Paramètres) ;
 - cadre : Maître de l'Ouvrage, Objet du marché (nature des travaux + « adresse – CP – commune »),
   Lot n°, Titulaire ;
-- cadre des montants : marché HT, « AVENANTS : » puis « Avenant n HT » (au moins 4 lignes, vides au
-  besoin), Total HT, TVA, Total TTC ;
+- cadre des montants : marché HT, « AVENANTS : » puis « Avenant n HT » (complété par des lignes vides
+  jusqu'à 4), Total HT, TVA, Total TTC ;
 - bande « État d'acompte n° 03 mois de Juillet 2026 » ;
-- tableau « Acomptes précédents » N° / Montant HT (au moins 8 lignes), Total HT, TVA, Total TTC ;
+- tableau « Acomptes précédents » N° / Montant HT (complété par des lignes vides jusqu'à 8), Total HT,
+  TVA, Total TTC ;
 - tableau « Titulaire » : travaux réalisés HT, acomptes précédents HT, présent acompte HT, TVA,
   présent acompte TTC, montant total mandaté, « Caution bancaire (OUI/NON) », dont retenue de
   garantie ;
 - « Le Maître d'œuvre soussigné certifie qu'il peut être mandaté la somme de : 3 021,00 € » ;
 - « Fait à Châteaubriant le : 30/09/2026 » ; « Le Maître d'œuvre ».
 
-Montants formatés par `formatEuros` du Socle. **Fichier** :
+Au-delà de 4 avenants ou de 8 acomptes précédents, il n'y a plus de ligne vide : seules les lignes
+réelles s'impriment, et la feuille reste sur une page (test : 10 avenants et 24 acomptes précédents
+tiennent sur une page A4 portrait). Montants formatés par `formatEuros` du Socle. **Fichier** :
 `<REF>-Lot02-GROS-OEUVRE-Certificat03-v1.pdf` (`ST` en sous-traitance).
 
 ### Aperçu du certificat
 
 Plein écran, comme l'aperçu des marchés : zones bleues (cumul, acomptes antérieurs), champs mois et
-date affichés sur la feuille à l'écran et imprimés en texte, bouton OUI/NON de la caution ; montants
+date affichés sur la feuille à l'écran et imprimés en texte, bouton OUI/NON de la caution (une donnée
+du lot, pas du brouillon : elle est enregistrée aussitôt et reste acquise même si l'on ferme sans
+générer ; l'aperçu l'indique sous le bouton : « Enregistré sur le lot, vaut pour les certificats
+suivants. ») ; montants
 recalculés à la frappe par `src/domaine/certificats.ts` ; alerte du cumul sous la feuille ; bouton
 **Générer le PDF** (ou « Générer la v2 » en correction) ; Échap ou **Fermer** : les saisies non
 générées sont perdues. En lecture seule : **Télécharger le PDF**.
@@ -307,10 +337,11 @@ colonne Réception arrivera avec le sous-projet 4) :
   (dernière version, lecture seule), pastille « modifié » et lien « Régénérer » (ouvre la lettre),
   pointillé « n° 03 à produire » (ouvre la lettre), « n° 04 · montant nul » en pointillé inactif.
 - **Certificats** : une case par acompte — « n° 01 · hors appli » (gris, sans lien), « n° 03 · v2 »
-  en bleu (lecture seule ; le dernier propose « Corriger ») ; un « + » ouvre un nouveau certificat
+  en bleu (lecture seule ; le dernier propose « Corriger » ; jamais de pastille « modifié ») ; un « + » ouvre un nouveau certificat
   (inactif avec la même condition que le panneau).
-- **Historique** : toutes les versions du lot, lettres d'avenants supprimés comprises, marquées
-  « avenant supprimé ».
+- **Historique** : versions du marché (comme au Socle) et versions des lettres d'avenants, lettres
+  d'avenants supprimés comprises, marquées « avenant supprimé ». Les certificats restent dans leur
+  colonne (chaque case donne accès à ses versions).
 
 La légende ajoute : « Gris : acompte antérieur à l'application, saisi sans document. » Le
 récapitulatif passe « modifié » dès qu'un avenant change un montant engagé.
@@ -348,15 +379,31 @@ journalisé sans données (ni montant, ni nom de client) et affiché comme erreu
   - acomptes manuels figés après le premier certificat ; renumérotation tant qu'aucun certificat ;
   - deux certificats simultanés sur un lot : un seul passe, l'autre reçoit le message, rien d'écrit ;
   - correction du dernier certificat → v2 et `Acompte` à jour ; correction d'un plus ancien refusée ;
-  - récapitulatif et tableur au montant engagé ; marché imprimé inchangé par un avenant ; état
-    « modifié » de la lettre quand un avenant antérieur change.
-- **Playwright E2E** (fixture PERRIER du Socle) :
-  1. ajouter un avenant de −300,00 € HT sur PEINTURE : le TTC du tableau des marchés baisse de 360 € ;
-  2. écrire l'objet sur la lettre et générer la lettre (nom du fichier) ;
-  3. saisir deux acomptes antérieurs, puis faire le certificat n° 03 avec caution : montant mandaté
-     attendu ; télécharger ;
-  4. corriger le certificat n° 03 : v2 ;
-  5. Documents : colonnes Avenants et Certificats, « hors appli », « v2 ».
+  - récapitulatif et tableur au montant engagé ; marché « à jour » après ajout d'un avenant, mais
+    « modifié » après saisie d'un TTC ; état « modifié » de la lettre quand un avenant antérieur change ;
+  - « générer les marchés manquants » génère le marché d'un lot qui n'a qu'une lettre d'avenant et un
+    certificat ;
+  - un avenant ajouté après un certificat ne rend pas ce certificat « modifié » ;
+  - correction sans changement : pas de v2 ; correction concurrente d'un certificat qui n'est plus le
+    dernier : refusée sous verrou, rien d'écrit ; acomptes manuels écrits en même temps : numéros
+    continus, aucun conflit d'unicité ;
+  - `mois` `2026-13` refusé (Zod et `CHECK`) ;
+  - lettre et certificat : une page A4 portrait ; 10 avenants et 24 acomptes précédents : une page.
+- **Playwright E2E** (chantier `FINANCIER`, copie de la fixture PERRIER insérée avant le serveur E2E,
+  comme les chantiers `PLANNING — …` du Planning) :
+  PEINTURE (LA DÉCO'TECH) : HT initial 9 450,00 €, TVA 20 %, retenue 5 %.
+  1. ajouter un avenant n° 01 de −300,00 € HT : le TTC du tableau passe de 11 340,00 € à 10 980,00 € ;
+     le marché de PEINTURE reste « à jour » dans Documents ;
+  2. écrire l'objet sur la lettre et générer la lettre :
+     `FINANCIER-Lot11-PEINTURE-Avenant01-v1.pdf` ;
+  3. saisir deux acomptes antérieurs de 2 000,00 € et 3 000,00 € HT, puis le certificat n° 03 avec
+     cumul 7 000,00 € HT, caution OUI : total HT 9 150,00, précédents 5 000,00, présent acompte
+     2 000,00 HT / 400,00 TVA / 2 400,00 TTC, retenue 0,00, **mandaté 2 400,00 €** ; télécharger
+     `FINANCIER-Lot11-PEINTURE-Certificat03-v1.pdf` ;
+  4. corriger le certificat n° 03 avec un cumul de 7 500,00 € : présent acompte 2 500,00 HT,
+     mandaté 3 000,00 € ; v2 ;
+  5. Documents : colonnes Avenants et Certificats, « n° 01 · hors appli », « n° 03 · v2 », sans
+     pastille « modifié » sur le certificat.
 
 ## 10. Hors périmètre
 
