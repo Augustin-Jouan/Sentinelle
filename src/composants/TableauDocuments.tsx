@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
-import type { LigneDocuments, SerieDocuments, SerieVisa, VersionResume, VueDocuments } from '@/documents/etats';
+import type { CaseAvenant, LigneDocuments, SerieDocuments, SerieVisa, VersionResume, VueDocuments } from '@/documents/etats';
 import { LIBELLES_TYPES } from '@/documents/libelles';
+import type { ManqueAvenant } from '@/domaine/avenants';
 import { dateDuJourTexte, LIBELLES_MANQUES } from '@/domaine/regles';
 import { BoutonMarchesManquants } from './BoutonMarchesManquants';
 
@@ -16,7 +17,7 @@ function Historique({ versions }: { versions: VersionResume[] }) {
 			<ul className="mt-1 space-y-0.5">
 				{versions.map((v) => (
 					<li key={v.id}>
-						v{v.version} — {LIBELLES_TYPES[v.type]} — {dateCourte(v.creeLe)} — {v.auteur}{' · '}
+						v{v.version} — {v.libelle ?? LIBELLES_TYPES[v.type]} — {dateCourte(v.creeLe)} — {v.auteur}{' · '}
 						<a className="underline" href={`/api/documents/${v.id}/pdf`}>PDF</a>
 					</li>
 				))}
@@ -102,6 +103,66 @@ function CaseMarche({ chantierId, ligne }: { chantierId: string; ligne: LigneDoc
 	);
 }
 
+const deux = (n: number) => String(n).padStart(2, '0');
+/** Spec § 7 : « n° 04 · montant nul ». */
+const MANQUES_CASE: Record<ManqueAvenant, string> = { entreprise: "pas d'entreprise", montantAvenant: 'montant nul' };
+
+function CaseLettre({ chantierId, a }: { chantierId: string; a: CaseAvenant }) {
+	const n = `n° ${deux(a.numero)}`;
+	const ouvrir = `/chantiers/${chantierId}/marches?avenant=${a.avenantId}`;
+	if (a.etat === 'a-produire') {
+		return a.manques.length ? (
+			<span data-case="avenant" className="inline-block rounded-md border border-dashed px-2 py-1 text-xs text-muted-foreground">
+				{`${n} · ${a.manques.map((m) => MANQUES_CASE[m]).join(', ')}`}
+			</span>
+		) : (
+			<Link data-case="avenant" href={ouvrir} className="inline-block rounded-md border border-dashed px-2 py-1 text-xs hover:bg-accent">{`${n} à produire`}</Link>
+		);
+	}
+	const derniere = a.versions[0];
+	return (
+		<span data-case="avenant" className="inline-flex items-center gap-1.5">
+			<Link href={`?version=${derniere.id}`} className="rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground">{`${n} · v${derniere.version}`}</Link>
+			{a.etat === 'modifie' && (
+				<>
+					<Badge variant="secondary">modifié</Badge>
+					<Link href={ouvrir} className="text-xs underline">Régénérer</Link>
+				</>
+			)}
+		</span>
+	);
+}
+
+/** Un acompte antérieur est gris et sans lien ; un certificat s'ouvre tel qu'émis, le dernier se corrige. Jamais « modifié ». */
+function CasesCertificats({ chantierId, ligne }: { chantierId: string; ligne: LigneDocuments }) {
+	return (
+		<div className="flex flex-wrap items-start gap-1.5">
+			{ligne.certificats.map((c) => {
+				const n = `n° ${deux(c.numero)}`;
+				const derniere = c.versions[0];
+				if (c.manuel || !derniere) {
+					return <span key={c.acompteId} data-case="certificat" className="inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">{`${n} · hors appli`}</span>;
+				}
+				return (
+					<span key={c.acompteId} data-case="certificat" className="inline-flex flex-col gap-0.5">
+						<span className="inline-flex items-center gap-1.5">
+							<Link href={`?version=${derniere.id}`} className="rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground">{`${n} · v${derniere.version}`}</Link>
+							{c.corrigeable && <Link href={`/chantiers/${chantierId}/marches?corriger=${c.acompteId}`} className="text-xs underline">Corriger</Link>}
+						</span>
+						{c.versions.length > 1 && <Historique versions={c.versions} />}
+					</span>
+				);
+			})}
+			{ligne.certificatPossible ? (
+				<Link href={`/chantiers/${chantierId}/marches?certificat=${ligne.lotId}`} aria-label="Nouveau certificat de paiement"
+					className="inline-block rounded-md border border-dashed px-2 py-1 text-xs hover:bg-accent">+</Link>
+			) : (
+				<span title="Lot sans entreprise ou sans montant" className="inline-block rounded-md border border-dashed px-2 py-1 text-xs text-muted-foreground opacity-50">+</span>
+			)}
+		</div>
+	);
+}
+
 export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 	const recap = vue.recap;
 	return (
@@ -131,14 +192,25 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 					<h3 className="border-b px-4 py-2 font-semibold">{groupe.entreprise ?? 'Lots à attribuer'}</h3>
 					<table className="w-full text-sm">
 						<thead>
-							<tr className="text-left text-muted-foreground"><th className="w-1/3 px-4 py-2">Lot</th><th className="px-4 py-2">Marché</th><th className="px-4 py-2">Historique</th></tr>
+							<tr className="text-left text-muted-foreground">
+								<th className="w-1/4 px-4 py-2">Lot</th><th className="px-4 py-2">Marché</th><th className="px-4 py-2">Avenants</th>
+								<th className="px-4 py-2">Certificats</th><th className="px-4 py-2">Historique</th>
+							</tr>
 						</thead>
 						<tbody>
 							{groupe.lots.map((ligne) => (
-								<tr key={ligne.lotId} data-lot={ligne.lotTexte} className="border-t">
+								<tr key={ligne.lotId} data-lot={ligne.lotTexte} className="border-t align-top">
 									<td className="px-4 py-2">{ligne.lotTexte}</td>
 									<td className="px-4 py-2"><CaseMarche chantierId={vue.chantierId} ligne={ligne} /></td>
-									<td className="px-4 py-2"><Historique versions={ligne.marche.versions} /></td>
+									<td className="px-4 py-2">
+										{ligne.avenants.length ? (
+											<div className="flex flex-wrap gap-1.5">
+												{ligne.avenants.map((a) => <CaseLettre key={a.avenantId} chantierId={vue.chantierId} a={a} />)}
+											</div>
+										) : <span className="text-xs text-muted-foreground">—</span>}
+									</td>
+									<td className="px-4 py-2"><CasesCertificats chantierId={vue.chantierId} ligne={ligne} /></td>
+									<td className="px-4 py-2"><Historique versions={ligne.historique} /></td>
 								</tr>
 							))}
 						</tbody>
@@ -149,6 +221,7 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 			<p className="text-xs text-muted-foreground">
 				Pointillé : à produire. Bleu : à jour, s&apos;ouvre en lecture seule. Pastille « modifié » : les données ont changé depuis la dernière version — régénérez-la.
 				Pastille « périmé » : le visa fait signer une version du planning qui n&apos;est plus la dernière.
+				Gris : acompte antérieur à l&apos;application, saisi sans document.
 			</p>
 		</div>
 	);
