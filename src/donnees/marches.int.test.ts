@@ -1,10 +1,28 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { creerUtilisateurTest, viderBase } from '../../tests/integration/aide';
+import { insererPerrier } from '../../tests/integration/perrier';
 import { lireVueMarches } from './marches';
 import { prisma } from './prisma';
 
 describe('vue de l\'onglet Marchés', () => {
 	beforeEach(viderBase);
+
+	it('le lot porte ses avenants et l\'état de ses certificats', async () => {
+		const p = await insererPerrier();
+		const lotId = p.lots.PEINTURE;
+		await prisma.avenant.create({ data: { lotId, numero: 2, montantHt: '-300', devis: 'D-7', date: new Date('2026-05-12T00:00:00Z') } });
+		await prisma.acompte.create({ data: { lotId, numero: 1, montantHt: '2000', manuel: true } });
+		const certificat = await prisma.acompte.create({ data: {
+			lotId, numero: 2, montantHt: '1000', cumulRealiseHt: '3000', mois: '2026-07', date: new Date('2026-09-30T00:00:00Z'),
+		} });
+		const vue = await lireVueMarches(p.chantierId);
+		expect(vue.lots.find((l) => l.id === lotId)).toMatchObject({
+			avenants: [{ numero: 2, devis: 'D-7', montantHt: '-300', date: '2026-05-12' }],
+			certificat: { possible: true, dernier: { id: certificat.id, numero: 2 } },
+		});
+		expect(vue.lots.find((l) => l.designation === 'ENDUIT EXTÉRIEUR')?.certificat).toEqual({ possible: false, dernier: null });
+		expect(vue.lots.find((l) => l.designation === 'GROS ŒUVRE')?.certificat).toEqual({ possible: true, dernier: null });
+	});
 
 	it('assemble lots, entreprises, montants et totaux', async () => {
 		const u = await creerUtilisateurTest();

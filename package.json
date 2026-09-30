@@ -11,7 +11,7 @@
     "test:int": "vitest run --project integration --passWithNoTests",
     "test:e2e": "playwright test",
     "db:seed": "tsx prisma/seed.ts",
-    "e2e:serveur": "dotenv -e .env.test -- sh -c 'export E2E=1 && node scripts/reinitialiser-base-test.mjs && tsx prisma/seed.ts && tsx e2e/preparer-planning.ts && next build && next start -p 3100'"
+    "e2e:serveur": "dotenv -e .env.test -- sh -c 'export E2E=1 && node scripts/reinitialiser-base-test.mjs && tsx prisma/seed.ts && tsx e2e/preparer-planning.ts && tsx e2e/preparer-financier.ts && next build && next start -p 3100'"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
