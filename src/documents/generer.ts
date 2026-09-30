@@ -1,10 +1,10 @@
 import { ErreurMetier } from '@/domaine/erreurs';
-import { nomFichierMarche, nomFichierRecap } from '@/domaine/fichiers';
+import { nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierVisa } from '@/domaine/fichiers';
 import { LIBELLES_MANQUES, manquesPourGenerer } from '@/domaine/regles';
 import { prisma } from '@/donnees/prisma';
 import type { Prisma } from '@/generated/prisma/client';
 import { empreinteDocument } from './batir';
-import { construireDonneesMarche, construireDonneesRecap, lireSources } from './donnees';
+import { construireDonneesMarche, construireDonneesPlanning, construireDonneesRecap, construireDonneesVisa, lireSources } from './donnees';
 import { htmlVersPdf, type RendrePdf } from './pdf';
 import { rendreHtml } from './rendu';
 import type { DonneesDocument } from './schemas';
@@ -14,6 +14,9 @@ export type ResultatGeneration = { documentId: string; version: number; nomFichi
 type Dependances = { maintenant?: Date; rendrePdf?: RendrePdf };
 
 const imprimerParDefaut: RendrePdf = (html) => htmlVersPdf(html, { paysage: true });
+
+/** Planning et visa : A4 paysage, toujours une seule page (échelle mesurée, refus sous 0,4). */
+const imprimerUneFeuille: RendrePdf = (html) => htmlVersPdf(html, { paysage: true, uneSeuleFeuille: true });
 
 /**
  * construire (fait par l'appelant) → empreinte → PDF hors transaction → contrôle de fraîcheur → insertion sous verrou.
@@ -100,6 +103,28 @@ export async function genererRecap(chantierId: string, utilisateurId: string, de
 		chantierId, lotId: null, serie: SERIES.RECAPITULATIF, donnees, utilisateurId, rendrePdf: deps.rendrePdf ?? imprimerParDefaut,
 		empreinteActuelle: async () => empreinteDocument((await construireDonneesRecap(chantierId, maintenant)).donnees),
 		nomFichier: (version) => nomFichierRecap(chantier.reference, version),
+	});
+}
+
+export async function genererPlanning(chantierId: string, utilisateurId: string, deps: Dependances = {}): Promise<ResultatGeneration> {
+	const maintenant = deps.maintenant ?? new Date();
+	const { chantier, donnees } = await construireDonneesPlanning(chantierId, maintenant);
+	return enregistrerVersion({
+		chantierId, lotId: null, serie: SERIES.PLANNING, donnees, utilisateurId, rendrePdf: deps.rendrePdf ?? imprimerUneFeuille,
+		empreinteActuelle: async () => empreinteDocument((await construireDonneesPlanning(chantierId, maintenant)).donnees),
+		nomFichier: (version) => nomFichierPlanning(chantier.reference, version),
+	});
+}
+
+/** Le visa porte sur la dernière version générée du planning ; s'il en paraît une pendant le rendu, il est abandonné. */
+export async function genererVisa(chantierId: string, utilisateurId: string, deps: Dependances = {}): Promise<ResultatGeneration> {
+	const maintenant = deps.maintenant ?? new Date();
+	const { chantier, source, donnees } = await construireDonneesVisa(chantierId, maintenant);
+	return enregistrerVersion({
+		chantierId, lotId: null, serie: SERIES.VISA, sourceId: source.id, donnees, utilisateurId,
+		rendrePdf: deps.rendrePdf ?? imprimerUneFeuille,
+		empreinteActuelle: async () => empreinteDocument((await construireDonneesVisa(chantierId, maintenant)).donnees),
+		nomFichier: (version) => nomFichierVisa(chantier.reference, version),
 	});
 }
 
