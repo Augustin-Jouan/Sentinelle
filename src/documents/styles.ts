@@ -130,6 +130,50 @@ table.cp-titu th.vide { border: 0; }
 .cp-vide { color: #5f7285; font-style: italic; font-weight: 400; }
 .cp-note { display: block; white-space: normal; font-family: 'Figtree', system-ui, sans-serif; font-size: .5625rem; line-height: 1.3; color: #5a6062; margin-top: .125rem; }
 
+/* Compte rendu de chantier : A4 portrait, une ou plusieurs pages (maquette renderCr). Double classe : « .sheet-doc » fixerait 68rem ;
+   « .sheet » devant les paragraphes : « .sheet p » l'emporterait. */
+.sheet-doc.sheet-cr { width: 46rem; font-size: .6875rem; line-height: 1.4; }
+.cr-tete { width: 100%; border-collapse: collapse; border: 1px solid #16191b; margin-bottom: .875rem; }
+.cr-tete td { vertical-align: middle; padding: .375rem .625rem; }
+.cr-logo { width: 6.5rem; border-right: 1px solid #16191b; text-align: center; }
+.cr-logo img { width: 5.25rem; height: auto; display: block; margin: 0 auto; }
+.cr-adr { font-weight: 700; font-size: .75rem; line-height: 1.35; }
+.cr-titre { width: 9.5rem; border-left: 1px solid #16191b; text-align: center; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: .03em; line-height: 1.2; }
+.sheet .cr-suivi { margin: 0 0 .25rem 2.5rem; font-weight: 700; }
+.cr-bloc { border: 1px solid #16191b; padding: .3125rem .375rem .375rem; margin-bottom: .875rem; }
+.sheet .cr-bloc p { margin: 0 0 .1875rem; }
+.cr-retrait { display: block; padding-left: 11.5rem; }
+.cr-ligne { display: grid; grid-template-columns: 1fr .8fr 1.5fr; gap: .5rem; margin: .125rem 0 .1875rem; }
+.cr-rdv { text-align: right; color: #b3261e; white-space: nowrap; }
+.sheet .cr-legende { text-align: center; font-size: .5625rem; border-top: 1px solid #16191b; padding-top: .125rem; margin: 0; }
+.cr-rouge { color: #b3261e; }
+table.cr-lots { width: 100%; border-collapse: collapse; border-top: 1px solid #16191b; table-layout: fixed; font-size: .625rem; }
+table.cr-lots th { font-style: italic; text-decoration: underline; text-align: center; padding: .125rem .25rem; font-weight: 700; }
+table.cr-lots th:first-child, table.cr-lots td:first-child { text-align: left; }
+table.cr-lots td { text-align: center; padding: .0625rem .25rem; overflow-wrap: anywhere; }
+table.cr-lots th:nth-child(1) { width: 30%; } table.cr-lots th:nth-child(2) { width: 26%; }
+table.cr-lots th:nth-child(3) { width: 19%; } table.cr-lots th:nth-child(4) { width: 14%; }
+table.cr-lots td:nth-child(4) { white-space: nowrap; }
+table.cr-lots td.cr-c { color: #b3261e; font-weight: 700; }
+.cr-souligne { text-decoration: underline; font-weight: 700; }
+.cr-avancement { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: .5rem; min-height: 2.5rem; }
+.cr-avancement > div { font-weight: 700; white-space: pre-wrap; }
+.cr-co-titre { text-decoration: underline; margin-top: .625rem; }
+.cr-co-titre:first-of-type { margin-top: .25rem; }
+.cr-co-suite { text-decoration: none; display: inline-block; }
+.cr-co-ligne { padding-left: 1.5rem; white-space: pre-wrap; }
+.sheet-cr mark { background: #fff200; color: inherit; font-weight: 700; padding: 0 1px; }
+.cr-pied { display: grid; grid-template-columns: 1fr auto; gap: 1rem; padding: 0 1.75rem 0 45%; margin-top: -.625rem; }
+.sheet .cr-nb { margin: .125rem 0 0; font-size: .625rem; }
+/* Saisies de l'aperçu : jamais imprimées (le PDF est rendu en mode impression, sans champ). */
+.sheet .cr-aide { margin: .25rem 0 .375rem; font-size: .625rem; font-style: italic; font-weight: 400; color: #5a6062; }
+.cr-saisie { font: inherit; font-weight: 700; color: inherit; background: #e8f0f8; border: 0; box-shadow: inset 0 -1px 0 #1c4e80; padding: 0 .25rem; }
+textarea.cr-saisie { display: block; width: 100%; min-height: 3rem; resize: vertical; field-sizing: content; white-space: pre-wrap; font-weight: 400; }
+.cr-avancement textarea.cr-saisie { font-weight: 700; }
+.cr-conv-bt { font: inherit; font-weight: 700; color: inherit; background: #e8f0f8; border: 0; border-radius: 3px; min-width: 1.5rem; cursor: pointer; }
+.cr-conv-bt:hover { background: #dce8f4; }
+.cr-conv-bt.est-c { color: #b3261e; }
+
 /* PDF : la page A4 (marges 10 mm) porte la feuille, sans cadre ni ombre. */
 .mode-impression { margin: 0; background: #fff; }
 .mode-impression .sheet { width: 100%; max-width: none; min-height: 0; border: 0; box-shadow: none; padding: 0; background: #fff; }

@@ -1,5 +1,6 @@
 import type { DonneesDocument } from '../schemas';
 import { CertificatPaiement } from './CertificatPaiement';
+import { CompteRendu } from './CompteRendu';
 import { LettreAvenant } from './LettreAvenant';
 import { MarcheGreAGre } from './MarcheGreAGre';
 import { MarcheSousTraitance } from './MarcheSousTraitance';
@@ -27,5 +28,8 @@ export function Gabarit({ donnees, mode, onSaisie }: { donnees: DonneesDocument;
 		case 'CERTIFICAT_PAIEMENT':
 			// Les saisies de l'aperçu passent par ApercuCertificat, qui rend CertificatPaiement directement.
 			return <CertificatPaiement donnees={donnees} mode={mode === 'edition' ? 'lecture' : mode} />;
+		case 'COMPTE_RENDU':
+			// Les saisies passent par ApercuCompteRendu, qui rend CompteRendu directement.
+			return <CompteRendu donnees={donnees} mode={mode === 'edition' ? 'lecture' : mode} />;
 	}
 }

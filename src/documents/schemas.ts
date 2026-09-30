@@ -1,3 +1,4 @@
+import { CONVOCATIONS } from '@/domaine/compteRendu';
 import { z } from 'zod';
 
 const texte = z.string();
@@ -195,6 +196,35 @@ export const societeSchema = z.object({
 	villeSignature: texte,
 });
 
+const segmentsSchema = z.array(z.object({ texte, surligne: z.boolean() }));
+
+/** En-tête SOCOREVE du compte rendu et du PV : ses lignes, figées avec le document, exclues de l'empreinte. */
+export const lignesSocieteSchema = z.object({ lignes: z.array(texte) });
+
+export const contenuCompteRenduSchema = z.object({
+	/** « 04 ». */
+	numero: texte,
+	redacteur: texte,
+	/** '' : la mention « Portable » ne s'imprime pas. */
+	portable: texte,
+	/** Nature des travaux en majuscules, « m² » gardé. */
+	referenceChantier: texte,
+	adresseChantier: texte,
+	maitreOuvrage: texte,
+	/** « 06/10/2026 ». */
+	date: texte,
+	/** « mardi 13/10/2026 à 14h00 » ; '' sans rendez-vous. */
+	prochainRdv: texte,
+	/** Tous les lots, dans l'ordre de saisie, entreprises et téléphones figés. */
+	lots: z.array(z.object({
+		lotId: texte, lot: texte, entreprise: texte, interlocuteur: texte, telephone: texte, convocation: z.enum(CONVOCATIONS),
+	})),
+	/** Une entrée par ligne. */
+	avancement: z.array(segmentsSchema),
+	/** Rubriques imprimées (les rubriques vides sont déjà omises). */
+	coordination: z.array(z.object({ titre: texte, suite: segmentsSchema, lignes: z.array(segmentsSchema) })),
+});
+
 export const donneesDocumentSchema = z.discriminatedUnion('type', [
 	z.object({ type: z.literal('MARCHE_GRE_A_GRE'), contenu: contenuMarcheGreAGreSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('MARCHE_SOUS_TRAITANCE'), contenu: contenuMarcheSousTraitanceSchema, cadre: cadreSchema }),
@@ -203,6 +233,7 @@ export const donneesDocumentSchema = z.discriminatedUnion('type', [
 	z.object({ type: z.literal('VISA_PLANNING'), contenu: contenuVisaSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('AVENANT'), contenu: contenuAvenantSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('CERTIFICAT_PAIEMENT'), contenu: contenuCertificatSchema, societe: societeSchema }),
+	z.object({ type: z.literal('COMPTE_RENDU'), contenu: contenuCompteRenduSchema, societe: lignesSocieteSchema }),
 ]);
 
 export type Cadre = z.infer<typeof cadreSchema>;
@@ -225,3 +256,6 @@ export type DonneesPlanning = Extract<DonneesDocument, { type: 'PLANNING' }>;
 export type DonneesVisa = Extract<DonneesDocument, { type: 'VISA_PLANNING' }>;
 export type DonneesAvenant = Extract<DonneesDocument, { type: 'AVENANT' }>;
 export type DonneesCertificat = Extract<DonneesDocument, { type: 'CERTIFICAT_PAIEMENT' }>;
+export type LignesSociete = z.infer<typeof lignesSocieteSchema>;
+export type ContenuCompteRendu = z.infer<typeof contenuCompteRenduSchema>;
+export type DonneesCompteRendu = Extract<DonneesDocument, { type: 'COMPTE_RENDU' }>;
