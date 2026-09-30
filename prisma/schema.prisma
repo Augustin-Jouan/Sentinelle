@@ -1,0 +1,339 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Mission {
+  COMPLETE
+  PARTIELLE
+}
+
+enum Nature {
+  GRE_A_GRE
+  SOUS_TRAITANCE
+}
+
+enum TypeDocument {
+  MARCHE_GRE_A_GRE
+  MARCHE_SOUS_TRAITANCE
+  RECAPITULATIF
+  PLANNING
+  VISA_PLANNING
+  AVENANT
+  CERTIFICAT_PAIEMENT
+  COMPTE_RENDU
+  PV_RECEPTION
+}
+
+enum StatutCompteRendu {
+  BROUILLON
+  ENREGISTRE
+}
+
+enum DecisionReception {
+  SANS_RESERVES
+  AVEC_RESERVES
+  DIFFEREE
+}
+
+// ---------- Better Auth (noms de champs imposés par la bibliothèque) ----------
+
+model Utilisateur {
+  id                    String    @id
+  name                  String
+  email                 String    @unique
+  emailVerified         Boolean   @default(false)
+  image                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  // plugin admin
+  role                  String?   @default("user")
+  banned                Boolean?  @default(false)
+  banReason             String?
+  banExpires            DateTime?
+  // champs de Sentinelle
+  initiales             String    @default("")
+  telephone             String?
+  doitChangerMotDePasse Boolean   @default(false)
+
+  sessions        Session[]
+  comptes         Compte[]
+  chantiersSuivis Chantier[] @relation("ChargeAffaire")
+  chantiersCrees  Chantier[] @relation("CreePar")
+  documentsCrees  Document[]
+
+  @@map("utilisateur")
+}
+
+model Session {
+  id             String      @id
+  expiresAt      DateTime
+  token          String      @unique
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
+  userId         String
+  user           Utilisateur @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Compte {
+  id                    String      @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  Utilisateur @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@map("compte")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+}
+
+// ---------- Sentinelle ----------
+
+/// Ligne unique (id = 1) : coordonnées de SOCOREVE imprimées sur les documents.
+model Parametres {
+  id              Int     @id @default(1)
+  raisonSociale   String
+  libelleActivite String
+  adresse         String
+  cp              String
+  ville           String
+  telephone       String
+  fax             String?
+  email           String?
+  villeSignature  String
+  /// En-tête du certificat de paiement. À relire sur le KBIS avant la mise en service.
+  rcs                   String  @default("328999503")
+  ape                   String  @default("4120A")
+  tvaIntracommunautaire String  @default("FR47328999503")
+  /// Imprimé sur les comptes rendus ; facultatif comme l'e-mail.
+  siteWeb               String? @default("socoreve-chateaubriant.com")
+}
+
+model Artisan {
+  id            String  @id @default(cuid())
+  nom           String  @unique
+  adresse       String  @default("")
+  cp            String  @default("")
+  commune       String  @default("")
+  interlocuteur String  @default("")
+  telephone     String  @default("")
+  email         String  @default("")
+  actif         Boolean @default(true)
+  lots          Lot[]
+}
+
+model Chantier {
+  id                  String      @id @default(cuid())
+  reference           String      @unique
+  maitreOuvrage       String
+  adresseClient       String      @default("")
+  natureTravaux       String      @default("")
+  adresse             String      @default("")
+  cp                  String      @default("")
+  commune             String      @default("")
+  mission             Mission     @default(COMPLETE)
+  dateSignaturePrevue DateTime?   @db.Date
+  termine             Boolean     @default(false)
+  chargeAffaireId     String
+  chargeAffaire       Utilisateur @relation("ChargeAffaire", fields: [chargeAffaireId], references: [id])
+  creeLe              DateTime    @default(now())
+  creeParId           String
+  creePar             Utilisateur @relation("CreePar", fields: [creeParId], references: [id])
+  lots                Lot[]
+  documents           Document[]
+  fermetures          Fermeture[]
+  /// Champs communs à tous les PV de réception du chantier (spec § 6).
+  receptionDate         DateTime?     @db.Date
+  receptionSignataire   String        @default("")
+  contratMoeDate        DateTime?     @db.Date
+  receptionMaitreOeuvre String        @default("")
+  comptesRendus         CompteRendu[]
+}
+
+model Lot {
+  id                 String     @id @default(cuid())
+  chantierId         String
+  chantier           Chantier   @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  ordre              Int
+  numero             String?
+  designation        String
+  nature             Nature     @default(GRE_A_GRE)
+  artisanId          String?
+  artisan            Artisan?   @relation(fields: [artisanId], references: [id], onDelete: Restrict)
+  montantHtInitial   Decimal    @default(0) @db.Decimal(18, 8)
+  tauxTva            Decimal    @default(20) @db.Decimal(5, 2)
+  retenueGarantie    Decimal    @default(5) @db.Decimal(5, 2)
+  exemplaires        Int        @default(3)
+  corpsEtat          String     @default("")
+  travaux            String     @default("")
+  clauseParticuliere String     @default("")
+  couleur            String     @default("noir")
+  dateSignature      DateTime?  @db.Date
+  /// Compteur des avenants : un numéro n'est jamais réattribué, même après suppression.
+  dernierNumeroAvenant Int        @default(0)
+  cautionBancaire      Boolean    @default(false)
+  avenants             Avenant[]
+  acomptes             Acompte[]
+  reception            Reception?
+  documents          Document[]
+  periodes           Periode[]
+
+  @@unique([chantierId, ordre])
+}
+
+model Document {
+  id         String       @id @default(cuid())
+  chantierId String
+  chantier   Chantier     @relation(fields: [chantierId], references: [id], onDelete: Restrict)
+  lotId      String?
+  lot        Lot?         @relation(fields: [lotId], references: [id], onDelete: Restrict)
+  /// Id du lot pour un marché ; RECAPITULATIF, PLANNING ou VISA pour les documents du chantier entier.
+  serie      String
+  /// Pour un visa : la version du planning qu'il fait signer.
+  sourceId   String?
+  source     Document?    @relation("Source", fields: [sourceId], references: [id], onDelete: Restrict)
+  derives    Document[]   @relation("Source")
+  type       TypeDocument
+  version    Int
+  donnees    Json
+  empreinte  String
+  pdf        Bytes
+  nomFichier String
+  creeLe     DateTime     @default(now())
+  creeParId  String
+  creePar    Utilisateur  @relation(fields: [creeParId], references: [id])
+
+  @@unique([chantierId, serie, version])
+}
+
+model Periode {
+  id         String    @id @default(cuid())
+  lotId      String
+  lot        Lot       @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  intitule   String    @default("")
+  /// Lundi de la semaine ISO (contrainte CHECK écrite dans la migration).
+  debut      DateTime  @db.Date
+  /// En semaines, de 1 à 104.
+  duree      Int
+  dependDeId String?
+  dependDe   Periode?  @relation("Dependance", fields: [dependDeId], references: [id], onDelete: SetNull)
+  suites     Periode[] @relation("Dependance")
+  creeLe     DateTime  @default(now())
+
+  @@index([lotId])
+  @@index([dependDeId])
+}
+
+model Fermeture {
+  id         String   @id @default(cuid())
+  chantierId String
+  chantier   Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  libelle    String   @default("Congés")
+  /// Lundi de la semaine ISO (contrainte CHECK écrite dans la migration).
+  debut      DateTime @db.Date
+  /// En semaines, de 1 à 52.
+  duree      Int
+
+  @@index([chantierId])
+}
+
+model Avenant {
+  id        String   @id @default(cuid())
+  lotId     String
+  lot       Lot      @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  /// Fixé à la création (`Lot.dernierNumeroAvenant + 1`), jamais réutilisé.
+  numero    Int
+  devis     String   @default("")
+  /// Signé : négatif = moins-value.
+  montantHt Decimal  @default(0) @db.Decimal(18, 2)
+  date      DateTime @db.Date
+  objet     String   @default("")
+  creeLe    DateTime @default(now())
+
+  @@unique([lotId, numero])
+}
+
+/// Un certificat de paiement émis, ou un acompte antérieur à l'application (`manuel`, sans document).
+model Acompte {
+  id             String    @id @default(cuid())
+  lotId          String
+  lot            Lot       @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  /// 1, 2, 3… sans trou dans le lot.
+  numero         Int
+  /// Présent acompte HT (montant saisi pour un acompte manuel).
+  montantHt      Decimal   @db.Decimal(18, 2)
+  manuel         Boolean   @default(false)
+  /// Certificat seulement (contrainte CHECK écrite dans la migration).
+  cumulRealiseHt Decimal?  @db.Decimal(18, 2)
+  /// 'AAAA-MM', certificat seulement.
+  mois           String?
+  /// « Fait le », certificat seulement.
+  date           DateTime? @db.Date
+  creeLe         DateTime  @default(now())
+
+  @@unique([lotId, numero])
+}
+
+/// Brouillon compris : au plus un brouillon par chantier, qui prend toujours le numéro suivant ;
+/// l'unicité du numéro garantit donc aussi un seul brouillon (spec § 4, écart du plan).
+model CompteRendu {
+  id           String            @id @default(cuid())
+  chantierId   String
+  chantier     Chantier          @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  statut       StatutCompteRendu @default(BROUILLON)
+  numero       Int
+  date         DateTime          @db.Date
+  rdvDate      DateTime?         @db.Date
+  /// 'HH:MM'
+  rdvHeure     String?
+  avancement   String            @default("")
+  coordination String            @default("")
+  redacteur    String            @default("")
+  portable     String            @default("")
+  /// { [lotId]: 'D' | 'C' | 'P' | 'A' | 'E' }
+  convocations Json              @default("{}")
+  creeLe       DateTime          @default(now())
+
+  @@unique([chantierId, numero])
+}
+
+/// Brouillon du PV d'un lot ; les PV émis sont figés dans Document (série RECEPTION:<lotId>).
+model Reception {
+  id               String            @id @default(cuid())
+  lotId            String            @unique
+  lot              Lot               @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  decision         DecisionReception @default(SANS_RESERVES)
+  dateEffet        DateTime?         @db.Date
+  reserves         String            @default("")
+  delai            String            @default("")
+  motifs           String            @default("")
+  representant     String            @default("")
+  reservesLeveesLe DateTime?         @db.Date
+}

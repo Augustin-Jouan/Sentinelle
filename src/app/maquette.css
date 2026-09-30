@@ -1,0 +1,1584 @@
+/* GÉNÉRÉ par scripts/extraire-css-maquette.mjs depuis docs/maquette/sentinelle-marches.html.
+   Ne pas éditer : relancer le script. Les ajouts propres à l'app vont dans maquette-ajouts.css. */
+/* ============================================================
+   JETONS — palette bleu de plan
+   ============================================================ */
+:root {
+	--paper: #eceef0;
+	--surface: #f6f8f9;
+	--raise: #ffffff;
+	--ink: #101619;
+	--ink-2: #38424a;
+	--muted: #6b747c;
+	--faint: #97a0a7;
+	--rule: #d0d5da;
+	--rule-strong: #b2bac1;
+	--accent: #1c4e80;
+	--accent-2: #143a60;
+	--accent-soft: #dbe6f1;
+	/* texte porté par un aplat d'accent : blanc en clair, encre sombre sur le bleu pâle du thème sombre */
+	--on-accent: #ffffff;
+	--danger: #8c1d18;
+	--danger-soft: #f7e2e0;
+	--idle-soft: #e0e4e8;
+	--band: rgba(16, 22, 25, 0.06);
+	/* liseré des barres du planning : il doit cerner aussi bien un lot clair qu'un lot noir */
+	--bar-ring: rgba(0, 0, 0, 0.22);
+	--focus: #1c4e80;
+	/* Échelle de rondeur et d'élévation : la DA repose dessus, elle se règle ici.
+	   Les fac-similés imprimés gardent leurs angles vifs, ils imitent du papier. */
+	--r-xs: 5px;
+	--r-sm: 9px;
+	--r: 14px;
+	--r-lg: 18px;
+	--ombre: 0 1px 2px rgba(16, 22, 25, 0.04), 0 6px 16px -4px rgba(16, 22, 25, 0.10);
+	--ombre-h: 0 2px 4px rgba(16, 22, 25, 0.05), 0 14px 30px -8px rgba(16, 22, 25, 0.18);
+	--sem-w: 26px;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		/* pas un noir neutre : l'ardoise prussienne du cyanotype, négatif du bleu de plan */
+		--paper: #14202b;
+		--surface: #1b2a37;
+		--raise: #223442;
+		--ink: #e9eff5;
+		--ink-2: #c3d1dd;
+		--muted: #8fa4b5;
+		--faint: #748a9d;
+		--rule: #2d4050;
+		--rule-strong: #43596d;
+		--accent: #6fb0e8;
+		--accent-2: #9ccbf2;
+		--accent-soft: #1c3a52;
+		--on-accent: #0d1720;
+		--danger: #f08c84;
+		--danger-soft: #3d2226;
+		--idle-soft: #27394a;
+		--band: rgba(255, 255, 255, 0.06);
+		--bar-ring: rgba(255, 255, 255, 0.30);
+		--focus: #6fb0e8;
+		/* sur fond sombre une ombre ne se voit pas : elle creuse, elle ne soulève pas */
+		--ombre: 0 1px 2px rgba(0, 0, 0, 0.40), 0 6px 16px -4px rgba(0, 0, 0, 0.50);
+		--ombre-h: 0 2px 6px rgba(0, 0, 0, 0.50), 0 14px 30px -8px rgba(0, 0, 0, 0.60);
+	}
+}
+
+:root[data-theme='dark'] {
+	/* pas un noir neutre : l'ardoise prussienne du cyanotype, négatif du bleu de plan */
+	--paper: #14202b;
+	--surface: #1b2a37;
+	--raise: #223442;
+	--ink: #e9eff5;
+	--ink-2: #c3d1dd;
+	--muted: #8fa4b5;
+	--faint: #748a9d;
+	--rule: #2d4050;
+	--rule-strong: #43596d;
+	--accent: #6fb0e8;
+	--accent-2: #9ccbf2;
+	--accent-soft: #1c3a52;
+	--on-accent: #0d1720;
+	--danger: #f08c84;
+	--danger-soft: #3d2226;
+	--idle-soft: #27394a;
+	--band: rgba(255, 255, 255, 0.06);
+	--bar-ring: rgba(255, 255, 255, 0.30);
+	--focus: #6fb0e8;
+	--ombre: 0 1px 2px rgba(0, 0, 0, 0.40), 0 6px 16px -4px rgba(0, 0, 0, 0.50);
+	--ombre-h: 0 2px 6px rgba(0, 0, 0, 0.50), 0 14px 30px -8px rgba(0, 0, 0, 0.60);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+* { box-sizing: border-box; }
+
+body {
+	margin: 0;
+	background: var(--paper);
+	color: var(--ink);
+	font-family: 'Figtree', system-ui, -apple-system, sans-serif;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	* { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+.num {
+	font-family: 'Spline Sans Mono', ui-monospace, monospace;
+	font-variant-numeric: tabular-nums;
+	font-feature-settings: 'tnum' 1;
+}
+
+.eyebrow {
+	font-family: 'Outfit', 'Figtree', sans-serif;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+h1, h2, h3 {
+	font-family: 'Outfit', 'Figtree', sans-serif;
+	font-weight: 600;
+	text-wrap: balance;
+	margin: 0;
+	letter-spacing: -0.005em;
+}
+
+/* ============================================================
+   ÉCRANS
+   ============================================================ */
+.screen { display: none; }
+.screen.is-on { display: block; }
+
+.app {
+	display: none;
+	min-height: 100vh;
+}
+.app.is-on { display: block; }
+
+/* ---------- barre de navigation ----------
+   Deux étages : au-dessus du filet ce qui vaut partout, en dessous ce qui
+   appartient au chantier ouvert. La frontière se voit, on n'a pas à l'expliquer. */
+.nav {
+	position: sticky;
+	top: 0;
+	z-index: 25;
+	background: var(--surface);
+	border-bottom: 1px solid var(--rule);
+}
+
+.nav-haut {
+	display: flex;
+	align-items: center;
+	gap: 0.875rem;
+	padding: 0.375rem 1.5rem;
+	min-height: 3.25rem;
+}
+
+/* La marque est réduite au sigle : le mot est porté par le titre et l'aria-label,
+   le dessin suffit à l'écran. Reste un bouton, avec sa cible de survol. */
+.nav-marque {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	padding: 0.25rem;
+	background: none;
+	border: 0;
+	border-radius: var(--r-sm);
+	cursor: pointer;
+}
+/* Le sigle : la plaque gravée. Le S y est creusé, ses parois biseautées prennent
+   la lumière d'en haut à gauche. Deux versions, une par thème : le clair sur son
+   fond bleu pâle, le sombre sur son ardoise. Le sprite porte les deux, la feuille
+   n'en montre qu'une — les couleurs sont figées, elles ne suivent pas `color`. */
+.sigle-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+/* Le fond de la plaque est le seul de ses aplats à ne pas être figé : il prend
+   `color`, donc la teinte de son support. La plaque se fond dans la barre — on ne
+   voit plus un carré posé dessus, seulement le S creusé. Au survol elle suit. */
+.sigle { flex: none; width: 3rem; height: 3rem; color: var(--surface); }
+.nav-marque:hover .sigle { color: var(--idle-soft); }
+.pl-sombre { display: none; }
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) .pl-clair { display: none; }
+	:root:not([data-theme='light']) .pl-sombre { display: block; }
+}
+:root[data-theme='dark'] .pl-clair { display: none; }
+:root[data-theme='dark'] .pl-sombre { display: block; }
+.nav-marque { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+.nav-marque:hover { background: var(--idle-soft); }
+
+.nav-fin { margin-left: auto; display: flex; align-items: center; gap: 0.1875rem; }
+
+.nav-b {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4375rem;
+	padding: 0.4375rem 0.75rem;
+	background: none;
+	border: 0;
+	border-radius: 999px;
+	color: var(--ink-2);
+	cursor: pointer;
+	font-size: 0.8125rem;
+	white-space: nowrap;
+	transition: background 0.12s, color 0.12s;
+}
+.nav-b:hover { background: var(--idle-soft); color: var(--ink); }
+.nav-b.is-on { background: var(--accent-soft); color: var(--accent-2); font-weight: 600; }
+.nav-b svg { flex: none; width: 1rem; height: 1rem; stroke: currentColor; fill: none; stroke-width: 1.5; opacity: 0.8; }
+.nav-b .count { font-family: 'Spline Sans Mono', monospace; font-size: 0.6875rem; color: var(--faint); }
+.nav-b.is-on .count { color: var(--accent-2); opacity: 0.75; }
+
+.nav-ic {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	background: none;
+	border: 0;
+	border-radius: 999px;
+	color: var(--muted);
+	cursor: pointer;
+}
+.nav-ic:hover { background: var(--idle-soft); color: var(--ink); }
+/* sans cet état, l'écran d'accueil n'aurait plus aucun repère dans la barre */
+.nav-ic.is-on { background: var(--accent-soft); color: var(--accent-2); }
+.nav-ic svg { width: 1rem; height: 1rem; stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+/* --- étage des onglets : il n'existe que si un chantier est ouvert --- */
+.nav-onglets {
+	display: flex;
+	gap: 0.125rem;
+	padding: 0 1.5rem;
+	border-top: 1px solid var(--rule);
+	background: var(--paper);
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+.nav-onglets::-webkit-scrollbar { display: none; }
+.app.sans-onglets .nav-onglets { display: none; }
+
+.nav-o {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex: none;
+	padding: 0.6875rem 0.875rem 0.5625rem;
+	background: none;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	color: var(--muted);
+	cursor: pointer;
+	font-size: 0.875rem;
+	white-space: nowrap;
+	transition: color 0.12s, border-color 0.12s;
+}
+.nav-o:hover { color: var(--ink); }
+.nav-o.is-on { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.nav-o svg { flex: none; width: 1rem; height: 1rem; stroke: currentColor; fill: none; stroke-width: 1.5; opacity: 0.8; }
+.nav-o .count { font-family: 'Spline Sans Mono', monospace; font-size: 0.6875rem; color: var(--faint); }
+.nav-o.is-on .count { color: var(--accent); opacity: 0.75; }
+
+/* --- Les menus déroulants : le sélecteur de chantier a donné le dessin, tous
+       les autres le reprennent. Un seul jeu de règles, deux familles de classes. --- */
+.picker, .dd { position: relative; flex: none; }
+.picker-btn { min-width: 15rem; }
+.dd-btn { min-width: 11rem; }
+.dd.dd-large .dd-btn { min-width: 15rem; }
+.dd.dd-plein { flex: 1; min-width: 0; }
+.dd.dd-plein .dd-btn { min-width: 0; }
+.picker-btn, .dd-btn {
+	width: 100%;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-rows: auto auto;
+	align-items: center;
+	gap: 0 0.5rem;
+	padding: 0.3125rem 0.5rem 0.375rem 0.625rem;
+	background: var(--raise);
+	border: 1px solid var(--rule-strong);
+	border-left: 2px solid var(--accent);
+	border-radius: var(--r-sm);
+	text-align: left;
+	cursor: pointer;
+	transition: border-color 0.12s, background 0.12s;
+}
+.picker-btn:hover, .dd-btn:hover { background: var(--idle-soft); border-color: var(--muted); border-left-color: var(--accent); }
+.picker-k, .dd-k {
+	grid-column: 1; grid-row: 1;
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.5625rem; font-weight: 600;
+	letter-spacing: 0.1em; text-transform: uppercase;
+	color: var(--faint);
+}
+.picker-v, .dd-v {
+	grid-column: 1; grid-row: 2;
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.9375rem; font-weight: 600;
+	line-height: 1.15;
+	overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.picker-caret, .dd-caret {
+	grid-column: 2; grid-row: 1 / 3;
+	width: 0.875rem; height: 0.875rem;
+	stroke: var(--muted); fill: none; stroke-width: 1.6;
+	transition: transform 0.14s;
+}
+.picker.is-open .picker-caret, .dd.is-open .dd-caret { transform: rotate(180deg); }
+
+.picker-menu, .dd-menu {
+	display: none;
+	position: absolute;
+	top: calc(100% + 0.375rem);
+	left: 0;
+	min-width: 100%;
+	width: 20rem;
+	z-index: 30;
+	background: var(--raise);
+	border: 1px solid var(--rule-strong);
+	border-radius: var(--r-sm);
+	box-shadow: var(--ombre-h);
+	max-height: 22rem;
+	overflow-y: auto;
+	padding: 0.1875rem;
+}
+.picker.is-open .picker-menu, .dd.is-open .dd-menu { display: block; }
+.picker-item, .dd-item {
+	width: 100%;
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	padding: 0.375rem 0.5rem;
+	background: none; border: 0; border-radius: 4px;
+	text-align: left; cursor: pointer;
+	color: var(--ink);
+}
+.picker-item:hover, .dd-item:hover { background: var(--idle-soft); }
+.picker-item.is-current, .dd-item.is-current { background: var(--accent-soft); color: var(--accent-2); font-weight: 600; }
+.picker-item-name, .dd-item-name { flex: 1; min-width: 0; font-size: 0.8125rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.picker-item-meta, .dd-item-meta { font-family: 'Spline Sans Mono', monospace; font-size: 0.625rem; color: var(--faint); flex: none; }
+.picker-item.is-done .picker-item-name { text-decoration: line-through; color: var(--muted); }
+.picker-head, .dd-head {
+	padding: 0.4375rem 0.5rem 0.25rem;
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.5625rem; font-weight: 600;
+	letter-spacing: 0.1em; text-transform: uppercase;
+	color: var(--faint);
+}
+.picker-sep, .dd-sep { border: 0; border-top: 1px solid var(--rule); margin: 0.1875rem 0; }
+.picker-item.picker-new { color: var(--accent-2); font-weight: 500; }
+
+/* la case d'un choix multiple : cochée, elle prend l'accent comme le reste */
+.dd-item.dd-coche { padding-left: 1.75rem; position: relative; }
+.dd-item.dd-coche::before {
+	content: '';
+	position: absolute; left: 0.5rem; top: 0.5rem;
+	width: 0.75rem; height: 0.75rem;
+	border: 1px solid var(--rule-strong);
+	border-radius: 3px;
+	background: var(--raise);
+}
+.dd-item.dd-coche.is-current::before {
+	background: var(--accent); border-color: var(--accent);
+	box-shadow: inset 0 0 0 1px var(--accent);
+}
+.dd-item.dd-coche.is-current::after {
+	content: '';
+	position: absolute; left: 0.71875rem; top: 0.6875rem;
+	width: 0.1875rem; height: 0.375rem;
+	border: solid var(--on-accent);
+	border-width: 0 1.5px 1.5px 0;
+	transform: rotate(45deg);
+}
+
+/* le menu s'ouvre vers le haut quand le bas manque — un panneau qui défile le rognerait */
+/* Ouvert, le menu quitte le flux : ses aïeux le rognaient — le bloc du panneau est
+   en overflow:hidden depuis qu'il est arrondi, et il n'en laissait voir que le haut.
+   En position fixe, plus rien ne le coupe ; ses coordonnées sont calculées à
+   l'ouverture et suivies tant qu'il est ouvert. */
+.dd.est-flottant .dd-menu {
+	position: fixed;
+	min-width: 0;
+	z-index: 70;
+}
+.dd-item:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.dd-item[hidden], .dd-sep[hidden], .dd-head[hidden] { display: none; }
+/* la recherche reste en haut du menu quand la liste défile */
+.dd-recherche { position: sticky; top: -0.1875rem; z-index: 1; margin: -0.1875rem -0.1875rem 0.1875rem; padding: 0.375rem; background: var(--raise); border-bottom: 1px solid var(--rule); }
+.dd-recherche input { width: 100%; box-sizing: border-box; padding: 0.4375rem 0.625rem; font-size: 0.8125rem; background: var(--surface);
+	border: 1px solid var(--rule-strong); border-radius: var(--r-xs); color: var(--ink); }
+.dd-recherche input:focus { outline: none; border-color: var(--accent); background: var(--raise); }
+.dd-aucun { margin: 0; padding: 0.75rem 0.5rem; font-size: 0.8125rem; font-style: italic; color: var(--muted); text-align: center; }
+/* dans une barre d'outils, le menu s'aligne sur ses voisins */
+.toolbar .dd { align-self: stretch; }
+
+/* --- le compte : ce qui n'a pas sa place dans la navigation --- */
+.compte { position: relative; flex: none; margin-left: 0.25rem; }
+.avatar {
+	width: 1.875rem; height: 1.875rem;
+	display: grid; place-items: center;
+	background: var(--accent-soft);
+	color: var(--accent-2);
+	border: 0; border-radius: 999px;
+	cursor: pointer;
+	font-family: 'Outfit', sans-serif;
+	font-weight: 600;
+	font-size: 0.6875rem;
+	letter-spacing: 0.02em;
+}
+.avatar:hover { background: var(--accent); color: var(--on-accent); }
+.compte-menu {
+	display: none;
+	position: absolute;
+	top: calc(100% + 0.375rem);
+	right: 0;
+	width: 14rem;
+	z-index: 30;
+	background: var(--raise);
+	border: 1px solid var(--rule-strong);
+	border-radius: var(--r-sm);
+	box-shadow: var(--ombre-h);
+	padding: 0.1875rem;
+}
+.compte.is-open .compte-menu { display: block; }
+.compte-id { padding: 0.5rem 0.5625rem 0.4375rem; }
+.compte-nom { display: block; font-size: 0.8125rem; font-weight: 500; }
+.compte-role { display: block; font-size: 0.6875rem; color: var(--faint); }
+.compte-mail { display: block; font-family: 'Spline Sans Mono', monospace; font-size: 0.625rem; color: var(--faint); margin-top: 0.1875rem; }
+.compte-item {
+	width: 100%;
+	padding: 0.4375rem 0.5625rem;
+	background: none; border: 0; border-radius: 4px;
+	text-align: left; cursor: pointer;
+	color: var(--ink-2);
+	font-size: 0.8125rem;
+}
+.compte-item:hover { background: var(--idle-soft); color: var(--ink); }
+
+/* ---------- contenu ---------- */
+.main { min-width: 0; display: flex; flex-direction: column; }
+
+/* Le bandeau de titre défile : seule la barre reste collée. Empiler deux éléments
+   collants obligerait à coupler leurs hauteurs, or la barre en change selon
+   qu'un chantier est ouvert ou non. */
+.topbar {
+	background: var(--paper);
+	border-bottom: 1px solid var(--rule);
+}
+
+.topbar-row {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 1.5rem;
+	padding: 1rem 1.5rem 0.875rem;
+	flex-wrap: wrap;
+}
+
+.page-title { font-size: 1.375rem; }
+
+.topbar-actions { display: flex; gap: 0.5rem; align-items: center; }
+
+/* bandeau chantier */
+.context {
+	display: flex;
+	gap: 0;
+	border-top: 1px solid var(--rule);
+	background: var(--surface);
+	overflow-x: auto;
+}
+.context-cell {
+	padding: 0.625rem 1.5rem 0.6875rem;
+	border-right: 1px solid var(--rule);
+	min-width: 0;
+	flex: none;
+}
+.context-cell:last-child { border-right: 0; }
+.context-k {
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.625rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--faint);
+	display: block;
+	margin-bottom: 0.0625rem;
+}
+.context-v { font-size: 0.8125rem; white-space: nowrap; }
+
+.body-pad { padding: 1.5rem; }
+
+/* ============================================================
+   BOUTONS
+   ============================================================ */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4375rem;
+	padding: 0.4375rem 0.8125rem;
+	background: var(--raise);
+	color: var(--ink);
+	border: 1px solid var(--rule-strong);
+	border-radius: var(--r-sm);
+	cursor: pointer;
+	font-size: 0.8125rem;
+	line-height: 1.3;
+	white-space: nowrap;
+	transition: background 0.12s, border-color 0.12s;
+}
+.btn:hover { background: var(--idle-soft); border-color: var(--muted); }
+.btn svg { width: 0.875rem; height: 0.875rem; stroke: currentColor; fill: none; stroke-width: 1.6; }
+
+.btn-primary {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: var(--on-accent);
+	font-weight: 500;
+}
+.btn-primary:hover { background: var(--accent-2); border-color: var(--accent-2); }
+
+.btn-ghost { background: transparent; border-color: transparent; color: var(--muted); }
+.btn-ghost:hover { background: var(--idle-soft); color: var(--ink); border-color: transparent; }
+
+.btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+
+/* Bouton d'action destructrice : il ne doit jamais se confondre avec son voisin. */
+.btn-danger { color: var(--danger); border-color: var(--rule-strong); }
+.btn-danger:hover { background: var(--danger-soft); border-color: var(--danger); }
+.btn-danger svg { opacity: 0.85; }
+/* bouton réduit à son icône : le libellé passe par title et aria-label */
+.btn-ico { padding: 0.25rem; gap: 0; }
+.btn-ico svg { width: 0.875rem; height: 0.875rem; }
+
+/* Dans une carte cliquable, un bouton fantôme passe pour du texte : on lui rend un contour. */
+.chantier-actions .btn { background: var(--surface); border-color: var(--rule-strong); color: var(--ink-2); }
+.chantier-actions .btn:hover { background: var(--idle-soft); border-color: var(--muted); color: var(--ink); }
+.chantier-actions .btn svg { opacity: 0.7; }
+
+/* ============================================================
+   PASTILLES D'ÉTAT
+   ============================================================ */
+.pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	padding: 0.125rem 0.4375rem 0.1875rem;
+	border-radius: var(--r-xs);
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.045em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+.pill::before {
+	content: '';
+	width: 0.375rem;
+	height: 0.375rem;
+	background: currentColor;
+	border-radius: 50%;
+	flex: none;
+}
+.pill-actif { background: var(--accent-soft); color: var(--accent-2); }
+
+/* ============================================================
+   TABLE DES MARCHÉS
+   ============================================================ */
+.table-frame {
+	border: 1px solid var(--rule);
+	border-radius: var(--r);
+	box-shadow: var(--ombre);
+	background: var(--raise);
+	overflow-x: auto;
+}
+
+table.lots {
+	width: 100%;
+	border-collapse: collapse;
+	min-width: 52rem;
+}
+
+table.lots thead th {
+	/* le cadre du tableau défile pour son compte (overflow-x sur .table-frame) :
+	   l'en-tête se colle à lui, pas à la fenêtre — surtout pas de décalage ici */
+	position: sticky;
+	top: 0;
+	z-index: 5;
+	background: var(--surface);
+	border-bottom: 1px solid var(--rule-strong);
+	padding: 0.5rem 0.75rem;
+	text-align: left;
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: var(--muted);
+	white-space: nowrap;
+}
+th.ta-r, td.ta-r { text-align: right; }
+
+table.lots tbody td {
+	padding: 0.4375rem 0.75rem;
+	border-bottom: 1px solid var(--rule);
+	vertical-align: middle;
+}
+/* un montant ne se coupe jamais : le « € » ne doit pas tomber à la ligne suivante */
+table.lots tbody td.num { white-space: nowrap; }
+table.lots tbody tr { cursor: pointer; }
+table.lots tbody tr:hover { background: var(--surface); }
+table.lots tbody tr.is-open { background: var(--accent-soft); }
+table.lots tbody tr.is-unassigned td { color: var(--muted); }
+
+.cell-num { font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; color: var(--muted); width: 4.5rem; }
+.cell-lot { font-weight: 500; white-space: nowrap; min-width: 16rem; }
+.cell-ht { width: 10.5rem; }
+.cell-tva { width: 6.5rem; }
+.cell-ent { white-space: nowrap; }
+.cell-ent small { display: block; font-size: 0.6875rem; color: var(--muted); }
+.cell-ent .unset { color: var(--faint); font-style: italic; }
+
+.nature-tag {
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--muted);
+	border: 1px solid var(--rule-strong);
+	border-radius: var(--r-xs);
+	padding: 0.0625rem 0.3125rem 0.125rem;
+	white-space: nowrap;
+}
+.nature-tag.st { border-color: var(--accent); color: var(--accent-2); }
+/* marqueur discret posé sur la ligne du lot, à la place de l'ancienne colonne Nature */
+.cell-lot .nature-tag { font-size: 0.625rem; flex: none; margin-right: 0.75rem; }
+/* le champ et l'étiquette cohabitent dans un conteneur interne :
+   la cellule elle-même doit rester une vraie cellule de tableau */
+.lot-wrap { display: flex; align-items: center; }
+.lot-wrap .text-input { flex: 1; min-width: 0; }
+
+.money-input {
+	width: 100%;
+	text-align: right;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--r-sm);
+	padding: 0.1875rem calc(0.75rem - 1px);
+	font-family: 'Spline Sans Mono', monospace;
+	font-variant-numeric: tabular-nums;
+	font-size: 0.8125rem;
+	transition: border-color 0.12s, background 0.12s;
+}
+.money-input:hover { border-color: var(--rule-strong); background: var(--surface); }
+.money-input:focus { border-color: var(--accent); background: var(--raise); outline: none; }
+
+/* saisie directe dans le tableau */
+.text-input {
+	width: 100%;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--r-sm);
+	padding: 0.1875rem calc(0.75rem - 1px);
+	font-size: 0.8125rem;
+	font-weight: 500;
+	transition: border-color 0.12s, background 0.12s;
+}
+.text-input.mini { width: 100%; font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; font-weight: 400; color: var(--muted); }
+.text-input::placeholder { color: var(--faint); font-weight: 400; font-style: italic; }
+.text-input:hover { border-color: var(--rule-strong); background: var(--surface); }
+.text-input:focus { border-color: var(--accent); background: var(--raise); outline: none; }
+.money-input.mini { font-size: 0.75rem; color: var(--muted); }
+
+/* cellules éditables : c'est le champ qui porte le rembourrage de la cellule,
+   pour que le texte saisi s'aligne exactement sur celui des colonnes voisines */
+table.lots tbody td.is-editable { padding-left: 0; padding-right: 0; }
+
+tr.empty-row td {
+	padding: 1.75rem 0.75rem;
+	text-align: center;
+	color: var(--muted);
+	font-style: italic;
+}
+tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
+
+/* barre de totaux */
+.totals {
+	position: sticky;
+	bottom: 0;
+	z-index: 15;
+	display: flex;
+	align-items: stretch;
+	background: var(--surface);
+	border: 1px solid var(--rule-strong);
+	border-radius: var(--r);
+	box-shadow: var(--ombre);
+	margin-top: 0.75rem;
+	overflow: hidden;   /* la cellule sombre doit suivre l'arrondi */
+}
+.total-cell {
+	padding: 0.625rem 1.125rem 0.6875rem;
+	border-right: 1px solid var(--rule);
+	flex: none;
+}
+.total-cell:last-child { border-right: 0; margin-left: auto; background: var(--ink); color: var(--paper); }
+.total-cell:last-child .total-k { color: var(--faint); }
+.total-k {
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.625rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--faint);
+	display: block;
+}
+.total-v {
+	font-family: 'Spline Sans Mono', monospace;
+	font-variant-numeric: tabular-nums;
+	font-size: 0.9375rem;
+	font-weight: 500;
+	white-space: nowrap;
+}
+.total-v.grand { font-size: 1.125rem; font-weight: 600; }
+
+/* ============================================================
+   CHANTIERS
+   ============================================================ */
+.chantier-grid {
+	display: grid;
+	/* 24 rem et non 20 : à 1392 px, 20 rem donnait 4 colonnes de 348 px où les noms
+	   de chantier passaient à la ligne. 24 rem en rend 3, larges de 464 px. */
+	grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+	/* vraie gouttière et cartes bordées, au lieu d'un filet de 1 px obtenu par le fond
+	   de la grille : les cellules vides d'une ligne incomplète laissaient voir un aplat gris */
+	gap: 1rem;
+}
+.chantier {
+	background: var(--raise);
+	border: 1px solid var(--rule);
+	border-radius: var(--r);
+	box-shadow: var(--ombre);
+	padding: 1.25rem 1.375rem 1.125rem;
+	text-align: left;
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s;
+}
+/* elle se soulève : c'est ce qui la distingue d'un cadre dessiné */
+.chantier:hover { border-color: var(--accent); box-shadow: var(--ombre-h); transform: translateY(-2px); }
+.chantier:active { transform: translateY(0); }
+.chantier-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
+.chantier-ref { font-family: 'Outfit', sans-serif; font-size: 1.0625rem; font-weight: 600; }
+.chantier-meta { font-size: 0.75rem; color: var(--muted); line-height: 1.45; }
+.chantier-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-top: auto; }
+.chantier-total { font-family: 'Spline Sans Mono', monospace; font-variant-numeric: tabular-nums; font-size: 1rem; }
+.chantier-lots { font-family: 'Spline Sans Mono', monospace; font-size: 0.6875rem; color: var(--muted); }
+.chantier-sig { font-family: 'Spline Sans Mono', monospace; font-size: 0.6875rem; color: var(--faint); }
+.chantier-new { align-items: flex-start; justify-content: center; gap: 0.375rem; background: var(--surface); border-style: dashed; }
+.chantier-new .plus { font-family: 'Outfit', sans-serif; font-size: 1.5rem; line-height: 1; color: var(--accent); }
+.chantier-new .chantier-ref { color: var(--accent-2); }
+.chantier-total small { display: block; font-family: 'Outfit', sans-serif; font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+
+/* interrupteur « masquer les terminés » */
+.switch { display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.8125rem; user-select: none; }
+.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch-box {
+	width: 1.875rem; height: 1rem; flex: none;
+	border: 1px solid var(--rule-strong);
+	background: var(--raise);
+	border-radius: 999px;
+	position: relative;
+	transition: background 0.14s, border-color 0.14s;
+}
+.switch-box::after {
+	content: '';
+	position: absolute; top: 0.125rem; left: 0.125rem;
+	width: 0.625rem; height: 0.625rem;
+	background: var(--muted);
+	border-radius: 50%;
+	transition: transform 0.14s, background 0.14s;
+}
+.switch input:checked + .switch-box { background: var(--accent); border-color: var(--accent); }
+.switch input:checked + .switch-box::after { transform: translateX(0.875rem); background: var(--on-accent); }
+.switch input:focus-visible + .switch-box { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* chantier terminé */
+.chantier.is-done { opacity: 0.72; }
+.chantier.is-done .chantier-ref { text-decoration: line-through; text-decoration-thickness: 1px; }
+.pill-fini { background: var(--idle-soft); color: var(--muted); }
+.pill-fini::before { background: none; border: 1px solid currentColor; border-radius: 50%; }
+.chantier-actions { display: flex; align-items: center; gap: 0.375rem; flex: none; }
+.chantier-grid .empty-list {
+	grid-column: 1 / -1;
+	background: var(--raise);
+	border: 1px solid var(--rule);
+	border-radius: var(--r-sm);
+	padding: 2rem 1.25rem;
+	text-align: center;
+	color: var(--muted);
+	font-style: italic;
+}
+
+/* ============================================================
+   FORMULAIRE
+   ============================================================ */
+/* Deux colonnes dès qu'il y a la place : le formulaire tenait sur 736 px d'une page
+   de 1392, et déroulait sur trois hauteurs d'écran. Les blocs coulent tout seuls,
+   et repassent sur une colonne sous 30 rem de large disponibles. */
+/* Trois blocs, trois colonnes dès qu'il y a la place : le formulaire tient alors
+   d'un seul écran. Il retombe à deux puis à une colonne quand la fenêtre se resserre. */
+.form-wrap { columns: 3 24rem; column-gap: 1.25rem; }
+.form-wrap .fieldset { break-inside: avoid; }
+.fieldset {
+	border: 1px solid var(--rule);
+	border-radius: var(--r);
+	box-shadow: var(--ombre);
+	background: var(--raise);
+	padding: 1.25rem 1.375rem 1.375rem;
+	margin-bottom: 1rem;
+}
+.fieldset > .eyebrow { display: block; margin-bottom: 0.875rem; padding-bottom: 0.625rem; border-bottom: 1px solid var(--rule); }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.875rem 1rem; }
+.field { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.field.span { grid-column: 1 / -1; }
+.field label { font-size: 0.75rem; color: var(--muted); }
+.field input, .field select, .field textarea {
+	background: var(--surface);
+	border: 1px solid var(--rule-strong);
+	border-radius: var(--r-sm);
+	padding: 0.5rem 0.625rem;
+	color: var(--ink);
+	width: 100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); outline: none; background: var(--raise); }
+.field .hint { font-size: 0.6875rem; color: var(--faint); }
+.radio-row { display: flex; gap: 0.5rem; }
+.radio-row label {
+	flex: 1;
+	border: 1px solid var(--rule-strong);
+	border-radius: var(--r-sm);
+	padding: 0.5rem 0.625rem;
+	cursor: pointer;
+	font-size: 0.8125rem;
+	color: var(--ink);
+	background: var(--surface);
+}
+.radio-row input { display: none; }
+.radio-row label.is-on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-2); font-weight: 500; }
+/* les actions traversent les colonnes et se posent sous le formulaire,
+   au lieu de couler au pied de la dernière */
+.form-actions { display: flex; gap: 0.625rem; align-items: center; column-span: all; padding-top: 0.25rem; }
+
+/* ============================================================
+   PANNEAU LATÉRAL
+   ============================================================ */
+/* Dialogue de confirmation maison. `confirm()` est bloqué dans l'iframe bac à sable
+   qui héberge l'artefact : il y renvoie false sans rien afficher, et toute action
+   qui en dépendait ne partait jamais. */
+.ask {
+	position: fixed; inset: 0; z-index: 80;
+	display: none; align-items: center; justify-content: center;
+	padding: 1.5rem;
+	background: rgba(10, 14, 16, 0.5);
+}
+.ask.is-on { display: flex; }
+.ask-card {
+	width: min(27rem, 100%);
+	background: var(--raise);
+	border: 1px solid var(--rule-strong);
+	border-radius: var(--r);
+	box-shadow: var(--ombre-h);
+	padding: 1.25rem 1.375rem 1.125rem;
+}
+.ask-txt { margin: 0 0 1.125rem; font-size: 0.875rem; line-height: 1.5; }
+.ask-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+
+.scrim {
+	position: fixed;
+	inset: 0;
+	background: rgba(10, 14, 16, 0.42);
+	z-index: 40;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.18s;
+}
+.scrim.is-on { opacity: 1; pointer-events: auto; }
+
+.panel {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: min(31rem, 100vw);
+	background: var(--paper);
+	border-left: 1px solid var(--rule-strong);
+	border-radius: var(--r-lg) 0 0 var(--r-lg);
+	box-shadow: var(--ombre-h);
+	overflow: hidden;
+	z-index: 50;
+	transform: translateX(100%);
+	transition: transform 0.2s ease;
+	display: flex;
+	flex-direction: column;
+}
+.panel.is-on { transform: none; }
+
+.panel-head {
+	padding: 1rem 1.25rem 0.875rem;
+	border-bottom: 1px solid var(--rule);
+	background: var(--surface);
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 1rem;
+}
+.panel-body { overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; flex: 1; }
+/* Les blocs gardent leur hauteur naturelle : sans cela le flex les comprime, et
+   depuis qu'ils sont arrondis leur overflow:hidden coupe le contenu en silence
+   au lieu de le laisser déborder. C'est le panneau qui doit défiler, pas eux. */
+.panel-body > * { flex: none; }
+.panel-foot { border-top: 1px solid var(--rule); background: var(--surface); padding: 0.875rem 1.25rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.kv { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 0.375rem 0.875rem; }
+.kv dt { font-size: 0.75rem; color: var(--muted); }
+.kv dd { margin: 0; font-size: 0.8125rem; }
+
+.block { border: 1px solid var(--rule); border-radius: var(--r); background: var(--raise); overflow: hidden; }
+.block-head {
+	padding: 0.5rem 0.875rem;
+	border-bottom: 1px solid var(--rule);
+	background: var(--surface);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 0.75rem;
+}
+.block-body { padding: 0.875rem; }
+
+/* ============================================================
+   GÉNÉRATION — champs + fac-similé
+   ============================================================ */
+.gen {
+	position: fixed;
+	inset: 0;
+	z-index: 60;
+	background: var(--paper);
+	display: none;
+	grid-template-rows: auto minmax(0, 1fr);
+}
+.gen.is-on { display: grid; }
+/* Un document ouvert couvre toute la fenêtre : la molette ne doit faire défiler que
+   lui. Sans ce verrou, arrivée en bout de feuille ou passée sur l'en-tête, elle
+   entraînait la page de derrière. Même chose sous le panneau latéral et la confirmation. */
+html:has(.gen.is-on), html:has(.panel.is-on), html:has(.ask.is-on) { overflow: hidden; }
+.gen-preview, .gen-fields, .panel-body, .dd-menu { overscroll-behavior: contain; }
+
+.gen-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.875rem 1.25rem;
+	border-bottom: 1px solid var(--rule);
+	background: var(--surface);
+	flex-wrap: wrap;
+}
+.gen-split { display: grid; grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); min-height: 0; }
+.gen-fields { border-right: 1px solid var(--rule); overflow-y: auto; padding: 1.125rem; display: flex; flex-direction: column; gap: 1.125rem; background: var(--surface); }
+.gen-preview { overflow: auto; padding: 1.75rem; display: flex; justify-content: center; align-items: flex-start; }
+
+.fgroup { display: flex; flex-direction: column; gap: 0.375rem; }
+.fgroup > .eyebrow { padding-bottom: 0.3125rem; border-bottom: 1px solid var(--rule); }
+.frow {
+	display: grid;
+	grid-template-columns: 7.5rem minmax(0, 1fr);
+	gap: 0.75rem;
+	padding: 0.3125rem 0.4375rem;
+	border-radius: var(--r-xs);
+	cursor: default;
+	border: 1px solid transparent;
+}
+.frow:hover, .frow.lit { background: var(--accent-soft); border-color: var(--accent); }
+.frow dt { font-size: 0.75rem; color: var(--muted); }
+.frow dd { margin: 0; font-size: 0.8125rem; word-break: break-word; }
+.frow dd .num { font-size: 0.8125rem; }
+.src {
+	display: inline-block;
+	font-family: 'Spline Sans Mono', monospace;
+	font-size: 0.625rem;
+	color: var(--faint);
+	letter-spacing: 0.02em;
+}
+
+/* la feuille A4 */
+
+/* la feuille de récap — paysage, dix colonnes */
+
+/* ---------- compte rendu de chantier — fac-similé de « COMPTE RENDU DE CHANTIER 1.doc » ---------- */
+/* double classe : « .sheet-doc { width: 68rem } », déclaré plus bas, l'emporterait */
+
+.gen-fields textarea { font-family: inherit; line-height: 1.45; resize: vertical; }
+/* Le compte rendu se rédige : la colonne des champs prend toute la place que la feuille
+   laisse, au lieu des 22 rem des marchés où l'on ne fait que relire. */
+
+/* ============================================================
+   PLANNING — diagramme de Gantt
+   ============================================================ */
+.g-toolbar { justify-content: space-between; align-items: center; }
+.g-outils { display: flex; align-items: center; gap: 0.75rem; }
+.zoom { display: inline-flex; align-items: center; gap: 0.5rem; }
+.zoom-lbl {
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.625rem; font-weight: 600;
+	letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint);
+}
+.zoom-b {
+	background: var(--raise);
+	border: 1px solid var(--rule-strong);
+	border-radius: var(--r-xs);
+	padding: 0.3125rem 0.625rem;
+	font-size: 0.75rem;
+	color: var(--muted);
+	cursor: pointer;
+	margin-left: -1px;
+}
+.zoom-b:first-of-type { margin-left: 0; }
+.zoom-b:hover { color: var(--ink); background: var(--idle-soft); }
+.zoom-b.is-on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 500; }
+/* les deux outils : une icône seule, le libellé passe par le titre */
+.zoom-ic { padding: 0.3125rem 0.5rem; line-height: 0; }
+.zoom-ic svg { width: 0.9375rem; height: 0.9375rem; stroke: currentColor; fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* L'outil courant se lit au curseur autant qu'au bouton : la cible vise une semaine,
+   la main saisit la nappe — et se referme pendant qu'on la déplace. */
+.gantt.outil-main .g-piste { cursor: grab; }
+.gantt.outil-main.est-saisi,
+.gantt.outil-main.est-saisi .g-piste,
+.gantt.outil-main.est-saisi .g-bar { cursor: grabbing; }
+/* le défilement doux interpolerait chaque pas du glissement */
+.gantt.est-saisi { scroll-behavior: auto; }
+
+.gantt {
+	border: 1px solid var(--rule);
+	border-radius: var(--r);
+	box-shadow: var(--ombre);
+	background: var(--raise);
+	/* Un seul défilement vertical, celui de la page : le cadre prend toute la hauteur
+	   de son contenu. Seul l'axe horizontal défile ici, ce qui garde la colonne des
+	   lots collée à gauche. En contrepartie l'en-tête des semaines n'est plus collé
+	   en haut — impossible dès lors que le cadre ne défile plus verticalement. */
+	overflow-x: auto;
+	scroll-behavior: smooth;
+	user-select: none;
+	--sem-w: 46px;
+}
+/* chaque ligne fait la largeur de son contenu, sinon les bordures, le survol
+   et l'étendue du défilement s'arrêtent au bord visible */
+.g-row {
+	display: flex;
+	align-items: stretch;
+	width: max-content;
+	min-width: 100%;
+	border-bottom: 1px solid var(--rule);
+}
+.g-row:last-child { border-bottom: 0; }
+.g-row:not(.g-head):not(.g-ferm-row):hover { background: var(--surface); }
+
+/* colonne figée : le lot sur une ligne, l'entreprise dessous — plus lisible que trois colonnes serrées */
+.g-fixe {
+	position: sticky;
+	left: 0;
+	z-index: 6;
+	flex: none;
+	width: 21rem;
+	display: grid;
+	grid-template-columns: 0.625rem minmax(0, 1fr);
+	align-content: center;
+	gap: 0.125rem 0.625rem;
+	padding: 0.625rem 1rem;
+	background: var(--raise);
+	border-right: 2px solid var(--rule-strong);
+	cursor: pointer;
+}
+.g-row:not(.g-head):not(.g-ferm-row):hover .g-fixe { background: var(--surface); }
+.g-puce { grid-column: 1; grid-row: 1; width: 0.625rem; height: 0.625rem; border-radius: var(--r-xs); align-self: center; }
+.g-nom {
+	grid-column: 2; grid-row: 1;
+	font-size: 0.875rem; font-weight: 500;
+	overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.g-sous {
+	grid-column: 2; grid-row: 2;
+	font-size: 0.75rem; color: var(--muted);
+	overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.g-sous .unset { color: var(--faint); }
+.g-sous .num { font-size: 0.6875rem; }
+
+.g-head { position: sticky; top: 0; z-index: 8; background: var(--surface); border-bottom: 2px solid var(--rule-strong); }
+/* l'angle doit passer au-dessus de l'en-tête ET de la colonne figée */
+.g-head .g-fixe { background: var(--surface); cursor: default; align-content: end; z-index: 9; }
+.g-th {
+	grid-column: 1 / -1;
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.6875rem; font-weight: 600;
+	letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted);
+}
+.g-axe { flex: none; }
+.g-mois, .g-sems { display: flex; }
+.g-mois span {
+	flex: none;
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.8125rem; font-weight: 600;
+	letter-spacing: 0.02em;
+	padding: 0.4375rem 0.5rem 0.3125rem;
+	border-left: 1px solid var(--rule-strong);
+	color: var(--ink);
+	overflow: hidden; white-space: nowrap;
+}
+.g-mois span.pair { background: var(--band); }
+.g-sems span {
+	flex: none;
+	font-family: 'Spline Sans Mono', monospace;
+	font-size: 0.6875rem;
+	text-align: center;
+	padding: 0.1875rem 0 0.375rem;
+	border-left: 1px solid var(--rule);
+	color: var(--muted);
+}
+.g-sems span.an-neuf { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
+.g-sems span.auj { background: var(--accent); color: var(--on-accent); font-weight: 600; border-left-color: var(--accent); }
+
+.g-corps { position: relative; }
+/* la nappe des liens couvre les pistes, décalée de la colonne figée */
+.g-liens {
+	position: absolute; top: 0; left: 21rem;
+	pointer-events: none;
+	z-index: 4;
+	overflow: visible;
+}
+.g-liens path { fill: none; stroke: var(--ink-2); stroke-width: 1.5; opacity: 0.55; }
+.g-liens marker path { fill: var(--ink-2); stroke: none; opacity: 1; }
+
+/* hauteur fixe : les flèches sont dessinées d'après elle (voir HAUTEUR_LIGNE) */
+.g-row[data-lot] { height: 3.75rem; }
+.g-piste {
+	position: relative;
+	flex: none;
+	min-height: 3.5rem;
+	background-image: repeating-linear-gradient(to right,
+		var(--rule) 0 1px, transparent 1px var(--sem-w));
+	cursor: crosshair;
+}
+.g-bmois {
+	position: absolute; top: 0; bottom: 0;
+	border-left: 1px solid var(--rule-strong);   /* la limite de mois se voit sur chaque ligne */
+	pointer-events: none;
+}
+.g-bmois.pair { background: var(--band); }
+
+.g-ferm-row { background: var(--surface); }
+.g-ferm-row .g-fixe { background: var(--surface); cursor: default; }
+.g-fixe-lbl {
+	display: block;
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.625rem; font-weight: 600;
+	letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint);
+	padding-top: 0.4375rem;
+}
+.g-piste-lbl { min-height: 1.75rem; cursor: default; background-image: none; }
+.g-ferm-lbl {
+	position: absolute; top: 0.25rem; bottom: 0.25rem;
+	display: flex; align-items: center; justify-content: center;
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.6875rem; font-weight: 600;
+	letter-spacing: 0.05em;
+	color: var(--muted);
+	background: var(--idle-soft);
+	border-radius: var(--r-xs);
+	overflow: hidden; white-space: nowrap;
+}
+
+/* congés : hachures sur toute la hauteur */
+.g-ferm {
+	position: absolute; top: 0; bottom: 0;
+	background: repeating-linear-gradient(135deg,
+		var(--rule-strong) 0 2px, transparent 2px 7px);
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+/* la semaine en cours */
+.g-auj { position: absolute; top: 0; bottom: 0; border-left: 2px solid var(--accent); pointer-events: none; }
+
+.g-bar {
+	position: absolute; top: 0.4375rem; bottom: 0.4375rem;
+	border-radius: var(--r-xs);
+	display: flex; align-items: center;
+	padding: 0 0.5rem;
+	font-size: 0.75rem;
+	font-weight: 500;
+	line-height: 1.2;
+	cursor: grab;
+	overflow: hidden;
+	box-shadow: inset 0 0 0 1px var(--bar-ring), 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+.g-bar:hover { filter: brightness(1.08); }
+.g-bar:active { cursor: grabbing; }
+/* Anneau neutre plutôt qu'un anneau d'accent : le bleu de plan et le bleu foncé
+   du .ods sont trop proches, la sélection disparaîtrait sur ce lot-là. */
+.g-bar.is-sel { box-shadow: inset 0 0 0 2px var(--raise), 0 0 0 2px var(--ink); }
+.g-bar-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
+/* nom d'une période trop courte pour le porter : posé à sa droite, hors de la souris */
+.g-etiq {
+	position: absolute; top: 50%;
+	transform: translateY(-50%);
+	margin-left: 0.4375rem;
+	max-width: 14rem;
+	font-size: 0.75rem;
+	color: var(--ink-2);
+	white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+	pointer-events: none;
+}
+.g-poignee { position: absolute; right: 0; top: 0; bottom: 0; width: 10px; cursor: ew-resize; }
+.g-poignee::after {
+	content: ''; position: absolute; right: 3px; top: 50%;
+	width: 2px; height: 0.75rem; margin-top: -0.375rem;
+	background: currentColor; opacity: 0; border-radius: 1px;
+}
+.g-bar:hover .g-poignee::after { opacity: 0.55; }
+
+.g-fantome {
+	position: absolute; top: 0.4375rem; bottom: 0.4375rem;
+	background: var(--accent-soft);
+	border: 2px dashed var(--accent);
+	border-radius: var(--r-xs);
+	pointer-events: none;
+}
+.g-vide { padding: 3rem 1.25rem; text-align: center; color: var(--muted); font-style: italic; }
+
+.g-legende { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-top: 1rem; }
+.leg { display: inline-flex; align-items: center; gap: 0.4375rem; font-size: 0.75rem; color: var(--muted); }
+.leg i { width: 0.75rem; height: 0.75rem; border-radius: var(--r-xs); flex: none; }
+
+/* palette du panneau */
+.pal { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+.pal-c {
+	width: 1.75rem; height: 1.75rem;
+	border: 1px solid var(--rule-strong);
+	border-radius: var(--r-xs); cursor: pointer; padding: 0;
+}
+.pal-c.is-on { box-shadow: 0 0 0 2px var(--accent); border-color: var(--accent); }
+.pal-note { margin: 0.625rem 0 0; font-size: 0.75rem; color: var(--muted); }
+
+/* .plain-mini est déclaré avant .plain : sans le double sélecteur, la règle large
+   l'emporterait et le tableau déborderait du panneau */
+table.plain.plain-mini { min-width: 0; font-size: 0.8125rem; }
+table.plain.plain-mini thead th { padding: 0.375rem 0.5rem; }
+table.plain.plain-mini tbody td { padding: 0.1875rem 0.25rem; }
+table.plain.plain-mini tbody td:first-child { padding-left: 0.25rem; }
+/* les colonnes de chiffres se serrent sur leur contenu — l'intitulé prend le reste */
+table.plain.plain-mini th.ta-r, table.plain.plain-mini td.ta-r { width: 1%; white-space: nowrap; }
+table.plain.plain-mini .money-input.mini { width: 3.25rem; }
+/* la date de signature et les avenants vivent dans le panneau du lot */
+.champ-kv {
+	width: 9rem; text-align: left;
+	border-color: var(--rule-strong);
+	background: var(--surface);
+	padding: 0.1875rem 0.4375rem;
+}
+.champ-kv.etroit { width: 4rem; }
+.champ-kv:hover { background: var(--raise); }
+.kv dd .unite { font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-left: 0.3125rem; }
+.kv dd .calcule { font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-left: 0.625rem; }
+
+.date-lot {
+	font: inherit; font-size: 0.8125rem;
+	color: var(--ink); background: var(--surface);
+	border: 1px solid var(--rule-strong); border-radius: var(--r-sm);
+	padding: 0.1875rem 0.375rem;
+}
+.hint-inline { display: block; font-size: 0.6875rem; color: var(--faint); margin-top: 0.1875rem; }
+.kv dd.num.moins { color: var(--danger); }
+.av-note {
+	margin: 0; padding: 0.625rem 0.875rem 0.75rem;
+	font-size: 0.6875rem; color: var(--muted); line-height: 1.45;
+	border-top: 1px solid var(--rule);
+}
+/* marqueur porté par la ligne du lot, comme celui de la sous-traitance */
+.nature-tag.av { border-color: var(--rule-strong); color: var(--muted); }
+
+.vide-mini { margin: 0; padding: 1.25rem 0.875rem; text-align: center; font-style: italic; color: var(--muted); font-size: 0.8125rem; }
+
+/* le lien de précédence, en second rang sous sa période — c'est ce qui fait la chaîne */
+table.plain.plain-mini tbody tr.ligne-per td { border-bottom: 0; }
+table.plain.plain-mini tbody tr.ligne-dep td {
+	position: relative;
+	padding: 0 0.25rem 0.4375rem 1.375rem;
+	border-bottom: 1px solid var(--rule);
+}
+tr.ligne-dep td::before {
+	content: '\21B3';
+	position: absolute; left: 0.375rem; top: -0.0625rem;
+	color: var(--faint); font-size: 0.8125rem;
+}
+tr.ligne-dep .dd { max-width: 100%; }
+
+/* La période venue de la grille : même bleu que la ligne ouverte d'un tableau,
+   plus un filet d'accent à gauche qui court sur les deux rangs. */
+table.plain.plain-mini tbody tr.est-vise td { background: var(--accent-soft); }
+table.plain.plain-mini tbody tr.est-vise td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+table.plain.plain-mini tbody tr.ligne-per.est-vise .text-input { font-weight: 600; }
+table.plain.plain-mini tbody tr.ligne-dep.est-vise td::before { color: var(--accent); }
+
+/* la pastille qui suit le curseur pendant un glisser — on lit les semaines sans lâcher */
+/* ---------- écrire directement sur la feuille ----------
+   Les zones à remplir sont teintées et soulignées à l'écran ; à l'impression elles
+   redeviennent du texte ordinaire. Une zone vide montre son invite, jamais imprimée. */
+.gen-split.solo { grid-template-columns: minmax(0, 1fr); }
+.saisie-aide { margin: 0.125rem 0 0; font-size: 0.75rem; color: var(--muted); }
+
+/* sélection de plusieurs périodes */
+.g-tete-g { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.g-sel-aide, .g-sel { white-space: nowrap; }
+.g-sel-aide { font-size: 0.75rem; color: var(--muted); }
+.g-sel { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.8125rem; color: var(--accent-2);
+	background: var(--accent-soft); border-radius: var(--r-sm); padding: 0.25rem 0.375rem 0.25rem 0.625rem; }
+.g-sel kbd { font-family: 'Spline Sans Mono', monospace; font-size: 0.6875rem; border: 1px solid currentColor; border-radius: 3px; padding: 0 0.25rem; opacity: 0.8; }
+.g-lasso { position: fixed; z-index: 85; pointer-events: none; border: 1.5px dashed var(--accent); background: rgba(28, 78, 128, 0.08); border-radius: 3px; }
+.g-chip {
+	position: fixed; z-index: 90; pointer-events: none;
+	background: var(--ink); color: var(--paper);
+	font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem;
+	padding: 0.25rem 0.5rem; border-radius: var(--r-xs); white-space: nowrap;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- documents du planning ---------- */
+/* Les feuilles d'un planning découpé s'empilent, et se séparent à l'impression. */
+
+/* ============================================================
+   ARTISANS + DOCUMENTS
+   ============================================================ */
+.toolbar { display: flex; gap: 0.625rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
+.search {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	background: var(--raise);
+	border: 1px solid var(--rule-strong);
+	border-radius: var(--r-xs);
+	padding: 0.3125rem 0.625rem;
+	min-width: 18rem;
+	flex: 1;
+	max-width: 26rem;
+}
+.search input { border: 0; background: none; outline: none; width: 100%; }
+.search svg { width: 0.875rem; height: 0.875rem; stroke: var(--muted); fill: none; stroke-width: 1.6; flex: none; }
+
+table.plain { width: 100%; border-collapse: collapse; min-width: 46rem; }
+table.plain thead th {
+	text-align: left;
+	padding: 0.5rem 0.75rem;
+	background: var(--surface);
+	border-bottom: 1px solid var(--rule-strong);
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	color: var(--muted);
+	white-space: nowrap;
+}
+table.plain tbody td { padding: 0.4375rem 0.75rem; border-bottom: 1px solid var(--rule); }
+table.plain tbody tr:hover { background: var(--surface); }
+.ent-name { font-weight: 500; }
+table.plain tbody tr[onclick] { cursor: pointer; }
+table.plain tbody tr.is-archived td { color: var(--muted); }
+table.plain tbody tr.is-archived .ent-name { text-decoration: line-through; text-decoration-thickness: 1px; }
+table.plain tbody tr.is-archived .pill { text-decoration: none; margin-left: 0.375rem; vertical-align: 1px; }
+td.nowrap { white-space: nowrap; }
+table.plain tbody td .btn-sm { visibility: hidden; }
+table.plain tbody tr:hover .btn-sm, table.plain tbody tr:focus-within .btn-sm { visibility: visible; }
+/* une colonne « Actions » annoncée en en-tête ne peut pas rester vide jusqu'au survol */
+table.plain tbody td.cell-actions .btn-sm { visibility: visible; }
+table.plain tbody td.cell-actions { white-space: nowrap; }
+table.plain tbody td.cell-actions .btn + .btn { margin-left: 0.375rem; }
+.dash { color: var(--faint); }
+
+.doc-link { color: var(--accent-2); text-decoration: none; font-weight: 500; }
+button.doc-link { background: none; border: 0; padding: 0; cursor: pointer; font: inherit; font-weight: 500; text-align: left; }
+
+/* rubriques de la page Documents */
+.doc-sections { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+
+/* ---------- page Documents : cartes du chantier + tableau par entreprise ---------- */
+.dm-cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.75rem; }
+.dm-carte { background: var(--raise); border: 1px solid var(--rule); border-radius: var(--r); box-shadow: var(--ombre);
+	padding: 0.875rem 1rem; display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start; }
+.dm-carte.est-vide { background: var(--surface); border-style: dashed; border-color: var(--rule-strong); box-shadow: none; }
+.dm-carte-tete { display: flex; justify-content: space-between; align-self: stretch; }
+.dm-carte-k { font-family: 'Outfit', sans-serif; font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.dm-carte-n { font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; color: var(--muted); }
+.dm-carte-v { font-family: 'Outfit', sans-serif; font-size: 1.0625rem; font-weight: 600; color: var(--accent-2);
+	background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
+.dm-carte-v:hover { text-decoration: underline; }
+.dm-carte-v.est-vide { color: var(--muted); cursor: default; }
+.dm-carte-s { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.375rem; }
+
+.dm-cadre { background: var(--raise); border: 1px solid var(--rule); border-radius: var(--r); box-shadow: var(--ombre); overflow-x: auto; }
+table.dm { width: 100%; border-collapse: collapse; min-width: 56rem; }
+table.dm thead th { text-align: left; padding: 0.625rem 0.75rem; background: var(--surface); border-bottom: 1px solid var(--rule-strong);
+	font-family: 'Outfit', sans-serif; font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+table.dm td, table.dm tbody th { padding: 0.4375rem 0.75rem; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+table.dm tbody tr:last-child td, table.dm tbody tr:last-child th { border-bottom: 0; }
+table.dm tbody tr:hover { background: var(--surface); }
+table.dm .dm-lot { width: 34%; padding-left: 1rem; }
+/* la grille vit dans un bloc intérieur : posée sur la cellule, elle la sortait du tableau */
+table.dm tbody th.dm-lot { text-align: left; font-weight: 400; }
+.dm-lot-in { display: grid; grid-template-columns: 2rem minmax(0, 1fr); column-gap: 0.25rem; }
+.dm-lot-n { grid-row: 1 / 3; font-family: 'Spline Sans Mono', monospace; font-size: 0.6875rem; color: var(--muted); padding-top: 0.125rem; }
+.dm-lot-d { font-size: 0.875rem; font-weight: 500; }
+.dm-lot-d .nature-tag { font-size: 0.5625rem; margin-left: 0.25rem; vertical-align: 1px; }
+.dm-lot-e { font-size: 0.75rem; color: var(--muted); }
+tr.dm-inactif .dm-lot-d, tr.dm-inactif .dm-lot-e { color: var(--muted); }
+.dm-note { font-size: 0.75rem; font-style: italic; color: var(--muted); }
+.dm-th-action { margin-left: 0.375rem; background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
+	font-family: 'Figtree', sans-serif; font-size: 0.6875rem; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--accent-2); }
+.dm-th-action:hover { text-decoration: underline; }
+.dm-pile { display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
+.dm-case { display: inline-flex; align-items: center; padding: 0.1875rem 0.5rem; border-radius: 6px; font: inherit; font-size: 0.75rem;
+	line-height: 1.35; white-space: nowrap; cursor: pointer; border: 1px solid transparent; }
+.dm-case.est-fait { background: var(--accent-soft); color: var(--accent-2); }
+.dm-case.est-fait:hover { border-color: var(--accent); }
+.dm-case.est-manque { background: none; border: 1px dashed var(--rule-strong); color: var(--ink-2); }
+.dm-case.est-manque:hover { border-color: var(--accent); color: var(--accent-2); }
+.dm-case.est-alerte { background: #fbeedd; color: #7a3d00; }
+.dm-case.est-alerte:hover { border-color: #b35c00; }
+:root[data-theme='dark'] .dm-case.est-alerte { background: #3d2e1c; color: #f2c38a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .dm-case.est-alerte { background: #3d2e1c; color: #f2c38a; } }
+.dm-ajout { width: 1.5rem; height: 1.5rem; padding: 0; border-radius: 6px; border: 1px dashed var(--rule-strong); background: none;
+	color: var(--ink-2); cursor: pointer; font-size: 0.875rem; line-height: 1; }
+.dm-ajout:hover { border-color: var(--accent); color: var(--accent-2); }
+.dm-plus { font-size: 0.6875rem; color: var(--muted); }
+.dm-rien { color: var(--faint); }
+.dm-pied { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: 0.625rem 1rem; background: var(--surface);
+	border-top: 1px solid var(--rule); font-size: 0.75rem; color: var(--muted); }
+.dm-legende .dm-case { cursor: default; padding: 0 0.375rem; font-size: 0.6875rem; }
+.dm-autres-t { padding: 0.625rem 1rem; font-family: 'Outfit', sans-serif; font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.08em;
+	text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--rule); background: var(--surface); }
+.dm-autre { display: flex; justify-content: space-between; padding: 0.5rem 1rem; font-size: 0.8125rem; border-bottom: 1px solid var(--rule); }
+.dm-autre:last-child { border-bottom: 0; }
+.dm-autre span { font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; color: var(--muted); }
+
+/* compte rendu enregistré : on le relit et on le réimprime, on ne le modifie plus */
+
+/* ---------- certificat de paiement — fac-similé du certificat SOCOREVE ---------- */
+
+.cp-alerte { margin: 0; padding: 0.5rem 0.625rem; border: 1px solid var(--danger); border-radius: var(--r-sm); background: var(--danger-soft); color: var(--danger); font-size: 0.75rem; }
+
+/* ---------- procès-verbal de réception — fac-similé de « 3- PV de réception.ods » ---------- */
+/* « .sheet hr » l'emporterait sans le double sélecteur */
+.doc-link:hover { text-decoration: underline; }
+
+/* ============================================================
+   CONNEXION
+   ============================================================ */
+.login {
+	min-height: 100vh;
+	display: grid;
+	grid-template-columns: 1fr;
+	place-items: center;
+	padding: 2rem 1.25rem;
+	background: var(--paper);
+}
+.login-card {
+	width: min(24rem, 100%);
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+.login-brand { display: flex; flex-direction: column; gap: 0.375rem; }
+.login-mark {
+	font-family: 'Outfit', sans-serif;
+	font-size: 2.5rem;
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	line-height: 1;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+.sigle-lg { width: 4.5rem; height: 4.5rem; color: var(--paper); }
+.login-tag { color: var(--muted); font-size: 0.875rem; max-width: 22rem; }
+.login-form { display: flex; flex-direction: column; gap: 0.75rem; border-top: 1px solid var(--rule); padding-top: 1.25rem; }
+.login-foot { font-family: 'Spline Sans Mono', monospace; font-size: 0.6875rem; color: var(--faint); }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast-zone { position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%); z-index: 90; display: flex; flex-direction: column; gap: 0.5rem; align-items: center; pointer-events: none; }
+.toast {
+	background: var(--ink);
+	color: var(--paper);
+	padding: 0.5625rem 0.9375rem;
+	border-radius: var(--r-xs);
+	font-size: 0.8125rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	animation: rise 0.2s ease;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+.toast b { color: var(--accent-2); font-weight: 500; }
+@keyframes rise { from { opacity: 0; transform: translateY(0.5rem); } to { opacity: 1; transform: none; } }
+
+/* ============================================================
+   ACCUEIL — bande de synthèse
+   ============================================================ */
+/* ---------- bande de synthèse de l'accueil ----------
+   La page était plus vide qu'avant parce qu'elle était plus large. On la remplit
+   de ce qu'on veut savoir en arrivant, pas en étirant ce qui existait. */
+.synthese {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+	background: var(--rule);
+	gap: 1px;
+	border: 1px solid var(--rule);
+	border-radius: var(--r);
+	box-shadow: var(--ombre);
+	overflow: hidden;   /* les cellules doivent suivre l'arrondi du cadre */
+	margin-bottom: 1.25rem;
+}
+.synth-cell { background: var(--raise); padding: 0.875rem 1.125rem 0.9375rem; }
+.synth-k {
+	display: block;
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.625rem; font-weight: 600;
+	letter-spacing: 0.08em; text-transform: uppercase;
+	color: var(--faint);
+	margin-bottom: 0.1875rem;
+}
+.synth-v {
+	font-family: 'Spline Sans Mono', monospace;
+	font-variant-numeric: tabular-nums;
+	font-size: 1.375rem;
+	line-height: 1.1;
+}
+.synth-sous { display: block; font-size: 0.75rem; color: var(--muted); margin-top: 0.1875rem; }
+.synth-cell.alerte .synth-v { color: var(--danger); }
+
+@media (max-width: 60rem) {
+	/* la barre est déjà horizontale : il n'y a plus de bascule à opérer,
+	   seulement des libellés à laisser tomber pour que tout tienne */
+	.nav-haut { gap: 0.5rem; padding: 0.5rem 0.875rem; }
+	.nav-onglets { padding: 0 0.875rem; }
+	.nav-b .nav-txt { display: none; }
+	.nav-b { padding: 0.4375rem 0.5rem; }
+	.picker-btn { min-width: 0; }
+	.picker-menu { width: min(20rem, calc(100vw - 1.75rem)); }
+	.gen-split { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
+	.gen-fields { border-right: 0; border-bottom: 1px solid var(--rule); max-height: 40vh; }
+}
+
+/* Alignement à droite, rappelé en dernier et à forte spécificité : « table.lots thead th »
+   et « table.plain thead th » l'emportaient sur .ta-r, si bien que les en-têtes des colonnes
+   chiffrées restaient calés à gauche pendant que leurs cellules s'alignaient à droite. */
+table thead th.ta-r, table tbody td.ta-r { text-align: right; }
