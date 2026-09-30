@@ -69,3 +69,7 @@ a.chantier-new { text-decoration: none; color: inherit; }
 .panel-foot a.btn, .cell-actions a.btn { text-decoration: none; }
 /* Nature du marché : des libellés sans bouton radio, comme la maquette ; focus visible au clavier. */
 .radio-row label[role='radio']:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Écran Documents : les cases et actions sont des liens dans l'app (des boutons dans la maquette). */
+a.dm-case, a.dm-ajout, a.dm-carte-v, a.dm-th-action, a.doc-link { text-decoration: none; }
+span.dm-ajout[aria-disabled='true'] { opacity: 0.4; cursor: not-allowed; }

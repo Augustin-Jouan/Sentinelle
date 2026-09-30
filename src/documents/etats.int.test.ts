@@ -53,4 +53,15 @@ describe('états des documents', () => {
 	it('chantier inconnu : nul', async () => {
 		expect(await etatsDocumentsChantier('inconnu')).toBeNull();
 	});
+
+	it('liste les lots dans l\'ordre du chantier, avec numéro, désignation, nature, entreprise et montant des avenants', async () => {
+		const vue = (await etatsDocumentsChantier(p.chantierId, deps.maintenant))!;
+		const ordre = await prisma.lot.findMany({ where: { chantierId: p.chantierId }, orderBy: { ordre: 'asc' }, select: { id: true } });
+		expect(vue.lots.map((l) => l.lotId)).toEqual(ordre.map((l) => l.id));
+		const go = vue.lots.find((l) => l.lotId === p.lots['GROS ŒUVRE'])!;
+		expect(go).toMatchObject({ designation: 'GROS ŒUVRE', nature: 'GRE_A_GRE', entreprise: 'CONSTRUCTIONS REBOURS' });
+		const avenant = await prisma.avenant.create({ data: { lotId: p.lots['GROS ŒUVRE'], numero: 1, montantHt: '3720', date: new Date('2026-05-12T00:00:00Z') } });
+		const apres = (await etatsDocumentsChantier(p.chantierId, deps.maintenant))!;
+		expect(apres.lots.find((l) => l.lotId === p.lots['GROS ŒUVRE'])!.avenants).toEqual([expect.objectContaining({ avenantId: avenant.id, montantHt: '3720' })]);
+	});
 });

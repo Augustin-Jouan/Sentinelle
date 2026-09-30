@@ -1,26 +1,31 @@
 import { notFound } from 'next/navigation';
 import { exigerPage } from '@/auth/session';
-import { Button, buttonVariants } from '@/components/ui/button';
 import { ApercuCompteRendu } from '@/composants/ApercuCompteRendu';
 import { ApercuDocument } from '@/composants/ApercuDocument';
 import { ApercuReception } from '@/composants/ApercuReception';
-import { TableauDocuments } from '@/composants/TableauDocuments';
+import { CartesDocuments } from '@/composants/documents/CartesDocuments';
+import { AutresDocuments, TableauDocuments } from '@/composants/documents/TableauDocuments';
+import { Ecran } from '@/composants/maquette/Ecran';
+import * as Icone from '@/composants/maquette/icones';
 import { construireDonneesRecap } from '@/documents/donnees';
 import { etatsDocumentsChantier, lireDocument, type VueDocuments } from '@/documents/etats';
 import { TITRES_TYPES } from '@/documents/libelles';
 import { lireBrouillon, ouvrirCompteRendu } from '@/donnees/comptesRendus';
+import { lirePlanning } from '@/donnees/planning';
 import { lireReceptionsOuvertes } from '@/donnees/receptions';
+import { etendueDuPlanning } from '@/domaine/planningVue';
 import { dateDuJourTexte } from '@/domaine/regles';
+import { dateParis, semaineDuRang, versIso } from '@/domaine/semaines';
 
 type Props = {
 	params: Promise<{ id: string }>;
 	searchParams: Promise<{ apercu?: string; version?: string; cr?: string; 'corriger-cr'?: string; pv?: string }>;
 };
 
-/** « 23 documents · dernier le 06/10/2026 » (spec § 7). */
+/** « 6 documents produits · dernier le 18.06.2026 » (renderDocs de la maquette). */
 function texteResume({ nombre, dernierLe }: VueDocuments['resume']): string {
 	if (!nombre || !dernierLe) return 'Aucun document produit pour ce chantier.';
-	return `${nombre} document${nombre > 1 ? 's' : ''} · dernier le ${dateDuJourTexte(new Date(dernierLe)).replace(/\./g, '/')}`;
+	return `${nombre} document${nombre > 1 ? 's' : ''} produit${nombre > 1 ? 's' : ''} · dernier le ${dateDuJourTexte(new Date(dernierLe))}`;
 }
 
 export default async function PageDocuments({ params, searchParams }: Props) {
@@ -29,6 +34,9 @@ export default async function PageDocuments({ params, searchParams }: Props) {
 	const { apercu, version, cr, 'corriger-cr': corrigerCr, pv } = await searchParams;
 	const vue = await etatsDocumentsChantier(id);
 	if (!vue) notFound();
+	const planning = await lirePlanning(id);
+	const e = etendueDuPlanning(planning!, versIso(dateParis(new Date())));
+	const etendue = { debut: semaineDuRang(e.debut), fin: semaineDuRang(e.fin) };
 	let apercuDocument: React.ReactNode = null;
 	if (apercu === 'recap') {
 		const { donnees } = await construireDonneesRecap(id);
@@ -50,20 +58,19 @@ export default async function PageDocuments({ params, searchParams }: Props) {
 		}
 	}
 	return (
-		<section className="space-y-4">
-			<div className="flex flex-wrap items-end gap-4">
-				<div>
-					<h2 className="text-lg font-semibold">Documents du chantier</h2>
-					<p data-testid="resume-documents" className="text-sm text-muted-foreground">{texteResume(vue.resume)}</p>
-				</div>
-				{vue.resume.nombre ? (
-					<a href={`/api/chantiers/${id}/archive`} download className={`ml-auto ${buttonVariants({ variant: 'outline' })}`}>Tout télécharger</a>
-				) : (
-					<span title="Aucun document à télécharger" className="ml-auto"><Button variant="outline" disabled>Tout télécharger</Button></span>
-				)}
+		<Ecran
+			titre="Documents du chantier"
+			sousTitre={<span className="eyebrow" data-testid="resume-documents">{texteResume(vue.resume)}</span>}
+			actions={vue.resume.nombre
+				? <a className="btn" href={`/api/chantiers/${id}/archive`} download><Icone.Telecharger />Tout télécharger</a>
+				: <button type="button" className="btn" disabled title="Aucun document à télécharger"><Icone.Telecharger />Tout télécharger</button>}
+		>
+			<div className="doc-sections">
+				<CartesDocuments vue={vue} etendue={etendue} attribues={vue.lots.filter((l) => l.entreprise).length} />
+				<TableauDocuments vue={vue} />
+				<AutresDocuments vue={vue} />
 			</div>
-			<TableauDocuments vue={vue} />
 			{apercuDocument}
-		</section>
+		</Ecran>
 	);
 }
