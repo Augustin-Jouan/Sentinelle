@@ -1,4 +1,5 @@
 import { sommeAvenants } from '@/domaine/avenants';
+import { certificatPossible } from '@/domaine/certificats';
 import { formatEuros, htEngage, totalArrondi, ttcEngage } from '@/domaine/montants';
 import { manquesPourGenerer, type Manque } from '@/domaine/regles';
 import { adresseArtisan } from './artisans';
@@ -17,6 +18,10 @@ export type LotVue = {
 	retenueGarantie: string; exemplaires: number; dateSignature: string; corpsEtat: string;
 	/** Somme signée des avenants ; engagé = initial + avenants (spec § 5). */
 	sommeAvenants: string; htEngage: string; ttcEngage: string; manques: Manque[];
+	/** Triés par numéro ; `date` au format des champs de saisie (AAAA-MM-JJ). */
+	avenants: { id: string; numero: number; devis: string; montantHt: string; date: string }[];
+	/** `dernier` : le dernier acompte du lot s'il est un certificat (lui seul se corrige). */
+	certificat: { possible: boolean; dernier: { id: string; numero: number } | null };
 };
 
 export type VueMarches = {
@@ -24,11 +29,21 @@ export type VueMarches = {
 	totalHtTexte: string; totalTvaTexte: string; totalTtcTexte: string;
 };
 
+/** Le dernier acompte du lot, s'il est un certificat : lui seul se corrige. */
+function dernierCertificat(acomptes: { id: string; numero: number; manuel: boolean }[]): { id: string; numero: number } | null {
+	const d = acomptes.at(-1);
+	return d && !d.manuel ? { id: d.id, numero: d.numero } : null;
+}
+
 export async function lireVueMarches(chantierId: string): Promise<VueMarches> {
 	const [c, artisans] = await Promise.all([
 		prisma.chantier.findUniqueOrThrow({
 			where: { id: chantierId },
-			include: { lots: { orderBy: { ordre: 'asc' }, include: { artisan: true, avenants: { orderBy: { numero: 'asc' } } } } },
+			include: { lots: { orderBy: { ordre: 'asc' }, include: {
+				artisan: true,
+				avenants: { orderBy: { numero: 'asc' } },
+				acomptes: { orderBy: { numero: 'asc' }, select: { id: true, numero: true, manuel: true } },
+			} } },
 		}),
 		prisma.artisan.findMany({ orderBy: { nom: 'asc' } }),
 	]);
@@ -44,6 +59,13 @@ export async function lireVueMarches(chantierId: string): Promise<VueMarches> {
 			dateSignature: versSaisieDate(l.dateSignature), corpsEtat: l.corpsEtat,
 			sommeAvenants: somme.toFixed(), htEngage: htEngage(ht, somme).toFixed(), ttcEngage: ttcEngage(ht, tva, somme).toFixed(),
 			manques: manquesPourGenerer({ artisanId: l.artisanId, montantHtInitial: ht, maitreOuvrage: c.maitreOuvrage, adresseChantier: c.adresse }),
+			avenants: l.avenants.map((a) => ({
+				id: a.id, numero: a.numero, devis: a.devis, montantHt: a.montantHt.toString(), date: versSaisieDate(a.date),
+			})),
+			certificat: {
+				possible: certificatPossible({ artisanId: l.artisanId, htEngage: htEngage(ht, somme) }),
+				dernier: dernierCertificat(l.acomptes),
+			},
 		};
 	});
 	const totalHt = totalArrondi(lots.map((l) => l.htEngage));
