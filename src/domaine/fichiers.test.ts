@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { enTeteTelechargement, nomFichierMarche, nomFichierRecap, nomFichierTableur, slugifier } from './fichiers';
+import { enTeteTelechargement, nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierTableur, nomFichierVisa, slugifier } from './fichiers';
 
 describe('noms de fichiers', () => {
 	it('slugifie accents, ligatures et ponctuation', () => {
@@ -23,6 +23,10 @@ describe('noms de fichiers', () => {
 	it('récapitulatif et tableur', () => {
 		expect(nomFichierRecap('PERRIER — Louisfert', 3)).toBe('PERRIER-LOUISFERT-RecapMarches-v3.pdf');
 		expect(nomFichierTableur('PERRIER — Louisfert')).toBe('PERRIER-LOUISFERT-RecapMarches.xlsx');
+	});
+	it('planning et feuille de visa', () => {
+		expect(nomFichierPlanning('PERRIER — Louisfert', 1)).toBe('PERRIER-LOUISFERT-Planning-v1.pdf');
+		expect(nomFichierVisa('PERRIER — Louisfert', 2)).toBe('PERRIER-LOUISFERT-VisaPlanning-v2.pdf');
 	});
 	it('en-tête de téléchargement ASCII et encodé', () => {
 		expect(enTeteTelechargement('A-Lot02-B-Marche-v1.pdf'))

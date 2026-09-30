@@ -18,6 +18,14 @@ export function nomFichierRecap(reference: string, version: number): string {
 	return `${slugifier(reference)}-RecapMarches-v${version}.pdf`;
 }
 
+export function nomFichierPlanning(reference: string, version: number): string {
+	return `${slugifier(reference)}-Planning-v${version}.pdf`;
+}
+
+export function nomFichierVisa(reference: string, version: number): string {
+	return `${slugifier(reference)}-VisaPlanning-v${version}.pdf`;
+}
+
 export function nomFichierTableur(reference: string): string {
 	return `${slugifier(reference)}-RecapMarches.xlsx`;
 }

@@ -1,3 +1,7 @@
+import type { SourcePlanning } from '@/documents/batir';
+import { lundiIso } from '@/domaine/semaines';
+import { PERRIER_CHANTIER, PERRIER_LOTS } from './perrier';
+
 /** Planning de démonstration de PERRIER (spec Planning, annexe B). Tests uniquement, jamais dans le seed. */
 export type PeriodeFixture = { intitule: string; semaine: number; annee: number; duree: number };
 export type LignePlanFixture = { lot: string; couleur: string; periodes: PeriodeFixture[] };
@@ -35,3 +39,20 @@ export const FERMETURES_PERRIER = [
 	{ libelle: "Congés d'été", semaine: 31, annee: 2026, duree: 2 },
 	{ libelle: 'Congés de Noël', semaine: 52, annee: 2026, duree: 2 },
 ];
+
+/** Le planning de l'annexe B sous la forme que lit `batirPlanning`, sans base de données. */
+export function sourcePlanningPerrier(): SourcePlanning {
+	return {
+		chantier: PERRIER_CHANTIER,
+		lots: PERRIER_LOTS.map((l) => {
+			const plan = PLAN_PERRIER.find((x) => x.lot === l.designation)!;
+			return {
+				designation: l.designation,
+				entreprise: l.artisan?.nom ?? null,
+				couleur: plan.couleur,
+				periodes: plan.periodes.map((x) => ({ intitule: x.intitule, debut: lundiIso(x.annee, x.semaine), duree: x.duree })),
+			};
+		}),
+		fermetures: FERMETURES_PERRIER.map((f) => ({ debut: lundiIso(f.annee, f.semaine), duree: f.duree })),
+	};
+}
