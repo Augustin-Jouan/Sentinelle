@@ -1,3 +1,4 @@
+import { sommeAvenants } from '@/domaine/avenants';
 import { formatEuros, htEngage, totalArrondi, ttcEngage } from '@/domaine/montants';
 import { manquesPourGenerer, type Manque } from '@/domaine/regles';
 import { adresseArtisan } from './artisans';
@@ -14,7 +15,8 @@ export type LotVue = {
 	nature: 'GRE_A_GRE' | 'SOUS_TRAITANCE'; artisanId: string | null; entreprise: string | null;
 	commune: string | null; artisanArchive: boolean; htInitial: string; tauxTva: string;
 	retenueGarantie: string; exemplaires: number; dateSignature: string; corpsEtat: string;
-	htEngage: string; ttcEngage: string; manques: Manque[];
+	/** Somme signée des avenants ; engagé = initial + avenants (spec § 5). */
+	sommeAvenants: string; htEngage: string; ttcEngage: string; manques: Manque[];
 };
 
 export type VueMarches = {
@@ -26,20 +28,21 @@ export async function lireVueMarches(chantierId: string): Promise<VueMarches> {
 	const [c, artisans] = await Promise.all([
 		prisma.chantier.findUniqueOrThrow({
 			where: { id: chantierId },
-			include: { lots: { orderBy: { ordre: 'asc' }, include: { artisan: true } } },
+			include: { lots: { orderBy: { ordre: 'asc' }, include: { artisan: true, avenants: { orderBy: { numero: 'asc' } } } } },
 		}),
 		prisma.artisan.findMany({ orderBy: { nom: 'asc' } }),
 	]);
 	const lots: LotVue[] = c.lots.map((l) => {
 		const ht = l.montantHtInitial.toString();
 		const tva = l.tauxTva.toString();
+		const somme = sommeAvenants(l.avenants.map((a) => ({ montantHt: a.montantHt.toString() })));
 		return {
 			id: l.id, ordre: l.ordre, numero: l.numero, designation: l.designation, nature: l.nature,
 			artisanId: l.artisanId, entreprise: l.artisan?.nom ?? null, commune: l.artisan?.commune ?? null,
 			artisanArchive: l.artisan ? !l.artisan.actif : false,
 			htInitial: ht, tauxTva: tva, retenueGarantie: l.retenueGarantie.toString(), exemplaires: l.exemplaires,
 			dateSignature: versSaisieDate(l.dateSignature), corpsEtat: l.corpsEtat,
-			htEngage: htEngage(ht).toFixed(), ttcEngage: ttcEngage(ht, tva).toFixed(),
+			sommeAvenants: somme.toFixed(), htEngage: htEngage(ht, somme).toFixed(), ttcEngage: ttcEngage(ht, tva, somme).toFixed(),
 			manques: manquesPourGenerer({ artisanId: l.artisanId, montantHtInitial: ht, maitreOuvrage: c.maitreOuvrage, adresseChantier: c.adresse }),
 		};
 	});

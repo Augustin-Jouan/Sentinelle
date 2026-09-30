@@ -131,9 +131,10 @@ export async function genererVisa(chantierId: string, utilisateurId: string, dep
 /** L'un après l'autre : jamais plus d'une génération à la fois pour cette action. */
 export async function genererMarchesManquants(chantierId: string, utilisateurId: string, deps: Dependances = {}) {
 	const { chantier, lots } = await lireSources(chantierId);
+	// Un marché généré est un document dont la série est l'id du lot : avenants et certificats portent aussi `lotId`.
 	const dejaGeneres = new Set(
-		(await prisma.document.findMany({ where: { chantierId, lotId: { not: null } }, select: { lotId: true }, distinct: ['lotId'] }))
-			.map((d) => d.lotId),
+		(await prisma.document.findMany({ where: { chantierId, serie: { in: lots.map((l) => l.id) } }, select: { serie: true }, distinct: ['serie'] }))
+			.map((d) => d.serie),
 	);
 	const generes: string[] = [];
 	const ignores: { lot: string; raison: string }[] = [];

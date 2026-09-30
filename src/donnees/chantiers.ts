@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ErreurMetier } from '@/domaine/erreurs';
 import { LOTS_DE_BASE } from '@/domaine/lotsDeBase';
+import { sommeAvenants } from '@/domaine/avenants';
 import { formatEuros, totalArrondi, ttcEngage } from '@/domaine/montants';
 import { exemplairesParDefaut } from '@/domaine/regles';
 import { estDoublon } from './erreursPrisma';
@@ -109,7 +110,7 @@ export type ChantierListe = {
 export async function listerChantiers(): Promise<ChantierListe[]> {
 	const lignes = await prisma.chantier.findMany({
 		orderBy: { creeLe: 'desc' },
-		include: { chargeAffaire: true, lots: { select: { montantHtInitial: true, tauxTva: true } } },
+		include: { chargeAffaire: true, lots: { select: { montantHtInitial: true, tauxTva: true, avenants: { select: { montantHt: true } } } } },
 	});
 	return lignes.map((c) => ({
 		id: c.id,
@@ -118,7 +119,10 @@ export async function listerChantiers(): Promise<ChantierListe[]> {
 		commune: c.commune,
 		chargeAffaire: c.chargeAffaire.name,
 		termine: c.termine,
-		totalTtcTexte: formatEuros(totalArrondi(c.lots.map((l) => ttcEngage(l.montantHtInitial.toString(), l.tauxTva.toString())))),
+		totalTtcTexte: formatEuros(totalArrondi(c.lots.map((l) => ttcEngage(
+			l.montantHtInitial.toString(), l.tauxTva.toString(),
+			sommeAvenants(l.avenants.map((a) => ({ montantHt: a.montantHt.toString() }))),
+		)))),
 	}));
 }
 

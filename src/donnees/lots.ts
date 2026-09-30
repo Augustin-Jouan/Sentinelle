@@ -1,9 +1,11 @@
 import Decimal from 'decimal.js';
+import { HT_INFERIEUR_AVENANTS, sommeAvenants, verifierEngage } from '@/domaine/avenants';
 import { ErreurMetier } from '@/domaine/erreurs';
 import { htDepuisTtc, lireNombreFr } from '@/domaine/montants';
 import { exemplairesParDefaut, type Nature } from '@/domaine/regles';
 import { versDateCalendaire } from './chantiers';
 import { prisma } from './prisma';
+import { montantsAvenants, sousVerrouLot } from './verrouLot';
 
 export const CHAMPS_LOT = [
 	'numero', 'designation', 'montantHt', 'montantTtc', 'tauxTva', 'retenueGarantie',
@@ -39,6 +41,23 @@ function taux(valeur: string, champ: ChampLot): string {
 }
 
 export async function modifierChampLot(lotId: string, champ: ChampLot, valeur: string): Promise<{ chantierId: string }> {
+	// Les montants dépendent des avenants : lus et écrits sous le verrou du lot (spec § 5).
+	if (champ === 'montantHt' || champ === 'montantTtc') {
+		const saisi = montantPositif(valeur, champ);
+		return sousVerrouLot(lotId, async (tx, lot) => {
+			const avenants = montantsAvenants(lot);
+			let ht: Decimal;
+			if (champ === 'montantHt') {
+				ht = saisi.toDecimalPlaces(8);
+				verifierEngage(ht, avenants, HT_INFERIEUR_AVENANTS);
+			} else {
+				ht = htDepuisTtc(saisi, lot.tauxTva.toString(), sommeAvenants(avenants));
+			}
+			await tx.lot.update({ where: { id: lotId }, data: { montantHtInitial: ht.toFixed() } });
+			return { chantierId: lot.chantierId };
+		});
+	}
+
 	const lot = await prisma.lot.findUniqueOrThrow({ where: { id: lotId } });
 	let donnees: Record<string, unknown>;
 	switch (champ) {
@@ -49,14 +68,6 @@ export async function modifierChampLot(lotId: string, champ: ChampLot, valeur: s
 			const d = texte(champ, valeur);
 			if (!d) throw new ErreurMetier('La désignation est obligatoire.', champ);
 			donnees = { designation: d };
-			break;
-		}
-		case 'montantHt':
-			donnees = { montantHtInitial: montantPositif(valeur, champ).toDecimalPlaces(8).toFixed() };
-			break;
-		case 'montantTtc': {
-			const ttc = montantPositif(valeur, champ);
-			donnees = { montantHtInitial: htDepuisTtc(ttc, lot.tauxTva.toString()).toFixed() };
 			break;
 		}
 		case 'tauxTva':

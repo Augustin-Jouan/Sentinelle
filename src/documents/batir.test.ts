@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CLAUSE_LOT_02, PERRIER_CHANTIER, PERRIER_LOTS, PERRIER_PARAMETRES, TRAVAUX_ESCALIER } from '../../tests/fixtures/perrier';
+import { formatEuros } from '@/domaine/montants';
 import { batirMarche, batirRecap, empreinteDocument } from './batir';
 import { donneesDocumentSchema } from './schemas';
 
@@ -121,6 +122,18 @@ describe('récapitulatif PERRIER', () => {
 
 	it('respecte son schéma', () => {
 		expect(donneesDocumentSchema.safeParse(d).success).toBe(true);
+	});
+
+	it('au montant engagé : les avenants comptent', () => {
+		const lots = PERRIER_LOTS.map((l) => (l.designation === 'CARRELAGE — FAÏENCE'
+			? { ...l, avenants: [
+				{ id: 'a1', numero: 1, devis: '', montantHt: '850', date: new Date('2026-05-12T00:00:00Z'), objet: '' },
+				{ id: 'a2', numero: 2, devis: '', montantHt: '-300', date: new Date('2026-05-20T00:00:00Z'), objet: '' },
+			] }
+			: l));
+		const r = batirRecap(PERRIER_CHANTIER, lots, PERRIER_PARAMETRES, MAINTENANT);
+		expect(r.contenu.lignes.find((l) => l.designation === 'CARRELAGE — FAÏENCE')).toMatchObject({ montantTtc: '15780.00', montantTtcTexte: formatEuros('15780') });
+		expect(r.contenu.totalTtc).toBe('374676.00');
 	});
 });
 

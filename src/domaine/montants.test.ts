@@ -33,8 +33,8 @@ describe('htDepuisTtc', () => {
 	it('déduit les avenants', () => {
 		expect(htDepuisTtc('1200', '20', '100').toFixed(2)).toBe('900.00');
 	});
-	it('refuse un HT négatif', () => {
-		expect(() => htDepuisTtc('100', '20', '500')).toThrow(ErreurMetier);
+	it('refuse un TTC inférieur aux seuls avenants', () => {
+		expect(() => htDepuisTtc('100', '20', '500')).toThrow('Ce TTC est inférieur aux seuls avenants.');
 	});
 });
 

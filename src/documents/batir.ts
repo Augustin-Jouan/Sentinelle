@@ -1,3 +1,4 @@
+import { sommeAvenants } from '@/domaine/avenants';
 import { empreinte } from '@/domaine/empreinte';
 import { ErreurMetier } from '@/domaine/erreurs';
 import {
@@ -23,11 +24,15 @@ export type SourceChantier = {
 	adresse: string; cp: string; commune: string; mission: Mission; dateSignaturePrevue: Date | null; chargeAffaire: string;
 };
 
+export type SourceAvenant = { id: string; numero: number; devis: string; montantHt: string; date: Date; objet: string };
+
 export type SourceLot = {
 	id: string; numero: string | null; designation: string; nature: Nature;
 	montantHtInitial: string; tauxTva: string; retenueGarantie: string; exemplaires: number;
 	corpsEtat: string; travaux: string; clauseParticuliere: string; dateSignature: Date | null;
 	artisanId: string | null; artisan: SourceArtisan | null;
+	/** Triés par numéro. Le marché imprimé les ignore ; le récapitulatif et le certificat les comptent. */
+	avenants: SourceAvenant[];
 };
 
 const TIRET = '—';
@@ -92,7 +97,7 @@ export function batirMarche(c: SourceChantier, l: SourceLot, p: SourceParametres
 
 export function batirRecap(c: SourceChantier, lots: SourceLot[], p: SourceParametres, maintenant: Date): DonneesRecap {
 	const lignes: LigneRecap[] = lots.map((l) => {
-		const ttc = arrondiCentime(ttcEngage(l.montantHtInitial, l.tauxTva));
+		const ttc = arrondiCentime(ttcEngage(l.montantHtInitial, l.tauxTva, sommeAvenants(l.avenants)));
 		const a = l.artisan;
 		return {
 			numero: l.numero ?? TIRET,
