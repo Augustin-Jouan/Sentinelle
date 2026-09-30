@@ -6,13 +6,13 @@ import type { ReponsePlanning } from '@/domaine/planningVue';
 import { depuisIso } from '@/domaine/semaines';
 import * as planning from '@/donnees/planning';
 import type { ChampFermeture, ChampPeriode } from '@/donnees/planning';
+import { dureePeriode } from './dureePeriode';
 import { executer, type Resultat } from './executer';
 
 const id = z.string().min(1);
 const dateIso = z.string()
 	.regex(/^\d{4}-\d{2}-\d{2}$/, 'Date invalide.')
 	.refine((s) => !Number.isNaN(depuisIso(s).getTime()), 'Date invalide.');
-const duree = z.number().int('La durée doit être comprise entre 1 et 104 semaines.');
 const champPeriode = z.enum(['intitule', 'semaine', 'annee', 'duree']);
 const champFermeture = z.enum(['libelle', 'semaine', 'annee', 'duree']);
 const valeur = z.string().max(500);
@@ -25,7 +25,7 @@ async function repondre(travail: Promise<ReponsePlanning>): Promise<ReponsePlann
 }
 
 export async function creerPeriodeAction(lotId: string, debut: string, semaines: number): Promise<Resultat<ReponsePlanning>> {
-	return executer({}, () => repondre(planning.creerPeriode(id.parse(lotId), dateIso.parse(debut), duree.parse(semaines))));
+	return executer({}, () => repondre(planning.creerPeriode(id.parse(lotId), dateIso.parse(debut), dureePeriode.parse(semaines))));
 }
 
 export async function deplacerPeriodesAction(chantierId: string, mouvements: { id: string; debut: string }[]): Promise<Resultat<ReponsePlanning>> {
