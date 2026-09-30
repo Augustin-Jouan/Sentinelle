@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { enTeteTelechargement, nomFichierAvenant, nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierTableur, nomFichierVisa, slugifier } from './fichiers';
+import { enTeteTelechargement, nomFichierAvenant, nomFichierCertificat, nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierTableur, nomFichierVisa, slugifier } from './fichiers';
 
 describe('noms de fichiers', () => {
 	it('slugifie accents, ligatures et ponctuation', () => {
@@ -33,6 +33,10 @@ describe('noms de fichiers', () => {
 			.toBe('FINANCIER-Lot11-PEINTURE-Avenant01-v1.pdf');
 		expect(nomFichierAvenant({ reference: 'PERRIER — Louisfert', numero: null, designation: 'ESCALIER', nature: 'SOUS_TRAITANCE', numeroAvenant: 12, version: 3 }))
 			.toBe('PERRIER-LOUISFERT-ST-ESCALIER-Avenant12-v3.pdf');
+	});
+	it('certificat de paiement', () => {
+		expect(nomFichierCertificat({ reference: 'FINANCIER', numero: '11', designation: 'PEINTURE', nature: 'GRE_A_GRE', numeroCertificat: 3, version: 2 }))
+			.toBe('FINANCIER-Lot11-PEINTURE-Certificat03-v2.pdf');
 	});
 	it('en-tête de téléchargement ASCII et encodé', () => {
 		expect(enTeteTelechargement('A-Lot02-B-Marche-v1.pdf'))

@@ -13,7 +13,20 @@ import { serieAvenant, SERIES } from './series';
 import { TROP_DE_LIGNES } from './uneFeuille';
 
 export type ResultatGeneration = { documentId: string; version: number; nomFichier: string; nouvelle: boolean };
-type Dependances = { maintenant?: Date; rendrePdf?: RendrePdf };
+export type Dependances = { maintenant?: Date; rendrePdf?: RendrePdf };
+
+export const DONNEES_CHANGEES = 'Les données ont changé pendant la génération. Relancez-la pour obtenir un document à jour.';
+
+/** HTML puis PDF ; un échec inattendu devient un message clair. Ni HTML, ni montant, ni nom de client dans le journal. */
+export async function rendrePdfDocument(donnees: DonneesDocument, rendrePdf: RendrePdf): Promise<Uint8Array> {
+	try {
+		return await rendrePdf(await rendreHtml(donnees));
+	} catch (e) {
+		if (e instanceof ErreurMetier) throw e;
+		console.error('[pdf] échec de génération', { type: donnees.type, erreur: e instanceof Error ? e.name : typeof e });
+		throw new ErreurMetier("La génération du PDF a échoué. Réessayez ; si le problème persiste, prévenez l'administrateur.");
+	}
+}
 
 const imprimerParDefaut: RendrePdf = (html) => htmlVersPdf(html, { paysage: true });
 
@@ -51,20 +64,12 @@ async function enregistrerVersion(p: {
 		return { documentId: derniere.id, version: derniere.version, nomFichier: derniere.nomFichier, nouvelle: false };
 	}
 
-	let pdf: Uint8Array;
-	try {
-		pdf = await p.rendrePdf(await rendreHtml(p.donnees));
-	} catch (e) {
-		if (e instanceof ErreurMetier) throw e;
-		// Ni HTML, ni montant, ni nom de client dans le journal.
-		console.error('[pdf] échec de génération', { type: p.donnees.type, erreur: e instanceof Error ? e.name : typeof e });
-		throw new ErreurMetier("La génération du PDF a échoué. Réessayez ; si le problème persiste, prévenez l'administrateur.");
-	}
+	const pdf = await rendrePdfDocument(p.donnees, p.rendrePdf);
 
 	// Données modifiées pendant le rendu : ce PDF est déjà périmé, il ne doit pas devenir la dernière version.
 	// Le verrou ne protège pas de ce cas (les saisies ne le prennent pas), d'où la relecture ici.
 	if ((await p.empreinteActuelle()) !== emp) {
-		throw new ErreurMetier('Les données ont changé pendant la génération. Relancez-la pour obtenir un document à jour.');
+		throw new ErreurMetier(DONNEES_CHANGEES);
 	}
 
 	return prisma.$transaction(async (tx) => {

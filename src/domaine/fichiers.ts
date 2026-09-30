@@ -20,6 +20,10 @@ export function nomFichierAvenant(p: { reference: string; numero: string | null;
 	return `${slugifier(p.reference)}-${prefixeLot(p.nature, p.numero)}-${slugifier(p.designation)}-Avenant${String(p.numeroAvenant).padStart(2, '0')}-v${p.version}.pdf`;
 }
 
+export function nomFichierCertificat(p: { reference: string; numero: string | null; designation: string; nature: Nature; numeroCertificat: number; version: number }): string {
+	return `${slugifier(p.reference)}-${prefixeLot(p.nature, p.numero)}-${slugifier(p.designation)}-Certificat${String(p.numeroCertificat).padStart(2, '0')}-v${p.version}.pdf`;
+}
+
 export function nomFichierRecap(reference: string, version: number): string {
 	return `${slugifier(reference)}-RecapMarches-v${version}.pdf`;
 }
