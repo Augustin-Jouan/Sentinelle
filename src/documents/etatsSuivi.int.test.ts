@@ -11,7 +11,7 @@ const deps = { rendrePdf: vi.fn(async () => new Uint8Array([37, 80, 68, 70])) };
 const LE_12_OCTOBRE = new Date('2026-10-12T08:00:00Z');
 let p: Awaited<ReturnType<typeof insererPerrier>>;
 
-const vue = () => etatsDocumentsChantier(p.chantierId);
+const vue = async () => (await etatsDocumentsChantier(p.chantierId))!;
 const ligne = async (designation: string) =>
 	(await vue()).entreprises.flatMap((g) => g.lots).find((l) => l.lotTexte.endsWith(designation))!;
 

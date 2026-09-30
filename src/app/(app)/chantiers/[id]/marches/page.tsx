@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { exigerPage } from '@/auth/session';
 import { buttonVariants } from '@/components/ui/button';
 import { ApercuCertificat } from '@/composants/ApercuCertificat';
@@ -59,6 +60,7 @@ export default async function PageMarches({ params, searchParams }: Props) {
 	const { id } = await params;
 	const { apercu, avenant, certificat, corriger } = await searchParams;
 	const vue = await lireVueMarches(id);
+	if (!vue) notFound();
 	const lot = apercu ? vue.lots.find((l) => l.id === apercu) : undefined;
 	const donnees = lot ? (await construireDonneesMarche(lot.id)).donnees : null;
 	const autreApercu = avenant ? await apercuAvenant(id, avenant)

@@ -123,7 +123,9 @@ function carteComptesRendus(comptesRendus: CompteRenduLu[], docsDe: (serie: stri
 }
 
 /** L'état se calcule en reconstruisant le contenu actuel et en le comparant à la dernière version : rien n'est stocké. */
-export async function etatsDocumentsChantier(chantierId: string, maintenant = new Date()): Promise<VueDocuments> {
+export async function etatsDocumentsChantier(chantierId: string, maintenant = new Date()): Promise<VueDocuments | null> {
+	const existe = await prisma.chantier.findUnique({ where: { id: chantierId }, select: { id: true } });
+	if (!existe) return null;
 	const [{ chantier, lots, parametres }, docs, empreinteDuPlanning, acomptes, lettres, comptesRendus, proces, receptions] = await Promise.all([
 		lireSources(chantierId),
 		prisma.document.findMany({ where: { chantierId }, orderBy: { version: 'desc' }, select: SELECTION }),

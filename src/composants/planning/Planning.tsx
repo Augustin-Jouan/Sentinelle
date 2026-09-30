@@ -22,6 +22,7 @@ import { GrillePlanning } from './GrillePlanning';
 import { PanneauLotPlanning } from './PanneauLotPlanning';
 import { usePreferencesPlanning } from './preferences';
 import { useClavier } from './useClavier';
+import { creerFileActions, ID_PERIODE_TEMPORAIRE } from './fileActions';
 import { appliquerPositions, useGestes } from './useGestes';
 
 type Appel = () => Promise<Resultat<ReponsePlanning>>;
@@ -58,21 +59,23 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 	const choisies = selection.filter((id) => existantes.has(id));
 	const nbAffichees = planning.lots.filter((l) => !masques.includes(l.id)).reduce((n, l) => n + l.periodes.length, 0);
 	const rangAujourdhui = rangIso(aujourdhui);
+	const enFile = useRef(creerFileActions()).current;
 
 	async function envoyer(local: PlanningVue | null, appel: Appel, silencieux = false): Promise<Resultat<ReponsePlanning>> {
 		if (local) setPlanning(local);
-		const r = await appel();
-		if (r.ok) {
-			serveur.current = r.donnees.planning;
-			setPlanning(r.donnees.planning);
-			if (r.donnees.message) toast(r.donnees.message);
-		} else {
-			setPlanning(serveur.current);
-			// Un champ du panneau affiche lui-même son erreur (ChampEnLigne).
-			if (!silencieux) toast.error(r.erreur);
-			router.refresh();
-		}
-		return r;
+		return enFile(async () => {
+			const r = await appel();
+			if (r.ok) {
+				serveur.current = r.donnees.planning;
+				setPlanning(r.donnees.planning);
+				if (r.donnees.message) toast(r.donnees.message);
+			} else {
+				setPlanning(serveur.current);
+				if (!silencieux) toast.error(r.erreur);
+				router.refresh();
+			}
+			return r;
+		});
 	}
 
 	/** Le résultat d'un geste par la règle du domaine ; null si elle le refuse (le serveur dira pourquoi). */
@@ -94,7 +97,7 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 	}
 
 	function tracer(lotId: string, debut: number, duree: number) {
-		const local = calculer((p) => regles.creerPeriode(p, { id: 'nouvelle-periode', lotId, intitule: '', debut, duree, dependDeId: null }));
+		const local = calculer((p) => regles.creerPeriode(p, { id: ID_PERIODE_TEMPORAIRE, lotId, intitule: '', debut, duree, dependDeId: null }));
 		void envoyer(local, () => creerPeriodeAction(lotId, isoRang(debut), duree)).then((r) => {
 			if (!r.ok || !r.donnees.periodeId) return;
 			selectionner([r.donnees.periodeId]);
@@ -180,7 +183,9 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 	}
 
 	const { rendu, onPointerDown } = useGestes({
-		outil: preferences.outil, debutAxe: e.debut, w, periodes, selection: choisies, cadre,
+		outil: preferences.outil, debutAxe: e.debut, w,
+		periodes: periodes.filter((x) => x.id !== ID_PERIODE_TEMPORAIRE),
+		selection: choisies.filter((id) => id !== ID_PERIODE_TEMPORAIRE), cadre,
 		onSelection: selectionner, onBasculer: basculer, onOuvrirLot: setPanneauLot,
 		onTracer: tracer, onDeplacer: deplacer, onAllonger: allonger,
 	});

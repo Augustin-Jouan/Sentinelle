@@ -9,3 +9,8 @@ export function estDoublon(e: unknown): boolean {
 export function estCleEtrangere(e: unknown): boolean {
 	return e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2003';
 }
+
+/** `findUniqueOrThrow` / `update` : la ligne visée n'existe plus. */
+export function estIntrouvable(e: unknown): boolean {
+	return e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025';
+}
