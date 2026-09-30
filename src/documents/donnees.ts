@@ -7,7 +7,7 @@ import { SERIES } from './series';
 
 const includeChantier = {
 	chargeAffaire: true,
-	lots: { orderBy: { ordre: 'asc' as const }, include: { artisan: true } },
+	lots: { orderBy: { ordre: 'asc' as const }, include: { artisan: true, avenants: { orderBy: { numero: 'asc' as const } } } },
 };
 
 type ChantierLu = NonNullable<Awaited<ReturnType<typeof lireChantierBrut>>>;
@@ -33,6 +33,9 @@ function versSources(c: ChantierLu): { chantier: SourceChantier; lots: SourceLot
 				nom: l.artisan.nom, adresse: l.artisan.adresse, cp: l.artisan.cp, commune: l.artisan.commune,
 				interlocuteur: l.artisan.interlocuteur, telephone: l.artisan.telephone,
 			},
+			avenants: l.avenants.map((a) => ({
+				id: a.id, numero: a.numero, devis: a.devis, montantHt: a.montantHt.toString(), date: a.date, objet: a.objet,
+			})),
 		})),
 	};
 }

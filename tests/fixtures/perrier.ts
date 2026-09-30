@@ -61,6 +61,7 @@ const lot = (numero: string | null, designation: string, entreprise: string | nu
 	dateSignature: null,
 	artisanId: entreprise,
 	artisan: entreprise ? PERRIER_ARTISANS[entreprise] : null,
+	avenants: [],
 	...o,
 });
 

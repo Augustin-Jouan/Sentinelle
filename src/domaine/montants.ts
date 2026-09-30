@@ -12,7 +12,7 @@ export function ttcInitial(htInitial: Valeur, tauxTva: Valeur): Decimal {
 	return new Decimal(htInitial).times(CENT.plus(tauxTva)).div(CENT);
 }
 
-/** HT engagé = initial + avenants (les avenants arrivent au sous-projet 3). */
+/** HT engagé = initial + avenants. */
 export function htEngage(htInitial: Valeur, avenantsHt: Valeur = 0): Decimal {
 	return new Decimal(htInitial).plus(avenantsHt);
 }
@@ -25,7 +25,7 @@ export function ttcEngage(htInitial: Valeur, tauxTva: Valeur, avenantsHt: Valeur
 /** Saisir un TTC recalcule le HT initial : HT = TTC / (1 + TVA) − avenants. 8 décimales, pour retrouver le TTC au centime. */
 export function htDepuisTtc(ttc: Valeur, tauxTva: Valeur, avenantsHt: Valeur = 0): Decimal {
 	const ht = new Decimal(ttc).times(CENT).div(CENT.plus(tauxTva)).minus(avenantsHt);
-	if (ht.isNegative() && !ht.isZero()) throw new ErreurMetier('Le montant HT deviendrait négatif.');
+	if (ht.isNegative() && !ht.isZero()) throw new ErreurMetier('Ce TTC est inférieur aux seuls avenants.');
 	return ht.toDecimalPlaces(8, Decimal.ROUND_HALF_UP);
 }
 
