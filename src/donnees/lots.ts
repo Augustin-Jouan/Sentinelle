@@ -5,7 +5,7 @@ import { htDepuisTtc, lireNombreFr } from '@/domaine/montants';
 import { exemplairesParDefaut, type Nature } from '@/domaine/regles';
 import { versDateCalendaire } from './chantiers';
 import { prisma } from './prisma';
-import { montantsAvenants, sousVerrouLot } from './verrouLot';
+import { montantsAvenants, sousVerrouLot, verrouillerChantier } from './verrouLot';
 
 export const CHAMPS_LOT = [
 	'numero', 'designation', 'montantHt', 'montantTtc', 'tauxTva', 'retenueGarantie',
@@ -89,7 +89,7 @@ export async function modifierChampLot(lotId: string, champ: ChampLot, valeur: s
 /** Sous verrou du chantier : deux ajouts simultanés ne se disputent pas le même `ordre`. */
 export async function ajouterLot(chantierId: string): Promise<string> {
 	return prisma.$transaction(async (tx) => {
-		await tx.$executeRaw`SELECT 1 FROM "Chantier" WHERE id = ${chantierId} FOR UPDATE`;
+		await verrouillerChantier(tx, chantierId);
 		const dernier = await tx.lot.aggregate({ where: { chantierId }, _max: { ordre: true } });
 		const lot = await tx.lot.create({
 			data: { chantierId, ordre: (dernier._max.ordre ?? 0) + 1, designation: 'Nouveau lot', exemplaires: exemplairesParDefaut('GRE_A_GRE') },

@@ -18,7 +18,7 @@ import { versDateCalendaire, versSaisieDate } from './chantiers';
 import { estDoublon } from './erreursPrisma';
 import { PARAMETRES_PAR_DEFAUT } from './parametres';
 import { prisma } from './prisma';
-import type { Tx } from './verrouLot';
+import { sousVerrouChantier, type Tx } from './verrouLot';
 
 export const convocationsSchema = z.record(z.string(), z.enum(CONVOCATIONS));
 
@@ -138,24 +138,15 @@ function donneesChamp(cr: CompteRendu, champ: ChampCompteRendu, valeur: string):
 	}
 }
 
-/** `SELECT … FOR UPDATE` sur la ligne du brouillon ; enregistré ou abandonné entre-temps : « Ce brouillon n'existe plus. » */
+/** `SELECT … FOR NO KEY UPDATE` sur la ligne du brouillon ; enregistré ou abandonné entre-temps : « Ce brouillon n'existe plus. » */
 async function verrouillerBrouillon(tx: Tx, id: string): Promise<CompteRendu> {
-	const verrou = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM "CompteRendu" WHERE id = ${id} AND statut = 'BROUILLON' FOR UPDATE`;
+	const verrou = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM "CompteRendu" WHERE id = ${id} AND statut = 'BROUILLON' FOR NO KEY UPDATE`;
 	if (!verrou.length) throw new ErreurMetier(BROUILLON_DISPARU);
 	return tx.compteRendu.findUniqueOrThrow({ where: { id } });
 }
 
 function sousVerrouBrouillon<T>(id: string, operation: (tx: Tx, cr: CompteRendu) => Promise<T>): Promise<T> {
 	return prisma.$transaction(async (tx) => operation(tx, await verrouillerBrouillon(tx, id)));
-}
-
-/** Enregistrement et correction : `FOR UPDATE` sur le chantier d'abord, puis sur le compte rendu (spec § 2, « Verrous »). */
-function sousVerrouChantier<T>(chantierId: string, operation: (tx: Tx) => Promise<T>): Promise<T> {
-	return prisma.$transaction(async (tx) => {
-		const verrou = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM "Chantier" WHERE id = ${chantierId} FOR UPDATE`;
-		if (!verrou.length) throw new ErreurMetier(INTROUVABLE);
-		return operation(tx);
-	});
 }
 
 async function estDernier(client: Tx, chantierId: string, numero: number): Promise<boolean> {
@@ -280,6 +271,7 @@ export async function enregistrerCompteRendu(id: string, utilisateurId: string, 
 	const donnees = await construire(prisma, brouillon, saisiesDe(brouillon));
 	const empreinte = empreinteDocument(donnees);
 	const pdf = await rendrePdfDocument(donnees, deps.rendrePdf ?? imprimerPortrait);
+	// Enregistrement et correction : `FOR NO KEY UPDATE` sur le chantier d'abord, puis sur le compte rendu (spec § 2, « Verrous »).
 	return sousVerrouChantier(brouillon.chantierId, async (tx) => {
 		const cr = await verrouillerBrouillon(tx, id);
 		if (empreinteDocument(await construire(tx, cr, saisiesDe(cr))) !== empreinte) throw new ErreurMetier(DONNEES_CHANGEES);
@@ -308,7 +300,7 @@ export async function corrigerCompteRendu(id: string, saisies: SaisiesCompteRend
 	if (dejaLa) return dejaLa;
 	const pdf = await rendrePdfDocument(donnees, deps.rendrePdf ?? imprimerPortrait);
 	return sousVerrouChantier(cr.chantierId, async (tx) => {
-		await tx.$queryRaw`SELECT id FROM "CompteRendu" WHERE id = ${id} FOR UPDATE`;
+		await tx.$queryRaw`SELECT id FROM "CompteRendu" WHERE id = ${id} FOR NO KEY UPDATE`;
 		if (empreinteDocument(await preparer(tx)) !== empreinte) throw new ErreurMetier(DONNEES_CHANGEES);
 		const courante = await tx.document.findFirst({ where: serie, orderBy: { version: 'desc' } });
 		const memeVersion = identique(courante);
