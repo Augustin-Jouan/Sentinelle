@@ -45,3 +45,11 @@ a.btn { text-decoration: none; }
 [data-slot='dialog-content'][data-closed], [data-slot='dialog-content'][data-ending-style] {
 	pointer-events: none;
 }
+
+/* Menu du compte : les entrées de l'app sont des liens et un formulaire (écart 1) — même dessin que les boutons de la maquette. */
+a.compte-item { display: block; text-decoration: none; color: inherit; }
+.compte-menu form { margin: 0; }
+.compte-menu form .compte-item { width: 100%; }
+
+/* Barre de navigation : l'app navigue par liens là où la maquette avait des boutons. */
+a.nav-marque, a.nav-ic, a.nav-b, a.nav-o { text-decoration: none; }
