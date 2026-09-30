@@ -225,8 +225,14 @@ export async function etatsDocumentsChantier(chantierId: string, maintenant = ne
 	};
 }
 
-export async function lireDocument(id: string): Promise<{ id: string; chantierId: string; lotId: string | null; version: number; donnees: DonneesDocument; nomFichier: string } | null> {
-	const d = await prisma.document.findUnique({ where: { id }, select: { id: true, chantierId: true, lotId: true, version: true, donnees: true, nomFichier: true } });
+/** Les versions d'une série (le menu « Version » de l'aperçu), de la plus récente à la plus ancienne. */
+export async function versionsDeLaSerie(chantierId: string, serie: string): Promise<VersionResume[]> {
+	const docs = await prisma.document.findMany({ where: { chantierId, serie }, orderBy: { version: 'desc' }, select: SELECTION });
+	return docs.map(resume);
+}
+
+export async function lireDocument(id: string): Promise<{ id: string; chantierId: string; lotId: string | null; version: number; serie: string; type: TypeDocument; donnees: DonneesDocument; nomFichier: string } | null> {
+	const d = await prisma.document.findUnique({ where: { id }, select: { id: true, chantierId: true, lotId: true, version: true, serie: true, type: true, donnees: true, nomFichier: true } });
 	if (!d) return null;
 	return { ...d, donnees: donneesDocumentSchema.parse(d.donnees) };
 }

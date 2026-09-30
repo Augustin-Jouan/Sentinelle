@@ -73,3 +73,8 @@ a.chantier-new { text-decoration: none; color: inherit; }
 /* Écran Documents : les cases et actions sont des liens dans l'app (des boutons dans la maquette). */
 a.dm-case, a.dm-ajout, a.dm-carte-v, a.dm-th-action, a.doc-link { text-decoration: none; }
 span.dm-ajout[aria-disabled='true'] { opacity: 0.4; cursor: not-allowed; }
+
+/* Sous le titre d'un aperçu : ce qui empêche de générer (danger) ou une précision sur la version (discret). */
+.gen-note { margin: 0.375rem 0 0; font-size: 0.75rem; color: var(--danger); }
+.gen-note.est-info { color: var(--muted); }
+.gen-head a.btn { text-decoration: none; }
