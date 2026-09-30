@@ -18,8 +18,10 @@ test('les compteurs de la barre suivent les actions, sans rechargement', async (
 	await expect(onglet('Marchés')).toHaveText('0');
 	await page.getByRole('button', { name: 'Ajouter un lot' }).first().click();
 	await expect(onglet('Marchés')).toHaveText('1');
+	// « Ajouter un lot » ouvre le panneau du lot (maquette) : le quitter pour retrouver la barre.
+	await page.keyboard.press('Escape');
 	// Hors d'un chantier, pas d'onglets ; le sélecteur dit « Affichage ».
-	await page.getByRole('link', { name: 'Tous les chantiers' }).click();
+	await page.getByTitle('Tous les chantiers').click();
 	await expect(page.locator('.nav-onglets')).toBeHidden();
 	await expect(page.locator('.picker-k')).toHaveText('Affichage');
 });

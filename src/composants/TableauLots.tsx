@@ -1,25 +1,54 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import Decimal from 'decimal.js';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { ajouterLotAction, modifierChampLotAction } from '@/actions/lots';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import * as Icone from '@/composants/maquette/icones';
+import { MenuDeroulant } from '@/composants/maquette/MenuDeroulant';
+import { usePreference } from '@/composants/maquette/preference';
+import { Recherche } from '@/composants/maquette/Recherche';
 import type { VueMarches } from '@/donnees/marches';
-import { LIBELLES_TRI, lotsVisibles, type TriLots } from '@/domaine/lots';
-import { formatMontantSaisie, formatTauxSaisie } from '@/domaine/montants';
+import { lotsVisibles, TRIS_LOTS, type TriLots } from '@/domaine/lots';
+import { formatMontantSaisie } from '@/domaine/montants';
 import { ChampEnLigne } from './ChampEnLigne';
 import { PanneauLot } from './PanneauLot';
 
-export function TableauLots({ vue, actions }: { vue: VueMarches; actions?: React.ReactNode }) {
-	const [requete, setRequete] = useState('');
-	const [tri, setTri] = useState<TriLots>('saisie');
-	const [lotOuvert, setLotOuvert] = useState<string | null>(null);
+const estTri = (v: unknown): v is TriLots => TRIS_LOTS.some((t) => t.v === v);
+/** « 20.00 » : le taux tel que la maquette l'affiche (toFixed(2)) ; lireNombreFr le relit. */
+export const tauxAffiche = (v: string) => new Decimal(v).toFixed(2);
+
+const OUVRIR_LOT = 'sentinelle:ouvrir-lot';
+
+/** « Ajouter un lot » de la barre de titre (rendue par la page) : crée le lot, puis demande au tableau d'ouvrir son panneau. */
+export function BoutonAjouterLot({ chantierId }: { chantierId: string }) {
 	const [enCours, demarrer] = useTransition();
+	return (
+		<button type="button" className="btn" disabled={enCours} onClick={() => demarrer(async () => {
+			const r = await ajouterLotAction(chantierId);
+			if (!r.ok) { toast.error(r.erreur); return; }
+			window.dispatchEvent(new CustomEvent(OUVRIR_LOT, { detail: r.donnees.id }));
+		})}>
+			<Icone.Plus />Ajouter un lot
+		</button>
+	);
+}
+
+export function TableauLots({ vue }: { vue: VueMarches }) {
+	const [requete, setRequete] = useState('');
+	const [tri, setTri] = usePreference<TriLots>('sentinelle-tri-lots', 'saisie', estTri);
+	const [lotOuvert, setLotOuvert] = useState<string | null>(null);
+	useEffect(() => {
+		const ouvrir = (e: Event) => setLotOuvert((e as CustomEvent<string>).detail);
+		window.addEventListener(OUVRIR_LOT, ouvrir);
+		return () => window.removeEventListener(OUVRIR_LOT, ouvrir);
+	}, []);
+	const [, demarrer] = useTransition();
 	const vus = lotsVisibles(vue.lots, requete, tri);
 	const ouvert = vue.lots.find((l) => l.id === lotOuvert);
 	const champ = (id: string, c: 'numero' | 'designation' | 'montantHt' | 'tauxTva' | 'montantTtc') => modifierChampLotAction.bind(null, id, c);
 	const arreter = (e: React.MouseEvent) => e.stopPropagation();
+	const q = requete.trim();
 
 	function ajouter() {
 		demarrer(async () => {
@@ -30,62 +59,67 @@ export function TableauLots({ vue, actions }: { vue: VueMarches; actions?: React
 	}
 
 	return (
-		<div className="space-y-3">
-			<div className="flex flex-wrap items-center gap-3">
-				<Input className="max-w-xs" placeholder="Rechercher un lot…" aria-label="Rechercher un lot" value={requete} onChange={(e) => setRequete(e.target.value)} />
-				<label className="flex items-center gap-2 text-sm">
-					Trier par
-					<select className="h-9 rounded-md border border-input bg-card px-2" value={tri} onChange={(e) => setTri(e.target.value as TriLots)}>
-						{Object.entries(LIBELLES_TRI).map(([v, t]) => <option key={v} value={v}>{t}</option>)}
-					</select>
-				</label>
-				<div className="ml-auto flex gap-2">
-					<Button variant="outline" onClick={ajouter} disabled={enCours}>Ajouter un lot</Button>
-					{actions}
-				</div>
+		<>
+			<div className="toolbar">
+				<Recherche placeholder="Rechercher un lot, une entreprise, un numéro…" libelle="Rechercher un lot" valeur={requete} onChange={setRequete} />
+				<MenuDeroulant id="lot-sort" k="Trier par" valeur={tri} options={TRIS_LOTS} onChoisir={(v) => { if (estTri(v)) setTri(v); }} />
+				<span className="eyebrow">{q ? `${vus.length} lot${vus.length > 1 ? 's' : ''} sur ${vue.lots.length} · les totaux portent sur le chantier entier` : ''}</span>
 			</div>
-			{requete.trim() && (
-				<p className="text-xs text-muted-foreground">{vus.length} lot{vus.length > 1 ? 's' : ''} sur {vue.lots.length} · les totaux portent sur le chantier entier</p>
-			)}
-			<div className="overflow-x-auto rounded-xl border bg-card">
-				<table className="w-full min-w-[56rem] text-sm">
+			<div className="table-frame">
+				<table className="lots">
 					<thead>
-						<tr className="border-b text-left text-muted-foreground">
-							<th className="w-20 p-2">N°</th><th className="p-2">Lot</th><th className="p-2">Entreprise</th>
-							<th className="w-36 p-2 text-right">Montant HT</th><th className="w-24 p-2 text-right">TVA</th><th className="w-36 p-2 text-right">Montant TTC</th>
-						</tr>
+						<tr><th>N°</th><th>Lot</th><th>Entreprise</th><th className="ta-r">Montant HT</th><th className="ta-r">TVA</th><th className="ta-r">Montant TTC</th></tr>
 					</thead>
 					<tbody>
-						{vus.map((l) => (
-							<tr key={l.id} data-lot={l.designation} className="cursor-pointer border-b last:border-0 hover:bg-accent/60" onClick={() => setLotOuvert(l.id)}>
-								<td className="p-1" onClick={arreter}><ChampEnLigne libelle="Numéro du lot" placeholder="—" valeur={l.numero ?? ''} enregistrer={champ(l.id, 'numero')} /></td>
-								<td className="p-1" onClick={arreter}>
-									<ChampEnLigne libelle="Désignation du lot" valeur={l.designation} enregistrer={champ(l.id, 'designation')} />
-									{l.nature === 'SOUS_TRAITANCE' && <span className="ml-1.5 rounded bg-secondary px-1.5 text-xs">Sous-traitance</span>}
+						{vus.map((l) => {
+							const nbAv = l.avenants.length;
+							const classes = [!l.entreprise && 'is-unassigned', l.id === lotOuvert && 'is-open'].filter(Boolean).join(' ') || undefined;
+							return (
+								<tr key={l.id} data-lot={l.designation} className={classes} onClick={() => setLotOuvert(l.id)}>
+									<td className="cell-num is-editable" onClick={arreter}>
+										<ChampEnLigne variante="texte-mini" libelle="Numéro du lot" placeholder="—" valeur={l.numero ?? ''} enregistrer={champ(l.id, 'numero')} />
+									</td>
+									<td className="cell-lot is-editable" onClick={arreter}>
+										<div className="lot-wrap">
+											<ChampEnLigne libelle="Désignation du lot" placeholder="Désignation du lot" valeur={l.designation} enregistrer={champ(l.id, 'designation')} />
+											{l.nature === 'SOUS_TRAITANCE' && <span className="nature-tag st">Sous-traitance</span>}
+											{nbAv > 0 && <span className="nature-tag av" title={`${nbAv} avenant(s) — le montant affiché les comprend`}>{nbAv} avenant{nbAv > 1 ? 's' : ''}</span>}
+										</div>
+									</td>
+									<td className="cell-ent">
+										{l.entreprise
+											? <>{l.entreprise}{l.artisanArchive && ' (archivée)'}{l.commune && <small>{l.commune}</small>}</>
+											: <span className="unset">à attribuer</span>}
+									</td>
+									<td className="ta-r cell-ht is-editable" onClick={arreter}>
+										<ChampEnLigne variante="montant" libelle="Montant HT" valeur={formatMontantSaisie(l.htInitial)} enregistrer={champ(l.id, 'montantHt')} />
+									</td>
+									<td className="ta-r cell-tva is-editable" onClick={arreter}>
+										<ChampEnLigne variante="montant-mini" libelle="Taux de TVA" valeur={tauxAffiche(l.tauxTva)} enregistrer={champ(l.id, 'tauxTva')} />
+									</td>
+									<td className="ta-r cell-ht is-editable" onClick={arreter} title={nbAv ? 'Avenants compris — le montant initial HT est recalculé' : undefined}>
+										<ChampEnLigne variante="montant" libelle="Montant TTC" valeur={formatMontantSaisie(l.ttcEngage)} enregistrer={champ(l.id, 'montantTtc')} />
+									</td>
+								</tr>
+							);
+						})}
+						{!vus.length && (
+							<tr className="empty-row">
+								<td colSpan={6}>
+									{q ? <>Aucun lot ne correspond à « {q} ». <button type="button" className="btn btn-sm" onClick={() => setRequete('')}>Effacer la recherche</button></>
+										: <>Aucun lot pour l&apos;instant. <button type="button" className="btn btn-sm btn-primary" onClick={ajouter}>Ajouter le premier lot</button></>}
 								</td>
-								<td className="p-2">
-									{l.entreprise
-										? <>{l.entreprise}{l.artisanArchive && ' (archivée)'}<small className="block text-muted-foreground">{l.commune}</small></>
-										: <span className="italic text-muted-foreground">à attribuer</span>}
-								</td>
-								<td className="p-1" onClick={arreter}><ChampEnLigne libelle="Montant HT" variante="montant" valeur={formatMontantSaisie(l.htInitial)} enregistrer={champ(l.id, 'montantHt')} /></td>
-								<td className="p-1" onClick={arreter}><ChampEnLigne libelle="Taux de TVA" variante="montant" valeur={formatTauxSaisie(l.tauxTva)} enregistrer={champ(l.id, 'tauxTva')} /></td>
-								<td className="p-1" onClick={arreter}><ChampEnLigne libelle="Montant TTC" variante="montant" valeur={formatMontantSaisie(l.ttcEngage)} enregistrer={champ(l.id, 'montantTtc')} /></td>
 							</tr>
-						))}
-						{!vus.length && <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">{requete ? `Aucun lot ne correspond à « ${requete} ».` : 'Aucun lot pour l\'instant.'}</td></tr>}
+						)}
 					</tbody>
-					<tfoot>
-						<tr className="border-t font-semibold">
-							<td colSpan={3} className="p-2">Total marchés</td>
-							<td className="p-2 text-right font-mono tabular-nums" data-testid="total-ht">{vue.totalHtTexte}</td>
-							<td className="p-2 text-right font-mono text-xs tabular-nums text-muted-foreground">{vue.totalTvaTexte}</td>
-							<td className="p-2 text-right font-mono tabular-nums" data-testid="total-ttc">{vue.totalTtcTexte}</td>
-						</tr>
-					</tfoot>
 				</table>
 			</div>
+			<div className="totals">
+				<div className="total-cell"><span className="total-k">Total marchés HT</span><span className="total-v num" data-testid="total-ht">{vue.totalHtTexte}</span></div>
+				<div className="total-cell"><span className="total-k">TVA</span><span className="total-v num">{vue.totalTvaTexte}</span></div>
+				<div className="total-cell"><span className="total-k">Total marchés TTC</span><span className="total-v grand num" data-testid="total-ttc">{vue.totalTtcTexte}</span></div>
+			</div>
 			{ouvert && <PanneauLot lot={ouvert} vue={vue} onFermer={() => setLotOuvert(null)} />}
-		</div>
+		</>
 	);
 }

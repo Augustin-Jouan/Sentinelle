@@ -21,6 +21,7 @@ export async function modifierChampChantierAction(id: string, champ: ChampChanti
 		await modifierChampChantier(id, z.enum(CHAMPS).parse(champ), valeur);
 		revalidatePath(`/chantiers/${id}`, 'layout');
 		revalidatePath('/chantiers');
+		revalidatePath('/', 'layout');
 		return null;
 	});
 }
