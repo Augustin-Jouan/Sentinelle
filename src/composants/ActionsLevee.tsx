@@ -5,7 +5,6 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import type { Resultat } from '@/actions/executer';
 import { annulerLeveeAction, leverReservesAction } from '@/actions/receptions';
-import { Button } from '@/components/ui/button';
 import type { EtatReception } from '@/domaine/reception';
 
 /** Aujourd'hui à Châteaubriant, AAAA-MM-JJ (le format suédois est l'ISO). */
@@ -30,10 +29,10 @@ export function ActionsLevee({ lotId, etat }: { lotId: string; etat: EtatRecepti
 	}
 
 	if (etat === 'levee') {
-		return <Button size="xs" variant="ghost" disabled={enCours} onClick={() => envoyer(() => annulerLeveeAction(lotId))}>Annuler la levée</Button>;
+		return <button type="button" className="dm-th-action" disabled={enCours} onClick={() => envoyer(() => annulerLeveeAction(lotId))}>Annuler la levée</button>;
 	}
 	if (etat !== 'avec-reserves') return null;
-	if (!ouvert) return <Button size="xs" variant="ghost" onClick={() => setOuvert(true)}>Réserves levées…</Button>;
+	if (!ouvert) return <button type="button" className="dm-th-action" onClick={() => setOuvert(true)}>Réserves levées…</button>;
 	return (
 		<form className="inline-flex items-center gap-1" onSubmit={(e) => {
 			e.preventDefault();
@@ -41,7 +40,7 @@ export function ActionsLevee({ lotId, etat }: { lotId: string; etat: EtatRecepti
 			envoyer(() => leverReservesAction(lotId, date));
 		}}>
 			<input type="date" name="date" aria-label="Date de levée des réserves" defaultValue={aujourdhui()} className="rounded border px-1 text-xs" />
-			<Button size="xs" type="submit" disabled={enCours}>Enregistrer la levée</Button>
+			<button type="submit" className="dm-th-action" disabled={enCours}>Enregistrer la levée</button>
 		</form>
 	);
 }
