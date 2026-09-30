@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { genererMarcheAction, genererRecapAction } from '@/actions/documents';
 import { modifierChampLotAction } from '@/actions/lots';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { FeuilleUnique } from '@/composants/planning/FeuilleUnique';
 import { Gabarit, type CleZone } from '@/documents/gabarits/Gabarit';
 import type { DonneesDocument } from '@/documents/schemas';
 import { CSS_DOCUMENTS } from '@/documents/styles';
@@ -92,7 +93,14 @@ export function ApercuDocument({ titre, sousTitre, donnees, source, manques = []
 				<p role="note" className="border-b bg-destructive-soft px-6 py-2 text-sm">Pour générer ce marché : {manques.join(', ')}.</p>
 			)}
 			<div className="flex flex-1 items-start justify-center overflow-auto overscroll-contain p-7">
-				<Gabarit donnees={donnees} mode={source.type === 'marche' ? 'edition' : 'lecture'} onSaisie={saisir} />
+				{donnees.type === 'PLANNING' || donnees.type === 'VISA_PLANNING' ? (
+					// Planning et visa : la feuille mesurée comme le PDF (une page, numéros espacés, échelle).
+					<FeuilleUnique key={sousTitre}>
+						<Gabarit donnees={donnees} mode="lecture" />
+					</FeuilleUnique>
+				) : (
+					<Gabarit donnees={donnees} mode={source.type === 'marche' ? 'edition' : 'lecture'} onSaisie={saisir} />
+				)}
 			</div>
 		</div>
 	);
