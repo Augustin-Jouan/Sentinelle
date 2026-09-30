@@ -6,6 +6,7 @@ import { LIBELLES_TYPES } from '@/documents/libelles';
 import type { ManqueAvenant } from '@/domaine/avenants';
 import { dateDuJourTexte, LIBELLES_MANQUES } from '@/domaine/regles';
 import { BoutonMarchesManquants } from './BoutonMarchesManquants';
+import { CarteComptesRendus } from './CarteComptesRendus';
 
 const dateCourte = (iso: string) => dateDuJourTexte(new Date(iso));
 
@@ -167,6 +168,7 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 	const recap = vue.recap;
 	return (
 		<div className="space-y-6">
+			<CarteComptesRendus chantierId={vue.chantierId} carte={vue.comptesRendus} />
 			<div className="flex flex-wrap items-center gap-4 rounded-xl border bg-card p-4">
 				<div>
 					<p className="text-xs uppercase tracking-wide text-muted-foreground">Chantier entier</p>
