@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:17.11-bookworm
+    environment:
+      POSTGRES_USER: sentinelle
+      POSTGRES_PASSWORD: sentinelle
+      POSTGRES_DB: sentinelle
+    ports: ['5432:5432']
+    volumes: ['sentinelle-dev:/var/lib/postgresql/data']
+  db-test:
+    image: postgres:17.11-bookworm
+    environment:
+      POSTGRES_USER: sentinelle
+      POSTGRES_PASSWORD: sentinelle
+      POSTGRES_DB: sentinelle_test
+    ports: ['5433:5432']
+    tmpfs: ['/var/lib/postgresql/data']
+volumes:
+  sentinelle-dev:
