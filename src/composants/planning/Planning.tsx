@@ -7,10 +7,11 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { Resultat } from '@/actions/executer';
 import {
-	ajouterFermetureAction, changerCouleurLotAction, creerPeriodeAction, lierPeriodeAction, modifierFermetureAction,
-	modifierPeriodeAction, supprimerFermetureAction, supprimerPeriodesAction,
+	ajouterFermetureAction, changerCouleurLotAction, creerPeriodeAction, deplacerPeriodesAction, lierPeriodeAction,
+	modifierFermetureAction, modifierPeriodeAction, supprimerFermetureAction, supprimerPeriodesAction,
 } from '@/actions/planning';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import * as regles from '@/domaine/planning';
 import { appliquerPeriodes, etendueDuPlanning, isoRang, periodesDuPlanning, rangIso, type PlanningVue, type ReponsePlanning } from '@/domaine/planningVue';
 import type { ChampFermeture, ChampPeriode } from '@/donnees/planning';
@@ -20,6 +21,8 @@ import { DENSITES, resume } from './geometrie';
 import { GrillePlanning } from './GrillePlanning';
 import { PanneauLotPlanning } from './PanneauLotPlanning';
 import { usePreferencesPlanning } from './preferences';
+import { useClavier } from './useClavier';
+import { appliquerPositions, useGestes } from './useGestes';
 
 type Appel = () => Promise<Resultat<ReponsePlanning>>;
 
@@ -44,6 +47,7 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 	const [principale, setPrincipale] = useState<string | null>(null);
 	const [panneauLot, setPanneauLot] = useState<string | null>(null);
 	const [fermeturesOuvertes, setFermeturesOuvertes] = useState(false);
+	const [confirmation, setConfirmation] = useState(false);
 	const { preferences, masques, changerPreferences, basculerLot, toutAfficher } = usePreferencesPlanning(planning.chantierId);
 
 	const periodes = useMemo(() => periodesDuPlanning(planning), [planning]);
@@ -52,8 +56,7 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 	const existantes = new Set(periodes.map((x) => x.id));
 	/** La sélection, sans les périodes supprimées entre-temps. */
 	const choisies = selection.filter((id) => existantes.has(id));
-	const lotsAffiches = planning.lots.filter((l) => !masques.includes(l.id));
-	const nbAffichees = lotsAffiches.reduce((n, l) => n + l.periodes.length, 0);
+	const nbAffichees = planning.lots.filter((l) => !masques.includes(l.id)).reduce((n, l) => n + l.periodes.length, 0);
 	const rangAujourdhui = rangIso(aujourdhui);
 
 	async function envoyer(local: PlanningVue | null, appel: Appel, silencieux = false): Promise<Resultat<ReponsePlanning>> {
@@ -86,6 +89,10 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 		setPrincipale(principal);
 	}
 
+	function basculer(id: string) {
+		selectionner(choisies.includes(id) ? choisies.filter((x) => x !== id) : [...choisies, id]);
+	}
+
 	function tracer(lotId: string, debut: number, duree: number) {
 		const local = calculer((p) => regles.creerPeriode(p, { id: 'nouvelle-periode', lotId, intitule: '', debut, duree, dependDeId: null }));
 		void envoyer(local, () => creerPeriodeAction(lotId, isoRang(debut), duree)).then((r) => {
@@ -93,6 +100,22 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 			selectionner([r.donnees.periodeId]);
 			setPanneauLot(lotId);
 		});
+	}
+
+	/** Déplacement seul, en groupe ou aux flèches : des débuts absolus, recalés et cascadés par le domaine. */
+	function deplacer(mouvements: { id: string; debut: number }[]) {
+		void envoyer(
+			calculer((p) => regles.deplacerPeriodes(p, mouvements)),
+			() => deplacerPeriodesAction(planning.chantierId, mouvements.map((m) => ({ id: m.id, debut: isoRang(m.debut) }))),
+		);
+	}
+
+	function allonger(id: string, duree: number) {
+		void envoyer(calculer((p) => regles.modifierPeriode(p, id, { duree })), () => modifierPeriodeAction(id, 'duree', String(duree)));
+	}
+
+	function decalerSelection(semaines: number) {
+		deplacer(periodes.filter((x) => choisies.includes(x.id)).map((x) => ({ id: x.id, debut: x.debut + semaines })));
 	}
 
 	function supprimer(ids: string[]) {
@@ -156,6 +179,22 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 		if (cadre.current) cadre.current.scrollLeft = Math.max(0, (rangAujourdhui - e.debut) * w - 200);
 	}
 
+	const { rendu, onPointerDown } = useGestes({
+		outil: preferences.outil, debutAxe: e.debut, w, periodes, selection: choisies, cadre,
+		onSelection: selectionner, onBasculer: basculer, onOuvrirLot: setPanneauLot,
+		onTracer: tracer, onDeplacer: deplacer, onAllonger: allonger,
+	});
+	useClavier({
+		nbSelection: choisies.length,
+		panneauOuvert: panneauLot !== null,
+		onDecaler: decalerSelection,
+		onSupprimer: () => (choisies.length === 1 ? supprimer(choisies) : setConfirmation(true)),
+		onVider: () => selectionner([]),
+	});
+
+	// Pendant un glisser, la grille montre les positions du geste ; l'axe reste celui du planning.
+	const affiche = rendu.positions ? appliquerPositions(planning, rendu.positions) : planning;
+	const lotsAffiches = affiche.lots.filter((l) => !masques.includes(l.id));
 	const lotOuvert = planning.lots.find((l) => l.id === panneauLot) ?? null;
 
 	return (
@@ -185,17 +224,22 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 			<GrillePlanning
 				cadre={cadre}
 				onScroll={surDefilement}
-				planning={planning}
+				planning={affiche}
 				lotsAffiches={lotsAffiches}
 				debutAxe={e.debut}
 				nbSemaines={e.nb}
 				w={w}
 				rangAujourdhui={rangAujourdhui}
-				selection={choisies}
+				selection={rendu.lassoIds ?? choisies}
 				outil={preferences.outil}
 				onOuvrirLot={setPanneauLot}
 				onToutAfficher={toutAfficher}
+				saisi={rendu.saisi}
+				fantome={rendu.fantome}
+				onPointerDown={onPointerDown}
 			/>
+			{rendu.lasso && <div className="g-lasso" style={rendu.lasso} />}
+			{rendu.pastille && <div className="g-chip" style={{ left: rendu.pastille.x, top: rendu.pastille.y }}>{rendu.pastille.texte}</div>}
 			<PanneauLotPlanning
 				lot={lotOuvert}
 				planning={planning}
@@ -215,6 +259,18 @@ export function Planning({ planningInitial, aujourdhui }: { planningInitial: Pla
 				onModifier={modifierFermeture}
 				onSupprimer={supprimerFermeture}
 			/>
+			<Dialog open={confirmation} onOpenChange={(o) => { if (!o) setConfirmation(false); }}>
+				<DialogContent className="planning sm:max-w-md" data-bloque-clavier="">
+					<DialogHeader>
+						<DialogTitle>Supprimer les périodes</DialogTitle>
+						<DialogDescription>Supprimer les {choisies.length} périodes sélectionnées ?</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setConfirmation(false)}>Annuler</Button>
+						<Button variant="destructive" onClick={() => { setConfirmation(false); supprimer(choisies); }}>Supprimer</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
