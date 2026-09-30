@@ -1,7 +1,9 @@
 import type { DonneesDocument } from '../schemas';
 import { MarcheGreAGre } from './MarcheGreAGre';
 import { MarcheSousTraitance } from './MarcheSousTraitance';
+import { PlanningPrevisionnel } from './PlanningPrevisionnel';
 import { Recapitulatif } from './Recapitulatif';
+import { VisaPlanning } from './VisaPlanning';
 import type { ModeGabarit, Saisie } from './Zone';
 
 export type { CleZone, ModeGabarit, Saisie } from './Zone';
@@ -14,5 +16,9 @@ export function Gabarit({ donnees, mode, onSaisie }: { donnees: DonneesDocument;
 			return <MarcheSousTraitance donnees={donnees} mode={mode} onSaisie={onSaisie} />;
 		case 'RECAPITULATIF':
 			return <Recapitulatif donnees={donnees} />;
+		case 'PLANNING':
+			return <PlanningPrevisionnel donnees={donnees} />;
+		case 'VISA_PLANNING':
+			return <VisaPlanning donnees={donnees} />;
 	}
 }

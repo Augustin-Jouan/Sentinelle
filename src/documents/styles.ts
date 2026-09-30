@@ -48,6 +48,37 @@ table.recap tr.total .lbl-total { font-family: 'Outfit', sans-serif; letter-spac
 .zone:focus { background: #fff; box-shadow: 0 0 0 2px #1c4e80; }
 .zone:empty::before { content: attr(data-placeholder); color: #5f7285; font-style: italic; font-weight: 400; }
 
+/* Planning prévisionnel et feuille de visa : A4 paysage, toujours une seule page. */
+.sheet-doc { width: 68rem; display: block; font-size: 0.6875rem; }
+/* Même modèle de boîte à l'écran (Tailwind met border-box partout) et dans le PDF : les mesures concordent. */
+.sheet-doc, .sheet-doc * { box-sizing: border-box; }
+.doc-entete { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 1.5rem; padding-bottom: .75rem; border-bottom: 1px solid #b9beb8; }
+.doc-entete .firm { margin: 0; }
+.doc-kv { display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: .1875rem .625rem; margin: 0; }
+.doc-kv dt { color: #5a6062; }
+.doc-kv dd { margin: 0; font-weight: 600; }
+.sheet .doc-titre { font-family: 'Outfit', sans-serif; font-size: .9375rem; font-weight: 700; letter-spacing: .05em; margin: .875rem 0 .625rem; }
+.sheet .doc-phrase { margin: 0 0 .875rem; font-style: italic; color: #4a5052; }
+.sheet .doc-note { margin: .875rem 0 0; font-size: .5625rem; color: #5a6062; line-height: 1.4; }
+table.d-gantt, table.d-visa { width: 100%; border-collapse: collapse; font-size: .625rem; }
+table.d-gantt th, table.d-visa th { text-align: left; padding: .1875rem .375rem; border-bottom: 1px solid #16191b; font-family: 'Outfit', sans-serif; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; vertical-align: bottom; }
+table.d-gantt td, table.d-visa td { padding: 0; border-bottom: 1px solid #e2e4de; }
+table.d-gantt .d-ent, table.d-gantt .d-lot { padding: .1875rem .375rem; white-space: nowrap; }
+.d-ent { width: 9rem; }
+.d-lot { width: 9rem; }
+/* Sans marge intérieure, l'axe tombe exactement au-dessus des pistes. */
+table.d-gantt th.d-piste { padding: 0; }
+.d-piste { position: relative; padding: 0; }
+.d-piste-in { position: relative; height: 1.125rem; }
+.d-mois, .d-sems { display: flex; }
+.d-mois span { flex: none; border-left: 1px solid #9aa19f; font-size: .5625rem; font-weight: 600; overflow: hidden; white-space: nowrap; padding-left: 1px; }
+.d-sems span { flex: none; border-left: 1px solid #e2e4de; font-size: .5rem; text-align: center; overflow: visible; white-space: nowrap; color: #5a6062; font-family: 'Spline Sans Mono', monospace; }
+.d-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 1px; font-size: .5rem; line-height: 1; display: flex; align-items: center; padding: 0 2px; overflow: hidden; white-space: nowrap; }
+/* Congés : hachures sur toute la hauteur de chaque ligne. */
+.d-ferm { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, #b2bac1 0 2px, transparent 2px 7px); opacity: .5; }
+table.d-visa td { padding: .3125rem .375rem; }
+table.d-visa .sig { border-bottom: 1px solid #b9beb8; height: 1.75rem; width: 22%; }
+
 /* PDF : la page A4 (marges 10 mm) porte la feuille, sans cadre ni ombre. */
 .mode-impression { margin: 0; background: #fff; }
 .mode-impression .sheet { width: 100%; max-width: none; min-height: 0; border: 0; box-shadow: none; padding: 0; background: #fff; }
