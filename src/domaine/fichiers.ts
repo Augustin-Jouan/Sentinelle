@@ -28,6 +28,15 @@ export function nomFichierCompteRendu(reference: string, numero: number, version
 	return `${slugifier(reference)}-CompteRendu${String(numero).padStart(2, '0')}-v${version}.pdf`;
 }
 
+export function nomFichierReception(p: { reference: string; numero: string | null; designation: string; nature: Nature; version: number }): string {
+	return `${slugifier(p.reference)}-${prefixeLot(p.nature, p.numero)}-${slugifier(p.designation)}-Reception-v${p.version}.pdf`;
+}
+
+/** Les PV de « Tous les lots », assemblés pour l'impression ; jamais stocké. */
+export function nomFichierReceptions(reference: string): string {
+	return `${slugifier(reference)}-Receptions.pdf`;
+}
+
 export function nomFichierRecap(reference: string, version: number): string {
 	return `${slugifier(reference)}-RecapMarches-v${version}.pdf`;
 }
