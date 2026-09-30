@@ -23,6 +23,8 @@ enum TypeDocument {
   RECAPITULATIF
   PLANNING
   VISA_PLANNING
+  AVENANT
+  CERTIFICAT_PAIEMENT
 }
 
 // ---------- Better Auth (noms de champs imposés par la bibliothèque) ----------
@@ -113,6 +115,10 @@ model Parametres {
   fax             String?
   email           String?
   villeSignature  String
+  /// En-tête du certificat de paiement. À relire sur le KBIS avant la mise en service.
+  rcs                   String  @default("328999503")
+  ape                   String  @default("4120A")
+  tvaIntracommunautaire String  @default("FR47328999503")
 }
 
 model Artisan {
@@ -169,6 +175,11 @@ model Lot {
   clauseParticuliere String     @default("")
   couleur            String     @default("noir")
   dateSignature      DateTime?  @db.Date
+  /// Compteur des avenants : un numéro n'est jamais réattribué, même après suppression.
+  dernierNumeroAvenant Int        @default(0)
+  cautionBancaire      Boolean    @default(false)
+  avenants             Avenant[]
+  acomptes             Acompte[]
   documents          Document[]
   periodes           Periode[]
 
@@ -229,4 +240,41 @@ model Fermeture {
   duree      Int
 
   @@index([chantierId])
+}
+
+model Avenant {
+  id        String   @id @default(cuid())
+  lotId     String
+  lot       Lot      @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  /// Fixé à la création (`Lot.dernierNumeroAvenant + 1`), jamais réutilisé.
+  numero    Int
+  devis     String   @default("")
+  /// Signé : négatif = moins-value.
+  montantHt Decimal  @default(0) @db.Decimal(18, 2)
+  date      DateTime @db.Date
+  objet     String   @default("")
+  creeLe    DateTime @default(now())
+
+  @@unique([lotId, numero])
+}
+
+/// Un certificat de paiement émis, ou un acompte antérieur à l'application (`manuel`, sans document).
+model Acompte {
+  id             String    @id @default(cuid())
+  lotId          String
+  lot            Lot       @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  /// 1, 2, 3… sans trou dans le lot.
+  numero         Int
+  /// Présent acompte HT (montant saisi pour un acompte manuel).
+  montantHt      Decimal   @db.Decimal(18, 2)
+  manuel         Boolean   @default(false)
+  /// Certificat seulement (contrainte CHECK écrite dans la migration).
+  cumulRealiseHt Decimal?  @db.Decimal(18, 2)
+  /// 'AAAA-MM', certificat seulement.
+  mois           String?
+  /// « Fait le », certificat seulement.
+  date           DateTime? @db.Date
+  creeLe         DateTime  @default(now())
+
+  @@unique([lotId, numero])
 }

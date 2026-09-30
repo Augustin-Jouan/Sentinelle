@@ -1,4 +1,6 @@
-export type TypeDocument = 'MARCHE_GRE_A_GRE' | 'MARCHE_SOUS_TRAITANCE' | 'RECAPITULATIF' | 'PLANNING' | 'VISA_PLANNING';
+export type TypeDocument =
+	| 'MARCHE_GRE_A_GRE' | 'MARCHE_SOUS_TRAITANCE' | 'RECAPITULATIF' | 'PLANNING' | 'VISA_PLANNING'
+	| 'AVENANT' | 'CERTIFICAT_PAIEMENT';
 
 export const LIBELLES_TYPES: Record<TypeDocument, string> = {
 	MARCHE_GRE_A_GRE: 'Gré à gré',
@@ -6,6 +8,8 @@ export const LIBELLES_TYPES: Record<TypeDocument, string> = {
 	RECAPITULATIF: 'Récapitulatif',
 	PLANNING: 'Planning',
 	VISA_PLANNING: 'Visa du planning',
+	AVENANT: 'Avenant',
+	CERTIFICAT_PAIEMENT: 'Certificat de paiement',
 };
 
 export const TITRES_TYPES: Record<TypeDocument, string> = {
@@ -14,4 +18,6 @@ export const TITRES_TYPES: Record<TypeDocument, string> = {
 	RECAPITULATIF: 'Récapitulatif des marchés',
 	PLANNING: 'Planning prévisionnel',
 	VISA_PLANNING: 'Feuille de visa du planning',
+	AVENANT: 'Avenant',
+	CERTIFICAT_PAIEMENT: 'Certificat de paiement',
 };

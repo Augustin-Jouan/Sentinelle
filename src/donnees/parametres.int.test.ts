@@ -22,4 +22,13 @@ describe('paramètres', () => {
 	it('refuse de vider un champ obligatoire', async () => {
 		await expect(modifierParametre('raisonSociale', ' ')).rejects.toThrow('Ce champ est obligatoire.');
 	});
+
+	it('RCS, APE et TVA intracommunautaire : valeurs par défaut, modifiables, obligatoires', async () => {
+		const p = await lireParametres();
+		expect([p.email, p.rcs, p.ape, p.tvaIntracommunautaire])
+			.toEqual(['contact@socoreve-chateaubriant.com', '328999503', '4120A', 'FR47328999503']);
+		await modifierParametre('tvaIntracommunautaire', ' FR47328999503 ');
+		expect((await lireParametres()).tvaIntracommunautaire).toBe('FR47328999503');
+		await expect(modifierParametre('rcs', '  ')).rejects.toThrow('Ce champ est obligatoire.');
+	});
 });
