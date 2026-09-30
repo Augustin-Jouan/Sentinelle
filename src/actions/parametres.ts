@@ -5,7 +5,10 @@ import { z } from 'zod';
 import { modifierParametre, type ChampParametres } from '@/donnees/parametres';
 import { executer, type Resultat } from './executer';
 
-const CHAMPS = ['raisonSociale', 'libelleActivite', 'adresse', 'cp', 'ville', 'telephone', 'fax', 'email', 'villeSignature'] as const;
+const CHAMPS = [
+	'raisonSociale', 'libelleActivite', 'adresse', 'cp', 'ville', 'telephone', 'fax', 'email', 'villeSignature',
+	'rcs', 'ape', 'tvaIntracommunautaire',
+] as const;
 
 export async function modifierParametreAction(champ: ChampParametres, valeur: string): Promise<Resultat> {
 	return executer({ admin: true }, async () => {

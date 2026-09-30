@@ -12,8 +12,11 @@ export const PARAMETRES_PAR_DEFAUT = {
 	ville: 'Châteaubriant',
 	telephone: '02 40 81 40 26',
 	fax: null,
-	email: 'contact@socoreve-chateaubriant.fr',
+	email: 'contact@socoreve-chateaubriant.com',
 	villeSignature: 'Châteaubriant',
+	rcs: '328999503',
+	ape: '4120A',
+	tvaIntracommunautaire: 'FR47328999503',
 } satisfies Parametres;
 
 export async function lireParametres(): Promise<Parametres> {
@@ -21,7 +24,8 @@ export async function lireParametres(): Promise<Parametres> {
 }
 
 export type ChampParametres =
-	| 'raisonSociale' | 'libelleActivite' | 'adresse' | 'cp' | 'ville' | 'telephone' | 'fax' | 'email' | 'villeSignature';
+	| 'raisonSociale' | 'libelleActivite' | 'adresse' | 'cp' | 'ville' | 'telephone' | 'fax' | 'email' | 'villeSignature'
+	| 'rcs' | 'ape' | 'tvaIntracommunautaire';
 
 const FACULTATIFS: ChampParametres[] = ['fax', 'email'];
 

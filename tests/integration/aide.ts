@@ -4,7 +4,7 @@ import { prisma } from '@/donnees/prisma';
 
 export async function viderBase() {
 	await prisma.$executeRawUnsafe(
-		'TRUNCATE "Periode", "Fermeture", "Document", "Lot", "Chantier", "Artisan", "Parametres", "session", "compte", "verification", "utilisateur" RESTART IDENTITY CASCADE',
+		'TRUNCATE "Avenant", "Acompte", "Periode", "Fermeture", "Document", "Lot", "Chantier", "Artisan", "Parametres", "session", "compte", "verification", "utilisateur" RESTART IDENTITY CASCADE',
 	);
 }
 
