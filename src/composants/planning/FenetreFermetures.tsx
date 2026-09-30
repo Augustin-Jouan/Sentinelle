@@ -1,10 +1,9 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
 import type { Resultat } from '@/actions/executer';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ChampEnLigne } from '@/composants/ChampEnLigne';
+import * as Icone from '@/composants/maquette/icones';
+import { Panneau } from '@/composants/maquette/Panneau';
 import { rangIso, type FermetureVue } from '@/domaine/planningVue';
 import { semaineDuRang } from '@/domaine/semaines';
 import type { ChampFermeture } from '@/donnees/planning';
@@ -20,50 +19,36 @@ type Props = {
 
 export function FenetreFermetures({ ouverte, onFermer, fermetures, onAjouter, onModifier, onSupprimer }: Props) {
 	return (
-		<Dialog open={ouverte} onOpenChange={(o) => { if (!o) onFermer(); }}>
-			<DialogContent className="planning sm:max-w-xl" data-bloque-clavier="">
-				<DialogHeader>
-					<DialogTitle>Périodes de fermeture</DialogTitle>
-					<DialogDescription>Les congés et fermetures barrent toute la hauteur du planning : ils valent pour tous les lots.</DialogDescription>
-				</DialogHeader>
-				{fermetures.length ? (
-					<table className="w-full text-sm">
-						<thead>
-							<tr className="text-left text-xs text-muted-foreground">
-								<th className="font-medium">Libellé</th>
-								<th className="w-14 text-right font-medium">Sem.</th>
-								<th className="w-16 text-right font-medium">Année</th>
-								<th className="w-14 text-right font-medium">Durée</th>
-								<th className="w-8" />
-							</tr>
-						</thead>
-						<tbody>
-							{fermetures.map((f) => {
-								const s = semaineDuRang(rangIso(f.debut));
-								return (
-									<tr key={f.id} className="border-t">
-										<td><ChampEnLigne libelle="Libellé" placeholder="Congés d'été" valeur={f.libelle} enregistrer={(v) => onModifier(f.id, 'libelle', v)} /></td>
-										<td><ChampEnLigne libelle="Semaine" variante="montant" valeur={String(s.semaine)} enregistrer={(v) => onModifier(f.id, 'semaine', v)} /></td>
-										<td><ChampEnLigne libelle="Année" variante="montant" valeur={String(s.annee)} enregistrer={(v) => onModifier(f.id, 'annee', v)} /></td>
-										<td><ChampEnLigne libelle="Durée" variante="montant" valeur={String(f.duree)} enregistrer={(v) => onModifier(f.id, 'duree', v)} /></td>
-										<td>
-											<Button size="icon-sm" variant="ghost" title="Supprimer cette fermeture"
-												aria-label={`Supprimer la fermeture ${f.libelle || 'sans libellé'}`} onClick={() => onSupprimer(f.id)}>
-												<Trash2 />
-											</Button>
-										</td>
-									</tr>
-								);
-							})}
-						</tbody>
-					</table>
-				) : (
-					<p className="py-4 text-center text-sm italic text-muted-foreground">Aucune fermeture.</p>
-				)}
-				<DialogFooter>
-					<Button variant="outline" onClick={onAjouter}>Ajouter</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+		<Panneau ouvert={ouverte} surtitre="CHANTIER" titre="Périodes de fermeture" onFermer={onFermer}
+			pied={<button type="button" className="btn btn-ghost" onClick={onFermer}>Fermer</button>}>
+			<p className="pal-note" style={{ margin: 0 }}>Les congés et fermetures barrent toute la hauteur du planning : ils valent pour tous les lots.</p>
+			<div className="block">
+				<div className="block-head"><span className="eyebrow">Fermetures</span><button type="button" className="btn btn-sm" onClick={onAjouter}>Ajouter</button></div>
+				<div className="block-body" style={{ padding: 0 }}>
+					{fermetures.length ? (
+						<table className="plain plain-mini">
+							<thead><tr><th>Libellé</th><th className="ta-r">Sem.</th><th className="ta-r">Année</th><th className="ta-r">Durée</th><th /></tr></thead>
+							<tbody>
+								{fermetures.map((f) => {
+									const s = semaineDuRang(rangIso(f.debut));
+									return (
+										<tr key={f.id}>
+											<td><ChampEnLigne libelle="Libellé" placeholder="Congés d'été" valeur={f.libelle} enregistrer={(v) => onModifier(f.id, 'libelle', v)} /></td>
+											<td className="ta-r"><ChampEnLigne variante="montant-mini" libelle="Semaine" valeur={String(s.semaine)} enregistrer={(v) => onModifier(f.id, 'semaine', v)} /></td>
+											<td className="ta-r"><ChampEnLigne variante="montant-mini" libelle="Année" valeur={String(s.annee)} enregistrer={(v) => onModifier(f.id, 'annee', v)} /></td>
+											<td className="ta-r"><ChampEnLigne variante="montant-mini" libelle="Durée" valeur={String(f.duree)} enregistrer={(v) => onModifier(f.id, 'duree', v)} /></td>
+											<td className="ta-r cell-actions">
+												<button type="button" className="btn btn-sm btn-danger btn-ico" onClick={() => onSupprimer(f.id)}
+													title="Supprimer cette fermeture" aria-label={`Supprimer la fermeture ${f.libelle || 'sans libellé'}`}><Icone.Corbeille /></button>
+											</td>
+										</tr>
+									);
+								})}
+							</tbody>
+						</table>
+					) : <p className="vide-mini">Aucune fermeture.</p>}
+				</div>
+			</div>
+		</Panneau>
 	);
 }

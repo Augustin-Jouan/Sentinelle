@@ -7,8 +7,8 @@ export const W = 46;
 export async function ouvrirPlanning(page: Page, reference: string) {
 	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
 	await page.goto('/chantiers');
-	await page.getByRole('link', { name: reference }).click();
-	await page.getByRole('link', { name: 'Planning', exact: true }).click();
+	await page.locator('.chantier', { hasText: reference }).click();
+	await page.locator('.nav-o', { hasText: 'Planning' }).click();
 	await expect(page).toHaveURL(/\/planning$/);
 	await expect(page.locator('.g-bar').first()).toBeVisible();
 }

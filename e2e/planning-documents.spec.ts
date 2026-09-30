@@ -12,7 +12,7 @@ test('planning imprimable, feuille de visa, états dans Documents', async ({ pag
 	const visa = page.getByRole('dialog', { name: 'Feuille de visa du planning' });
 	const cartePlanning = page.locator('[data-serie="planning"]');
 	const carteVisa = page.locator('[data-serie="visa"]');
-	const onglet = (nom: string) => page.getByRole('link', { name: nom, exact: true }).click();
+	const onglet = (nom: string) => page.locator('.nav-o', { hasText: nom }).click();
 
 	// 1. Planning imprimable : l'aperçu mesure comme le PDF ; la génération crée la v1.
 	await page.getByRole('link', { name: 'Planning imprimable' }).click();

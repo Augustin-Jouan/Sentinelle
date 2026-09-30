@@ -1,12 +1,13 @@
 import { notFound } from 'next/navigation';
 import { exigerPage } from '@/auth/session';
+import { BandeauChantier } from '@/composants/chantier/BandeauChantier';
 import { ApercuPlanning } from '@/composants/planning/ApercuPlanning';
 import { Planning } from '@/composants/planning/Planning';
 import { construireDonneesPlanning, construireDonneesVisa } from '@/documents/donnees';
 import { etatSeriePlanning } from '@/documents/etats';
 import { ErreurMetier } from '@/domaine/erreurs';
 import { dateParis, versIso } from '@/domaine/semaines';
-import { lireEnTeteChantier } from '@/donnees/chantiers';
+import { lireEnTeteChantier, listerChargesAffaire } from '@/donnees/chantiers';
 import { lirePlanning } from '@/donnees/planning';
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ apercu?: string }> };
@@ -43,7 +44,7 @@ export default async function PagePlanning({ params, searchParams }: Props) {
 	await exigerPage();
 	const { id } = await params;
 	const { apercu } = await searchParams;
-	const [planning, chantier] = await Promise.all([lirePlanning(id), lireEnTeteChantier(id)]);
+	const [planning, chantier, chargesAffaire] = await Promise.all([lirePlanning(id), lireEnTeteChantier(id), listerChargesAffaire()]);
 	if (!planning || !chantier) notFound();
 	const apercuOuvert = apercu === 'planning' ? await apercuPlanning(id, chantier.reference)
 		: apercu === 'visa' ? await apercuVisa(id, chantier.reference)
@@ -51,7 +52,8 @@ export default async function PagePlanning({ params, searchParams }: Props) {
 	return (
 		<>
 			{/* Le jour à Châteaubriant, calculé côté serveur : le repère « aujourd'hui » est le même au rendu et à l'hydratation. */}
-			<Planning planningInitial={planning} aujourdhui={versIso(dateParis(new Date()))} />
+			<Planning planningInitial={planning} aujourdhui={versIso(dateParis(new Date()))}
+				contexte={<BandeauChantier chantier={chantier} chargesAffaire={chargesAffaire} />} />
 			{apercuOuvert}
 		</>
 	);

@@ -88,7 +88,7 @@ test('tracer, déplacer, allonger, sélectionner, décaler, cadre, supprimer, ou
 
 	// 7. Suppr sur deux périodes : confirmation d'abord.
 	await page.keyboard.press('Delete');
-	const confirmation = page.getByRole('dialog', { name: 'Supprimer les périodes' });
+	const confirmation = page.locator('.ask.is-on');
 	await expect(confirmation).toContainText('Supprimer les 2 périodes sélectionnées ?');
 	await confirmation.getByRole('button', { name: 'Supprimer' }).click();
 	await toast('2 périodes supprimées.');

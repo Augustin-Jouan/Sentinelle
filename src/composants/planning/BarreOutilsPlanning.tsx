@@ -1,11 +1,9 @@
 'use client';
 
-import { Crosshair, Hand } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import * as Icone from '@/composants/maquette/icones';
+import { MenuDeroulant } from '@/composants/maquette/MenuDeroulant';
 import type { LotPlanning } from '@/domaine/planningVue';
-import { cn } from '@/lib/utils';
 import { DENSITES, LIBELLES_DENSITES, texteSelection, type Densite } from './geometrie';
-import { MenuLotsAffiches } from './MenuLotsAffiches';
 import type { Outil } from './preferences';
 
 type Props = {
@@ -24,8 +22,10 @@ type Props = {
 };
 
 export function BarreOutilsPlanning(p: Props) {
+	const caches = p.lots.filter((l) => p.masques.includes(l.id)).length;
+	const vus = p.lots.length - caches;
 	const outil = (valeur: Outil, libelle: string, icone: React.ReactNode) => (
-		<button type="button" className={cn('zoom-b zoom-ic', p.outil === valeur && 'is-on')} aria-pressed={p.outil === valeur}
+		<button type="button" className={p.outil === valeur ? 'zoom-b zoom-ic is-on' : 'zoom-b zoom-ic'} aria-pressed={p.outil === valeur}
 			title={libelle} aria-label={libelle} onClick={() => p.onOutil(valeur)}>
 			{icone}
 		</button>
@@ -38,7 +38,7 @@ export function BarreOutilsPlanning(p: Props) {
 					{p.nbSelection > 1 ? (
 						<span className="g-sel">
 							<b>{texteSelection(p.nbSelection)}</b>
-							<Button size="sm" variant="outline" onClick={p.onDeselectionner}>Désélectionner</Button>
+							<button type="button" className="btn btn-sm" onClick={p.onDeselectionner}>Désélectionner</button>
 						</span>
 					) : (
 						<span className="g-sel-aide">{texteSelection(p.nbSelection)}</span>
@@ -46,17 +46,24 @@ export function BarreOutilsPlanning(p: Props) {
 				</span>
 			</div>
 			<div className="g-outils">
-				<MenuLotsAffiches lots={p.lots} masques={p.masques} onBasculer={p.onBasculerLot} onToutAfficher={p.onToutAfficher} />
+				<MenuDeroulant id="lots-vus" k="Lots affichés" multi classe="dd-large"
+					valeurs={p.lots.filter((l) => !p.masques.includes(l.id)).map((l) => l.id)}
+					libelle={caches ? `${vus} lot${vus > 1 ? 's' : ''} sur ${p.lots.length}` : 'Tous les lots'}
+					options={[
+						...(caches ? [{ v: '*', t: 'Tout afficher' }, { sep: true as const }] : []),
+						...p.lots.map((l) => ({ v: l.id, t: l.designation || 'Lot sans désignation', meta: l.periodes.length ? `${l.periodes.length} pér.` : '—' })),
+					]}
+					onChoisir={(v) => (v === '*' ? p.onToutAfficher() : p.onBasculerLot(v))} />
 				<div className="zoom" role="group" aria-label="Outil">
 					<span className="zoom-lbl">Outil</span>
-					{outil('main', 'Main — faire glisser le planning', <Hand />)}
-					{outil('cible', 'Cible — tracer une période', <Crosshair />)}
+					{outil('main', 'Main — faire glisser le planning', <Icone.Main />)}
+					{outil('cible', 'Cible — tracer une période', <Icone.Cible />)}
 				</div>
-				<Button size="sm" variant="outline" onClick={p.onAujourdhui}>Aujourd&apos;hui</Button>
+				<button type="button" className="btn btn-sm" onClick={p.onAujourdhui}>Aujourd&apos;hui</button>
 				<div className="zoom" role="group" aria-label="Densité">
 					<span className="zoom-lbl">Densité</span>
 					{(Object.keys(DENSITES) as Densite[]).map((d) => (
-						<button key={d} type="button" className={cn('zoom-b', p.densite === d && 'is-on')} aria-pressed={p.densite === d} onClick={() => p.onDensite(d)}>
+						<button key={d} type="button" className={p.densite === d ? 'zoom-b is-on' : 'zoom-b'} aria-pressed={p.densite === d} onClick={() => p.onDensite(d)}>
 							{LIBELLES_DENSITES[d]}
 						</button>
 					))}

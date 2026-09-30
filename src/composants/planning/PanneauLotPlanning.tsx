@@ -1,15 +1,15 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
+import { useEffect } from 'react';
 import type { Resultat } from '@/actions/executer';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ChampEnLigne } from '@/composants/ChampEnLigne';
+import * as Icone from '@/composants/maquette/icones';
+import { MenuDeroulant } from '@/composants/maquette/MenuDeroulant';
+import { Panneau } from '@/composants/maquette/Panneau';
 import { COULEURS } from '@/domaine/couleurs';
 import { rangIso, type LotPlanning, type PeriodeVue, type PlanningVue } from '@/domaine/planningVue';
 import { semaineDuRang } from '@/domaine/semaines';
 import type { ChampPeriode } from '@/donnees/planning';
-import { cn } from '@/lib/utils';
 import { optionsGroupees } from './geometrie';
 
 type Props = {
@@ -25,56 +25,41 @@ type Props = {
 };
 
 export function PanneauLotPlanning({ lot, planning, principale, onFermer, onCouleur, onModifier, onLier, onSupprimer, onAjouter }: Props) {
+	useEffect(() => { document.querySelector('.panel.is-on tr[data-vise]')?.scrollIntoView({ block: 'nearest' }); }, [lot?.id, principale]);
 	return (
-		<Sheet open={lot !== null} onOpenChange={(ouvert) => { if (!ouvert) onFermer(); }}>
-			<SheetContent className="planning overflow-y-auto sm:max-w-lg" data-bloque-clavier="">
-				{lot && (
-					<>
-						<SheetHeader>
-							<SheetDescription>{lot.numero ? `LOT ${lot.numero}` : 'LOT'}</SheetDescription>
-							<SheetTitle>{lot.designation || 'Désignation à saisir'}</SheetTitle>
-						</SheetHeader>
-						<section className="space-y-2 px-4">
-							<h3 className="eyebrow">Couleur du lot</h3>
+		<Panneau ouvert={lot !== null} surtitre={lot?.numero ? `LOT ${lot.numero}` : 'LOT'} titre={lot?.designation || 'Désignation à saisir'}
+			libelle={lot?.designation} onFermer={onFermer} pied={<button type="button" className="btn btn-ghost" onClick={onFermer}>Fermer</button>}>
+			{lot && (
+				<>
+					<div className="block">
+						<div className="block-head"><span className="eyebrow">Couleur du lot</span></div>
+						<div className="block-body">
 							<div className="pal">
 								{COULEURS.map((c) => (
-									<button key={c.cle} type="button" className={cn('pal-c', c.cle === lot.couleur && 'is-on')} style={{ background: c.fond }}
+									<button key={c.cle} type="button" className={c.cle === lot.couleur ? 'pal-c is-on' : 'pal-c'} style={{ background: c.fond }}
 										title={c.nom} aria-label={c.nom} aria-pressed={c.cle === lot.couleur} onClick={() => onCouleur(c.cle)} />
 								))}
 							</div>
 							<p className="pal-note">Donnez la même couleur à des lots d&apos;une même famille — les fluides, les menuiseries — comme dans votre planning actuel.</p>
-						</section>
-						<section className="space-y-2 px-4 pb-6">
-							<div className="flex items-center justify-between">
-								<h3 className="eyebrow">Périodes</h3>
-								<Button size="sm" variant="outline" onClick={onAjouter}>Ajouter</Button>
-							</div>
+						</div>
+					</div>
+					<div className="block">
+						<div className="block-head"><span className="eyebrow">Périodes</span><button type="button" className="btn btn-sm" onClick={onAjouter}>Ajouter</button></div>
+						<div className="block-body" style={{ padding: 0 }}>
 							{lot.periodes.length ? (
-								<table className="w-full text-sm">
-									<thead>
-										<tr className="text-left text-xs text-muted-foreground">
-											<th className="font-medium">Intitulé</th>
-											<th className="w-14 text-right font-medium">Sem.</th>
-											<th className="w-16 text-right font-medium">Année</th>
-											<th className="w-14 text-right font-medium">Durée</th>
-											<th className="w-8" />
-										</tr>
-									</thead>
+								<table className="plain plain-mini">
+									<thead><tr><th>Intitulé</th><th className="ta-r">Sem.</th><th className="ta-r">Année</th><th className="ta-r">Durée</th><th /></tr></thead>
 									{lot.periodes.map((x) => (
 										<LignePeriode key={x.id} periode={x} vise={x.id === principale} options={optionsGroupees(planning, x.id)}
 											onModifier={onModifier} onLier={onLier} onSupprimer={onSupprimer} />
 									))}
 								</table>
-							) : (
-								<p className="py-4 text-center text-sm italic text-muted-foreground">
-									Aucune période. Tracez-en une à la souris sur la grille, ou cliquez « Ajouter ».
-								</p>
-							)}
-						</section>
-					</>
-				)}
-			</SheetContent>
-		</Sheet>
+							) : <p className="vide-mini">Aucune période. Tracez-en une à la souris sur la grille, ou cliquez « Ajouter ».</p>}
+						</div>
+					</div>
+				</>
+			)}
+		</Panneau>
 	);
 }
 
@@ -87,37 +72,33 @@ type LigneProps = {
 	onSupprimer: Props['onSupprimer'];
 };
 
-/** Deux rangs par période : les champs, puis le lien « commence après » (maquette `openLotPlanning`). */
+/** Deux rangs par période : les champs, puis « Commence après » (openLotPlanning de la maquette). */
 function LignePeriode({ periode: x, vise, options, onModifier, onLier, onSupprimer }: LigneProps) {
 	const s = semaineDuRang(rangIso(x.debut));
 	return (
-		<tbody data-periode={x.id} className={cn('border-t', vise && 'bg-accent')}>
-			<tr>
+		<tbody data-periode={x.id}>
+			<tr className={vise ? 'ligne-per est-vise' : 'ligne-per'} data-vise={vise ? '1' : undefined}>
 				<td><ChampEnLigne libelle="Intitulé" placeholder="sans intitulé" valeur={x.intitule} enregistrer={(v) => onModifier(x.id, 'intitule', v)} /></td>
-				<td><ChampEnLigne libelle="Semaine" variante="montant" valeur={String(s.semaine)} enregistrer={(v) => onModifier(x.id, 'semaine', v)} /></td>
-				<td><ChampEnLigne libelle="Année" variante="montant" valeur={String(s.annee)} enregistrer={(v) => onModifier(x.id, 'annee', v)} /></td>
-				<td><ChampEnLigne libelle="Durée" variante="montant" valeur={String(x.duree)} enregistrer={(v) => onModifier(x.id, 'duree', v)} /></td>
-				<td>
-					<Button size="icon-sm" variant="ghost" title="Supprimer cette période" aria-label={`Supprimer la période ${x.intitule || 'sans intitulé'}`}
-						onClick={() => onSupprimer(x.id)}>
-						<Trash2 />
-					</Button>
+				<td className="ta-r"><ChampEnLigne variante="montant-mini" libelle="Semaine" valeur={String(s.semaine)} enregistrer={(v) => onModifier(x.id, 'semaine', v)} /></td>
+				<td className="ta-r"><ChampEnLigne variante="montant-mini" libelle="Année" valeur={String(s.annee)} enregistrer={(v) => onModifier(x.id, 'annee', v)} /></td>
+				<td className="ta-r"><ChampEnLigne variante="montant-mini" libelle="Durée" valeur={String(x.duree)} enregistrer={(v) => onModifier(x.id, 'duree', v)} /></td>
+				<td className="ta-r cell-actions">
+					<button type="button" className="btn btn-sm btn-danger btn-ico" onClick={() => onSupprimer(x.id)}
+						title="Supprimer cette période" aria-label={`Supprimer la période ${x.intitule || 'sans intitulé'}`}><Icone.Corbeille /></button>
 				</td>
 			</tr>
-			<tr>
-				<td colSpan={5} className="pb-2 pl-5">
-					<label className="flex items-center gap-2 text-xs text-muted-foreground">
-						<span aria-hidden="true">↳</span> Commence après
-						<select aria-label="Commence après" className="h-8 min-w-0 flex-1 rounded-md border border-input bg-card px-2 text-sm text-foreground"
-							value={x.dependDeId ?? ''} onChange={(e) => onLier(x.id, e.target.value || null)}>
-							<option value="">— rien, date libre —</option>
-							{options.map((g) => (
-								<optgroup key={g.lot} label={g.lot}>
-									{g.periodes.map((o) => <option key={o.id} value={o.id}>{o.libelle}</option>)}
-								</optgroup>
-							))}
-						</select>
-					</label>
+			<tr className={vise ? 'ligne-dep est-vise' : 'ligne-dep'}>
+				<td colSpan={5}>
+					<MenuDeroulant id={`dd-dep-${x.id}`} k="Commence après" classe="dd-large" valeur={x.dependDeId ?? ''}
+						options={[
+							{ v: '', t: '— rien, date libre —' },
+							// optionsDep() de la maquette : un séparateur et le nom du lot, puis ses périodes (« Fondations » · « S16 2026 »).
+							...options.flatMap((g) => [{ sep: true as const }, { tete: g.lot }, ...g.periodes.map((o) => {
+								const [t, meta] = o.libelle.split(' — ');
+								return { v: o.id, t, meta };
+							})]),
+						]}
+						onChoisir={(v) => onLier(x.id, v || null)} />
 				</td>
 			</tr>
 		</tbody>
