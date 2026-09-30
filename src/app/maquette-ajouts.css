@@ -1,0 +1,47 @@
+/* Ajouts propres à l'app : des états que la maquette n'a pas (voir « Écarts assumés » du plan).
+   Uniquement les jetons de la maquette, jamais une couleur en dur. */
+
+/* Barre temporaire pendant qu'on trace une période (planning) : elle ne capte pas la souris. */
+.g-bar.est-temp { pointer-events: none; }
+
+/* Saisie refusée par le serveur : le champ garde le texte et se voit en erreur (la maquette remettait l'ancienne valeur). */
+.text-input.est-erreur, .money-input.est-erreur, .field input.est-erreur { border-color: var(--danger); background: var(--danger-soft); }
+.field .erreur { font-size: 0.6875rem; color: var(--danger); }
+
+/* Pendant l'enregistrement d'une saisie. */
+.est-en-cours { opacity: 0.7; }
+
+/* Document modifié depuis sa dernière version, visa périmé : la pastille de la maquette, en accent. */
+.pill-modif { background: var(--accent-soft); color: var(--accent-2); margin-left: 0.25rem; }
+/* Acompte saisi hors de l'application : une case sans lien. */
+.dm-case.est-hors { background: var(--idle-soft); color: var(--muted); cursor: default; }
+/* Action secondaire sous une case (Corriger, Régénérer, Lever les réserves). */
+.dm-sous { display: flex; gap: 0.5rem; margin-top: 0.1875rem; }
+.dm-sous .dm-th-action { margin-left: 0; }
+
+/* Bouton désactivé : la maquette n'en avait pas. */
+.btn:disabled, .btn[aria-disabled='true'] { opacity: 0.5; cursor: not-allowed; }
+.btn:disabled:hover { background: var(--raise); border-color: var(--rule-strong); }
+.btn-primary:disabled:hover { background: var(--accent); border-color: var(--accent); }
+
+/* Bandeau du chantier cliquable : il ouvre l'en-tête du chantier (écart 3). */
+button.context { width: 100%; margin: 0; padding: 0; border: 0; border-top: 1px solid var(--rule); border-radius: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+button.context:hover { background: var(--idle-soft); }
+
+/* Lien d'une barre d'aperçu (« Télécharger le PDF » est un <a>). */
+a.btn { text-decoration: none; }
+
+/* Base UI n'unmount le panneau que quand getAnimations() est fini. Le :focus-visible
+   de la maquette relance outline-color (transition shadcn), le scrim restait. */
+[data-slot='sheet-content'], [data-slot='dialog-content'],
+[data-slot='sheet-overlay'], [data-slot='dialog-overlay'] {
+	transition-property: opacity, transform;
+}
+/* Panneau fermé : opacity 0 mais encore cliquable tant que Base UI attend. La maquette
+   glisse le sien hors écran (transform), le hit-test suit. */
+[data-slot='sheet-overlay'][data-closed], [data-slot='sheet-overlay'][data-ending-style],
+[data-slot='dialog-overlay'][data-closed], [data-slot='dialog-overlay'][data-ending-style],
+[data-slot='sheet-content'][data-closed], [data-slot='sheet-content'][data-ending-style],
+[data-slot='dialog-content'][data-closed], [data-slot='dialog-content'][data-ending-style] {
+	pointer-events: none;
+}

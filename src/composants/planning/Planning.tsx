@@ -1,6 +1,5 @@
 'use client';
 
-import './gantt.css';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';

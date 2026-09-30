@@ -59,7 +59,7 @@ export function GrillePlanning({
 			<div
 				ref={cadre}
 				className={cn('gantt', outil === 'main' && 'outil-main', saisi && 'est-saisi')}
-				style={{ '--p-sem-w': `${w}px` } as CSSProperties}
+				style={{ '--sem-w': `${w}px` } as CSSProperties}
 				onScroll={onScroll}
 				onPointerDown={onPointerDown}
 			>

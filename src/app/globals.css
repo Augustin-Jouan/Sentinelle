@@ -1,8 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (@media (prefers-color-scheme: dark));
-
 @font-face { font-family: 'Figtree'; font-weight: 400; font-display: swap; src: url('/polices/figtree-400.woff2') format('woff2'); }
 @font-face { font-family: 'Figtree'; font-weight: 500; font-display: swap; src: url('/polices/figtree-500.woff2') format('woff2'); }
 @font-face { font-family: 'Figtree'; font-weight: 600; font-display: swap; src: url('/polices/figtree-600.woff2') format('woff2'); }
@@ -12,6 +10,12 @@
 @font-face { font-family: 'Spline Sans Mono'; font-weight: 400; font-display: swap; src: url('/polices/spline-sans-mono-400.woff2') format('woff2'); }
 @font-face { font-family: 'Spline Sans Mono'; font-weight: 500; font-display: swap; src: url('/polices/spline-sans-mono-500.woff2') format('woff2'); }
 @font-face { font-family: 'Spline Sans Mono'; font-weight: 600; font-display: swap; src: url('/polices/spline-sans-mono-600.woff2') format('woff2'); }
+
+/* Le thème suit l'interrupteur de la barre (data-theme), sinon le système — comme la maquette. */
+@custom-variant dark {
+	&:where([data-theme='dark'], [data-theme='dark'] *) { @slot; }
+	@media (prefers-color-scheme: dark) { &:where(:root:not([data-theme='light']), :root:not([data-theme='light']) *) { @slot; } }
+}
 
 /* Palette « bleu de plan » de la maquette (jetons de :root), traduite en variables shadcn. */
 :root {
@@ -41,7 +45,7 @@
 
 /* L'ardoise prussienne du cyanotype : le négatif du bleu de plan. */
 @media (prefers-color-scheme: dark) {
-	:root {
+	:root:not([data-theme='light']) {
 		--background: #14202b;
 		--foreground: #e9eff5;
 		--card: #223442;
@@ -64,6 +68,30 @@
 		--input: #43596d;
 		--ring: #6fb0e8;
 	}
+}
+
+:root[data-theme='dark'] {
+	--background: #14202b;
+	--foreground: #e9eff5;
+	--card: #223442;
+	--card-foreground: #e9eff5;
+	--popover: #223442;
+	--popover-foreground: #e9eff5;
+	--primary: #6fb0e8;
+	--primary-foreground: #0d1720;
+	--secondary: #1b2a37;
+	--secondary-foreground: #c3d1dd;
+	--muted: #1b2a37;
+	--muted-foreground: #8fa4b5;
+	--accent: #1c3a52;
+	--accent-foreground: #e9eff5;
+	--destructive: #f08c84;
+	--destructive-soft: #3d2226;
+	--alerte: #3d2e1c;
+	--alerte-foreground: #f2c38a;
+	--border: #2d4050;
+	--input: #43596d;
+	--ring: #6fb0e8;
 }
 
 @theme inline {
@@ -102,3 +130,7 @@
 	body { @apply bg-background text-foreground font-sans; }
 	h1, h2, h3 { @apply font-titre; }
 }
+
+/* Hors couche : la maquette prime sur les utilitaires Tailwind. */
+@import './maquette.css';
+@import './maquette-ajouts.css';

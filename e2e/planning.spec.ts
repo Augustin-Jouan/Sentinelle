@@ -55,7 +55,7 @@ test.describe('écran Planning', () => {
 	});
 
 	test('densité et lots masqués, gardés au rechargement', async ({ page }) => {
-		const largeurSemaine = () => page.locator('.gantt').evaluate((el) => getComputedStyle(el).getPropertyValue('--p-sem-w').trim());
+		const largeurSemaine = () => page.locator('.gantt').evaluate((el) => getComputedStyle(el).getPropertyValue('--sem-w').trim());
 		await page.getByRole('button', { name: 'Large' }).click();
 		await expect.poll(largeurSemaine).toBe('68px');
 
