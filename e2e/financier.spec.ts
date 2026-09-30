@@ -114,7 +114,7 @@ test('avenant, lettre, acomptes antérieurs, certificat et correction', async ({
 	await expect(certificats.nth(1)).toHaveText('n° 02 · hors appli');
 	await expect(certificats.nth(2)).toContainText('n° 03 · v2');
 	await expect(colonne(3).getByText('modifié', { exact: true })).toHaveCount(0);
-	await expect(colonne(4)).toContainText('2 versions');
+	await expect(colonne(5)).toContainText('2 versions');
 	await certificats.nth(2).getByRole('link', { name: 'n° 03 · v2' }).click();
 	const version = page.getByRole('dialog', { name: 'Certificat de paiement — version 2' });
 	await expect(version.locator('.cp-somme')).toHaveText(eur('3 000,00'));
