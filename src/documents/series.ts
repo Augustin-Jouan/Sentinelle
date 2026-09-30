@@ -5,3 +5,5 @@ export const SERIES = { RECAPITULATIF: 'RECAPITULATIF', PLANNING: 'PLANNING', VI
 export const serieAvenant = (avenantId: string): string => `AVENANT:${avenantId}`;
 /** Un certificat de paiement : une série par acompte, dont seule la dernière version compte. */
 export const serieCertificat = (acompteId: string): string => `CERTIFICAT:${acompteId}`;
+/** L'id de l'avenant d'une série de lettre, ou null pour une autre série. */
+export const avenantDeLaSerie = (serie: string): string | null => (serie.startsWith('AVENANT:') ? serie.slice('AVENANT:'.length) : null);

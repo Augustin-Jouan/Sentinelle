@@ -98,4 +98,25 @@ test('avenant, lettre, acomptes antérieurs, certificat et correction', async ({
 	expect(await telecharger(page, () => cp.getByRole('button', { name: 'Générer la v2' }).click()))
 		.toBe('FINANCIER-Lot11-PEINTURE-Certificat03-v2.pdf');
 	await expect(cp).toBeHidden();
+
+	// 5. Documents : colonnes Avenants et Certificats ; « n° 01 · hors appli », « n° 03 · v2 », sans pastille « modifié ».
+	await page.getByRole('link', { name: 'Documents', exact: true }).click();
+	const ligneDoc = page.locator('tr[data-lot="11 — PEINTURE"]');
+	const colonne = (i: number) => ligneDoc.locator('td').nth(i);
+	await expect(page.getByRole('columnheader', { name: 'Avenants' }).first()).toBeVisible();
+	await expect(page.getByRole('columnheader', { name: 'Certificats' }).first()).toBeVisible();
+	// Le marché généré avant l'avenant reste à jour ; la lettre aussi.
+	await expect(colonne(1).getByText('modifié', { exact: true })).toHaveCount(0);
+	await expect(colonne(2).locator('[data-case="avenant"]')).toHaveText('n° 01 · v1');
+	const certificats = colonne(3).locator('[data-case="certificat"]');
+	await expect(certificats).toHaveCount(3);
+	await expect(certificats.nth(0)).toHaveText('n° 01 · hors appli');
+	await expect(certificats.nth(1)).toHaveText('n° 02 · hors appli');
+	await expect(certificats.nth(2)).toContainText('n° 03 · v2');
+	await expect(colonne(3).getByText('modifié', { exact: true })).toHaveCount(0);
+	await expect(colonne(4)).toContainText('2 versions');
+	await certificats.nth(2).getByRole('link', { name: 'n° 03 · v2' }).click();
+	const version = page.getByRole('dialog', { name: 'Certificat de paiement — version 2' });
+	await expect(version.locator('.cp-somme')).toHaveText(eur('3 000,00'));
+	await expect(version.getByRole('link', { name: 'Télécharger le PDF' })).toBeVisible();
 });
