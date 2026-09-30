@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { creerUtilisateurTest, viderBase } from '../../tests/integration/aide';
-import { ajouterLot, attribuerArtisan, changerNature, modifierChampLot, supprimerLot } from './lots';
+import { ajouterLot, attribuerArtisan, changerNature, LOT_AVEC_DOCUMENTS, modifierChampLot, supprimerLot } from './lots';
 import { prisma } from './prisma';
 
 let chantierId: string;
@@ -93,6 +93,29 @@ describe('lots', () => {
 			chantierId, lotId, serie: lotId, type: 'MARCHE_GRE_A_GRE', version: 1, donnees: {}, empreinte: 'x',
 			pdf: new Uint8Array([1]), nomFichier: 'x.pdf', creeParId: utilisateurId,
 		} });
-		await expect(supprimerLot(lotId)).rejects.toThrow('Ce lot a déjà un marché généré : il ne peut plus être supprimé.');
+		await expect(supprimerLot(lotId)).rejects.toThrow(LOT_AVEC_DOCUMENTS);
+	});
+
+	it('document inséré pendant la suppression : même refus, pas d\'erreur inattendue', async () => {
+		let insere!: () => void;
+		let terminer!: () => void;
+		const documentInsere = new Promise<void>((r) => { insere = r; });
+		const fin = new Promise<void>((r) => { terminer = r; });
+		// Une génération en cours : son document existe déjà dans sa transaction, pas encore validée.
+		const generation = prisma.$transaction(async (tx) => {
+			await tx.document.create({ data: {
+				chantierId, lotId, serie: lotId, type: 'MARCHE_GRE_A_GRE', version: 1, donnees: {}, empreinte: 'x',
+				pdf: new Uint8Array([1]), nomFichier: 'x.pdf', creeParId: utilisateurId,
+			} });
+			insere();
+			await fin;
+		});
+		await documentInsere;
+		const suppression = supprimerLot(lotId);
+		await new Promise((r) => setTimeout(r, 300));
+		terminer();
+		await generation;
+		await expect(suppression).rejects.toThrow(LOT_AVEC_DOCUMENTS);
+		expect(await prisma.lot.count({ where: { id: lotId } })).toBe(1);
 	});
 });

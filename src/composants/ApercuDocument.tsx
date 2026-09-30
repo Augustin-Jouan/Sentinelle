@@ -8,6 +8,7 @@ import { genererAvenantAction, genererMarcheAction, genererRecapAction } from '@
 import type { Resultat } from '@/actions/executer';
 import { modifierChampLotAction } from '@/actions/lots';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { telecharger } from '@/composants/telecharger';
 import { FeuilleUnique } from '@/composants/planning/FeuilleUnique';
 import { Gabarit, type CleZone } from '@/documents/gabarits/Gabarit';
 import type { DonneesDocument } from '@/documents/schemas';
@@ -67,7 +68,7 @@ export function ApercuDocument({ titre, sousTitre, donnees, source, manques = []
 			toast.success(r.donnees.nouvelle
 				? `Version ${r.donnees.version} générée.`
 				: `Rien n'a changé depuis la version ${r.donnees.version} : elle est téléchargée.`);
-			window.location.assign(`/api/documents/${r.donnees.documentId}/pdf`);
+			telecharger(`/api/documents/${r.donnees.documentId}/pdf`);
 			router.refresh();
 		});
 	}

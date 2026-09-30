@@ -4,6 +4,8 @@ import { nextCookies } from 'better-auth/next-js';
 import { admin } from 'better-auth/plugins';
 import { prisma } from '@/donnees/prisma';
 
+if (!process.env.BETTER_AUTH_SECRET) throw new Error('BETTER_AUTH_SECRET est absent.');
+
 export const auth = betterAuth({
 	database: prismaAdapter(prisma, { provider: 'postgresql' }),
 	emailAndPassword: { enabled: true, disableSignUp: true, minPasswordLength: 12 },

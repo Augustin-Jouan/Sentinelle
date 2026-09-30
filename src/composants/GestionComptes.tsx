@@ -93,13 +93,13 @@ export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moi
 									: <Badge variant="outline">Actif</Badge>}
 							</td>
 							<td className="space-x-2 p-3 text-right">
-								<Button size="sm" variant="outline" onClick={() => reinitialiser(c)}>Réinitialiser le mot de passe</Button>
+								<Button size="sm" variant="outline" disabled={enCours} onClick={() => reinitialiser(c)}>Réinitialiser le mot de passe</Button>
 								{c.id !== moiId && (
 									<>
-										<Button size="sm" variant="outline" onClick={() => agir(() => changerRoleAction(c.id, c.role === 'admin' ? 'user' : 'admin'), 'Rôle modifié.')}>
+										<Button size="sm" variant="outline" disabled={enCours} onClick={() => agir(() => changerRoleAction(c.id, c.role === 'admin' ? 'user' : 'admin'), 'Rôle modifié.')}>
 											{c.role === 'admin' ? 'Passer utilisateur' : 'Passer administrateur'}
 										</Button>
-										<Button size="sm" variant={c.bloque ? 'outline' : 'destructive'} onClick={() => agir(() => bloquerCompteAction(c.id, !c.bloque), c.bloque ? 'Compte débloqué.' : 'Compte bloqué.')}>
+										<Button size="sm" variant={c.bloque ? 'outline' : 'destructive'} disabled={enCours} onClick={() => agir(() => bloquerCompteAction(c.id, !c.bloque), c.bloque ? 'Compte débloqué.' : 'Compte bloqué.')}>
 											{c.bloque ? 'Débloquer' : 'Bloquer'}
 										</Button>
 									</>
@@ -110,8 +110,8 @@ export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moi
 				</tbody>
 			</table>
 
-			<Dialog open={provisoire !== null} onOpenChange={(ouvert) => { if (!ouvert) setProvisoire(null); }}>
-				<DialogContent>
+			<Dialog open={provisoire !== null} onOpenChange={(ouvert) => { if (ouvert) return; }} disablePointerDismissal>
+				<DialogContent showCloseButton={false}>
 					<DialogHeader>
 						<DialogTitle>Mot de passe provisoire</DialogTitle>
 						<DialogDescription>

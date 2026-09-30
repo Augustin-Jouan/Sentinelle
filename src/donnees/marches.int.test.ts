@@ -16,6 +16,7 @@ describe('vue de l\'onglet Marchés', () => {
 			lotId, numero: 2, montantHt: '1000', cumulRealiseHt: '3000', mois: '2026-07', date: new Date('2026-09-30T00:00:00Z'),
 		} });
 		const vue = await lireVueMarches(p.chantierId);
+		if (!vue) throw new Error('attendu');
 		expect(vue.lots.find((l) => l.id === lotId)).toMatchObject({
 			avenants: [{ numero: 2, devis: 'D-7', montantHt: '-300', date: '2026-05-12' }],
 			certificat: { possible: true, dernier: { id: certificat.id, numero: 2 } },
@@ -36,6 +37,7 @@ describe('vue de l\'onglet Marchés', () => {
 			] },
 		} });
 		const vue = await lireVueMarches(c.id);
+		if (!vue) throw new Error('attendu');
 		expect(vue.dateSignatureChantier).toBe('2026-04-03');
 		expect(vue.lots.map((l) => l.designation)).toEqual(['GROS ŒUVRE', 'ESCALIER']);
 		expect(vue.lots[0]).toMatchObject({
@@ -46,5 +48,9 @@ describe('vue de l\'onglet Marchés', () => {
 		expect(vue.artisans[0].adresseComplete).toBe('Z.I. du Pigeon Blanc, 35640 MARTIGNÉ-FERCHAUD');
 		expect([vue.totalHtTexte, vue.totalTvaTexte, vue.totalTtcTexte])
 			.toEqual(['96 250,00 €', '19 250,00 €', '115 500,00 €']);
+	});
+
+	it('chantier inconnu : nul', async () => {
+		expect(await lireVueMarches('inconnu')).toBeNull();
 	});
 });

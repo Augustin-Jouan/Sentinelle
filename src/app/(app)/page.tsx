@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation';
+import { exigerPage } from '@/auth/session';
 
-export default function Accueil() {
+export default async function Accueil() {
+	await exigerPage();
 	redirect('/chantiers');
 }

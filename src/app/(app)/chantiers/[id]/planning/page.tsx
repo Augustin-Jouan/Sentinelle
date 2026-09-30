@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { exigerPage } from '@/auth/session';
 import { ApercuPlanning } from '@/composants/planning/ApercuPlanning';
 import { Planning } from '@/composants/planning/Planning';
 import { construireDonneesPlanning, construireDonneesVisa } from '@/documents/donnees';
@@ -39,6 +40,7 @@ async function apercuVisa(chantierId: string, reference: string) {
 }
 
 export default async function PagePlanning({ params, searchParams }: Props) {
+	await exigerPage();
 	const { id } = await params;
 	const { apercu } = await searchParams;
 	const [planning, chantier] = await Promise.all([lirePlanning(id), lireEnTeteChantier(id)]);

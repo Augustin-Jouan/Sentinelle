@@ -4,8 +4,9 @@ import { ErreurMetier } from '@/domaine/erreurs';
 import { htDepuisTtc, lireNombreFr } from '@/domaine/montants';
 import { exemplairesParDefaut, type Nature } from '@/domaine/regles';
 import { versDateCalendaire } from './chantiers';
+import { estCleEtrangere } from './erreursPrisma';
 import { prisma } from './prisma';
-import { montantsAvenants, sousVerrouLot } from './verrouLot';
+import { montantsAvenants, sousVerrouLot, verrouillerChantier } from './verrouLot';
 
 export const CHAMPS_LOT = [
 	'numero', 'designation', 'montantHt', 'montantTtc', 'tauxTva', 'retenueGarantie',
@@ -58,6 +59,14 @@ export async function modifierChampLot(lotId: string, champ: ChampLot, valeur: s
 		});
 	}
 
+	if (champ === 'tauxTva' || champ === 'retenueGarantie') {
+		const data = champ === 'tauxTva' ? { tauxTva: taux(valeur, champ) } : { retenueGarantie: taux(valeur, champ) };
+		return sousVerrouLot(lotId, async (tx, lot) => {
+			await tx.lot.update({ where: { id: lotId }, data });
+			return { chantierId: lot.chantierId };
+		});
+	}
+
 	const lot = await prisma.lot.findUniqueOrThrow({ where: { id: lotId } });
 	let donnees: Record<string, unknown>;
 	switch (champ) {
@@ -70,12 +79,6 @@ export async function modifierChampLot(lotId: string, champ: ChampLot, valeur: s
 			donnees = { designation: d };
 			break;
 		}
-		case 'tauxTva':
-			donnees = { tauxTva: taux(valeur, champ) };
-			break;
-		case 'retenueGarantie':
-			donnees = { retenueGarantie: taux(valeur, champ) };
-			break;
 		case 'dateSignature':
 			donnees = { dateSignature: versDateCalendaire(valeur) };
 			break;
@@ -89,7 +92,7 @@ export async function modifierChampLot(lotId: string, champ: ChampLot, valeur: s
 /** Sous verrou du chantier : deux ajouts simultanés ne se disputent pas le même `ordre`. */
 export async function ajouterLot(chantierId: string): Promise<string> {
 	return prisma.$transaction(async (tx) => {
-		await tx.$executeRaw`SELECT 1 FROM "Chantier" WHERE id = ${chantierId} FOR UPDATE`;
+		await verrouillerChantier(tx, chantierId);
 		const dernier = await tx.lot.aggregate({ where: { chantierId }, _max: { ordre: true } });
 		const lot = await tx.lot.create({
 			data: { chantierId, ordre: (dernier._max.ordre ?? 0) + 1, designation: 'Nouveau lot', exemplaires: exemplairesParDefaut('GRE_A_GRE') },
@@ -98,22 +101,32 @@ export async function ajouterLot(chantierId: string): Promise<string> {
 	});
 }
 
+export const LOT_AVEC_DOCUMENTS = 'Ce lot a déjà des documents générés : il ne peut plus être supprimé.';
+export const LOT_DISPARU = "Ce lot n'existe plus.";
+
+/** Un document (marché, lettre, certificat, PV) interdit la suppression, même inséré pendant qu'elle s'exécute. */
 export async function supprimerLot(lotId: string): Promise<{ chantierId: string }> {
 	const lot = await prisma.lot.findUniqueOrThrow({ where: { id: lotId }, include: { _count: { select: { documents: true } } } });
-	if (lot._count.documents > 0) throw new ErreurMetier('Ce lot a déjà un marché généré : il ne peut plus être supprimé.');
-	await prisma.lot.delete({ where: { id: lotId } });
+	if (lot._count.documents > 0) throw new ErreurMetier(LOT_AVEC_DOCUMENTS);
+	try {
+		await prisma.lot.delete({ where: { id: lotId } });
+	} catch (e) {
+		if (estCleEtrangere(e)) throw new ErreurMetier(LOT_AVEC_DOCUMENTS);
+		throw e;
+	}
 	return { chantierId: lot.chantierId };
 }
 
 export async function attribuerArtisan(lotId: string, artisanId: string | null): Promise<{ chantierId: string }> {
-	const lot = await prisma.lot.findUniqueOrThrow({ where: { id: lotId } });
-	if (artisanId && artisanId !== lot.artisanId) {
-		const artisan = await prisma.artisan.findUnique({ where: { id: artisanId } });
-		if (!artisan) throw new ErreurMetier('Entreprise introuvable.');
-		if (!artisan.actif) throw new ErreurMetier('Cette entreprise est archivée.');
-	}
-	await prisma.lot.update({ where: { id: lotId }, data: { artisanId } });
-	return { chantierId: lot.chantierId };
+	return sousVerrouLot(lotId, async (tx, lot) => {
+		if (artisanId && artisanId !== lot.artisanId) {
+			const artisan = await tx.artisan.findUnique({ where: { id: artisanId } });
+			if (!artisan) throw new ErreurMetier('Entreprise introuvable.');
+			if (!artisan.actif) throw new ErreurMetier('Cette entreprise est archivée.');
+		}
+		await tx.lot.update({ where: { id: lotId }, data: { artisanId } });
+		return { chantierId: lot.chantierId };
+	});
 }
 
 /** Change le gabarit imprimé ; la série de versions du marché reste la même (spec § 4). */

@@ -13,7 +13,7 @@ const deps = { maintenant: new Date('2026-09-29T08:00:00Z'), rendrePdf: faux };
 let p: Awaited<ReturnType<typeof insererPerrier>>;
 let ids: Record<string, string>;
 
-const etats = () => etatsDocumentsChantier(p.chantierId, deps.maintenant);
+const etats = async () => (await etatsDocumentsChantier(p.chantierId, deps.maintenant))!;
 const allonger = (intitule: string, duree: number) => prisma.periode.update({ where: { id: ids[intitule] }, data: { duree } });
 const planning = () => genererPlanning(p.chantierId, p.utilisateurId, deps);
 const visa = () => genererVisa(p.chantierId, p.utilisateurId, deps);

@@ -27,7 +27,7 @@ type Props = {
 export function PanneauLotPlanning({ lot, planning, principale, onFermer, onCouleur, onModifier, onLier, onSupprimer, onAjouter }: Props) {
 	return (
 		<Sheet open={lot !== null} onOpenChange={(ouvert) => { if (!ouvert) onFermer(); }}>
-			<SheetContent className="planning overflow-y-auto sm:max-w-lg">
+			<SheetContent className="planning overflow-y-auto sm:max-w-lg" data-bloque-clavier="">
 				{lot && (
 					<>
 						<SheetHeader>

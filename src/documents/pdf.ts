@@ -1,5 +1,6 @@
 import { chromium, type Browser, type BrowserContext } from 'playwright';
 import { ErreurMetier } from '@/domaine/erreurs';
+import { argumentsChromium } from './chromium';
 import { ajusterUneFeuille, ECHELLE_MIN, HAUTEUR_UTILE_PORTRAIT_PX, HAUTEUR_UTILE_PX, LARGEUR_UTILE_PORTRAIT_PX, LARGEUR_UTILE_PX, OPTIONS_UNE_FEUILLE, TROP_DE_LOTS } from './uneFeuille';
 
 export type RendrePdf = (html: string) => Promise<Uint8Array>;
@@ -13,7 +14,7 @@ let enCours = 0;
 /** Un seul Chromium par processus, lancé au premier besoin puis réutilisé (une seule réplique de l'app). */
 function obtenirNavigateur(): Promise<Browser> {
 	if (!navigateur) {
-		const lancement = chromium.launch({ args: ['--no-sandbox', '--disable-dev-shm-usage'] });
+		const lancement = chromium.launch({ args: argumentsChromium() });
 		navigateur = lancement;
 		lancement.then(
 			(b) => b.on('disconnected', () => { navigateur = null; }),

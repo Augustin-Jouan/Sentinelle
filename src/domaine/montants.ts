@@ -72,9 +72,20 @@ export function formatNombreCourt(v: Valeur): string {
 	return x.isInteger() ? x.toFixed(0) : x.toFixed(2).replace('.', ',');
 }
 
+/** « 96.250 » : milliers à l'ancienne, ou décimales ? Indécidable, et un facteur 1 000 d'écart : refusé. */
+const AMBIGU = /^(-?)([1-9]\d{0,2})\.(\d{3})$/;
+
 /** Lit un nombre saisi à la française : espaces, €, % ignorés ; virgule décimale ; point de milliers si une virgule suit. */
 export function lireNombreFr(saisie: string): Decimal {
 	let s = saisie.replace(/[\s\u00a0\u202f€%]/g, '');
+	const ambigu = AMBIGU.exec(s);
+	if (ambigu) {
+		const [, signe, entier, trois] = ambigu;
+		const decimales = trois.replace(/0+$/, '');
+		throw new ErreurMetier(
+			`« ${saisie.trim()} » est ambigu : écrivez ${signe}${entier} ${trois} ou ${signe}${entier}${decimales ? `,${decimales}` : ''}.`,
+		);
+	}
 	if (s.includes(',') && s.includes('.')) s = s.replace(/\./g, '');
 	s = s.replace(',', '.');
 	if (!/^-?\d+(\.\d+)?$/.test(s)) {

@@ -1,4 +1,5 @@
 import { utilisateurConnecte } from '@/auth/session';
+import { ErreurMetier } from '@/domaine/erreurs';
 import { enTeteTelechargement } from '@/domaine/fichiers';
 import { construireArchive } from '@/donnees/archive';
 
@@ -6,13 +7,18 @@ import { construireArchive } from '@/donnees/archive';
 export async function GET(_requete: Request, { params }: { params: Promise<{ id: string }> }) {
 	const u = await utilisateurConnecte();
 	if (!u || u.doitChangerMotDePasse) return new Response('Non autorisé', { status: 401 });
-	const archive = await construireArchive((await params).id);
-	if (!archive) return new Response('Aucun document à télécharger', { status: 404 });
-	return new Response(Buffer.from(archive.zip), {
-		headers: {
-			'Content-Type': 'application/zip',
-			'Content-Disposition': enTeteTelechargement(archive.nomFichier),
-			'Cache-Control': 'private, no-store',
-		},
-	});
+	try {
+		const archive = await construireArchive((await params).id);
+		if (!archive) return new Response('Aucun document à télécharger', { status: 404 });
+		return new Response(Buffer.from(archive.zip), {
+			headers: {
+				'Content-Type': 'application/zip',
+				'Content-Disposition': enTeteTelechargement(archive.nomFichier),
+				'Cache-Control': 'private, no-store',
+			},
+		});
+	} catch (e) {
+		if (e instanceof ErreurMetier) return new Response(e.message, { status: 413 });
+		throw e;
+	}
 }
