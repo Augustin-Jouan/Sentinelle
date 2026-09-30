@@ -1,13 +1,16 @@
 import { notFound } from 'next/navigation';
 import { exigerPage } from '@/auth/session';
-import { buttonVariants } from '@/components/ui/button';
 import { ApercuCertificat } from '@/composants/ApercuCertificat';
 import { ApercuDocument } from '@/composants/ApercuDocument';
 import { BoutonMarchesManquants } from '@/composants/BoutonMarchesManquants';
-import { TableauLots } from '@/composants/TableauLots';
+import { BandeauChantier } from '@/composants/chantier/BandeauChantier';
+import { Ecran } from '@/composants/maquette/Ecran';
+import * as Icone from '@/composants/maquette/icones';
+import { BoutonAjouterLot, TableauLots } from '@/composants/TableauLots';
 import { construireDonneesAvenant, construireDonneesMarche } from '@/documents/donnees';
 import { TITRES_TYPES } from '@/documents/libelles';
 import { ouvrirCorrection, ouvrirNouveauCertificat } from '@/donnees/acomptes';
+import { lireEnTeteChantier, listerChargesAffaire } from '@/donnees/chantiers';
 import { lireVueMarches } from '@/donnees/marches';
 import { LIBELLES_MANQUES_AVENANT, manquesAvenant, numeroAvenantTexte } from '@/domaine/avenants';
 import { ErreurMetier } from '@/domaine/erreurs';
@@ -59,35 +62,29 @@ export default async function PageMarches({ params, searchParams }: Props) {
 	await exigerPage();
 	const { id } = await params;
 	const { apercu, avenant, certificat, corriger } = await searchParams;
-	const vue = await lireVueMarches(id);
-	if (!vue) notFound();
+	const [vue, chantier, chargesAffaire] = await Promise.all([lireVueMarches(id), lireEnTeteChantier(id), listerChargesAffaire()]);
+	if (!vue || !chantier) notFound();
 	const lot = apercu ? vue.lots.find((l) => l.id === apercu) : undefined;
 	const donnees = lot ? (await construireDonneesMarche(lot.id)).donnees : null;
 	const autreApercu = avenant ? await apercuAvenant(id, avenant)
 		: certificat || corriger ? await apercuCertificat(id, { certificat, corriger })
 			: null;
 	return (
-		<section className="space-y-3">
-			<h2 className="text-lg font-semibold">Marchés &amp; récapitulatif</h2>
-			<TableauLots
-				vue={vue}
-				actions={(
-					<>
-						<BoutonMarchesManquants chantierId={id} />
-						<a href={`/api/chantiers/${id}/recap-xlsx`} className={buttonVariants({ variant: 'outline' })}>Exporter le récap</a>
-					</>
-				)}
-			/>
+		<Ecran
+			titre="Marchés & récapitulatif"
+			actions={<>
+				<BoutonAjouterLot chantierId={id} />
+				<a className="btn" href={`/api/chantiers/${id}/recap-xlsx`}><Icone.Telecharger />Exporter le récap</a>
+				<BoutonMarchesManquants chantierId={id} forme="barre" />
+			</>}
+			contexte={<BandeauChantier chantier={chantier} chargesAffaire={chargesAffaire} />}
+		>
+			<TableauLots vue={vue} />
 			{lot && donnees && (
-				<ApercuDocument
-					titre={TITRES_TYPES[donnees.type]}
-					sousTitre={`Lot ${lot.numero ?? '—'} — ${lot.designation} — ${lot.entreprise ?? 'non attribué'}`}
-					donnees={donnees}
-					source={{ type: 'marche', lotId: lot.id }}
-					manques={lot.manques.map((m) => LIBELLES_MANQUES[m])}
-				/>
+				<ApercuDocument titre={TITRES_TYPES[donnees.type]} sousTitre={`Lot ${lot.numero ?? '—'} — ${lot.designation} — ${lot.entreprise ?? 'non attribué'}`}
+					donnees={donnees} source={{ type: 'marche', lotId: lot.id }} manques={lot.manques.map((m) => LIBELLES_MANQUES[m])} />
 			)}
 			{autreApercu}
-		</section>
+		</Ecran>
 	);
 }

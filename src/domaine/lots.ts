@@ -2,15 +2,17 @@ import Decimal from 'decimal.js';
 import { normaliser } from './recherche';
 import type { Nature } from './regles';
 
-export type TriLots = 'saisie' | 'lot' | 'entreprise' | 'montant' | 'attribuer';
+export type TriLots = 'saisie' | 'numero' | 'lot' | 'entreprise' | 'montant' | 'attribuer';
 
-export const LIBELLES_TRI: Record<TriLots, string> = {
-	saisie: 'Ordre du chantier',
-	lot: 'Lot',
-	entreprise: 'Entreprise',
-	montant: 'Montant',
-	attribuer: "À attribuer d'abord",
-};
+/** Les ordres du menu « Trier par », libellés et ordre de la maquette (TRIS_LOT_LIBELLES). */
+export const TRIS_LOTS: { v: TriLots; t: string }[] = [
+	{ v: 'saisie', t: 'Ordre du chantier' },
+	{ v: 'numero', t: 'Numéro de lot' },
+	{ v: 'lot', t: 'Désignation (A → Z)' },
+	{ v: 'entreprise', t: 'Entreprise (A → Z)' },
+	{ v: 'montant', t: 'Montant décroissant' },
+	{ v: 'attribuer', t: "À attribuer d'abord" },
+];
 
 export type LotTriable = {
 	ordre: number;
@@ -26,6 +28,7 @@ const cmpTexte = (a: string, b: string) => a.localeCompare(b, 'fr', { numeric: t
 
 const TRIS: Record<TriLots, (a: LotTriable, b: LotTriable) => number> = {
 	saisie: (a, b) => a.ordre - b.ordre,
+	numero: (a, b) => cmpTexte(a.numero ?? '', b.numero ?? '') || cmpTexte(a.designation, b.designation),
 	lot: (a, b) => cmpTexte(a.designation, b.designation),
 	entreprise: (a, b) => cmpTexte(a.entreprise ?? '', b.entreprise ?? '') || cmpTexte(a.designation, b.designation),
 	montant: (a, b) => new Decimal(b.htEngage).comparedTo(a.htEngage),
