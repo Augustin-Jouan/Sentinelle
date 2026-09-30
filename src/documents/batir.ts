@@ -1,12 +1,15 @@
 import { empreinte } from '@/domaine/empreinte';
+import { ErreurMetier } from '@/domaine/erreurs';
 import {
 	complementRetenue, formatEuros, formatNombreCourt, formatPourcentFixe, totalArrondi, arrondiCentime, ttcEngage, ttcInitial,
 } from '@/domaine/montants';
+import { colonnes, etendue, moisDesColonnes, periodeTravaux } from '@/domaine/planning';
 import {
 	corpsEtatImprime, dateDuJourTexte, dateSignatureMarche, destinataireFactures, exemplairesTexte, formatDateCalendaire,
 	type Mission, type Nature,
 } from '@/domaine/regles';
-import type { Cadre, DonneesDocument, DonneesMarche, DonneesRecap, LigneRecap } from './schemas';
+import { lundiDuRang, rangDe, semaineDuRang, versIso } from '@/domaine/semaines';
+import type { Cadre, DonneesDocument, DonneesMarche, DonneesPlanning, DonneesRecap, DonneesVisa, EntetePlanning, LigneRecap } from './schemas';
 
 export type SourceParametres = {
 	raisonSociale: string; libelleActivite: string; adresse: string; cp: string; ville: string;
@@ -123,6 +126,78 @@ export function batirRecap(c: SourceChantier, lots: SourceLot[], p: SourceParame
 			totalLibelle: `Total marchés — ${lots.length} lot${lots.length > 1 ? 's' : ''}`,
 			totalTtc: total.toFixed(2),
 			totalTtcTexte: formatEuros(total),
+		},
+		cadre: batirCadre(p, maintenant),
+	};
+}
+
+export type SourcePeriode = { intitule: string; debut: Date; duree: number };
+
+export type SourcePlanning = {
+	chantier: SourceChantier;
+	/** Tous les lots, dans l'ordre du chantier ; leurs périodes triées par début. */
+	lots: { designation: string; entreprise: string | null; couleur: string; periodes: SourcePeriode[] }[];
+	fermetures: { debut: Date; duree: number }[];
+};
+
+/** « adresse – CP commune », comme `enTetePlanning` de la maquette. */
+export function entetePlanning(c: SourceChantier): EntetePlanning {
+	return {
+		coordination: ouTiret(c.chargeAffaire),
+		maitreOuvrage: ouTiret(c.maitreOuvrage),
+		projet: ouTiret(c.natureTravaux),
+		adresseChantier: ouTiret(joindre([c.adresse, joindre([c.cp, c.commune], ' ')], ' – ')),
+	};
+}
+
+const semaineEtAnnee = (rang: number) => {
+	const s = semaineDuRang(rang);
+	return { semaine: s.semaine, annee: s.annee };
+};
+
+export function batirPlanning(s: SourcePlanning, p: SourceParametres, maintenant: Date): DonneesPlanning {
+	const periodes = s.lots.flatMap((l) => l.periodes.map((x) => ({ debut: rangDe(x.debut), duree: x.duree })));
+	const travaux = periodeTravaux(periodes);
+	if (!travaux) throw new ErreurMetier('Aucune période : rien à imprimer.');
+	const fermetures = s.fermetures.map((f) => ({ debut: rangDe(f.debut), duree: f.duree }));
+	// Le même axe qu'à l'écran. Il couvre toutes les périodes et fermetures : rien n'est à rogner.
+	const e = etendue([...periodes, ...fermetures], travaux.debut);
+	const cols = colonnes(e);
+	return {
+		type: 'PLANNING',
+		contenu: {
+			entete: entetePlanning(s.chantier),
+			axe: {
+				premierLundi: versIso(lundiDuRang(e.debut)),
+				semaines: cols.map((c) => ({ numero: c.semaine, annee: c.annee })),
+				mois: moisDesColonnes(cols).map((m) => ({ libelle: m.libelle, nbSemaines: m.nb })),
+			},
+			fermetures: fermetures.map((f) => ({ colonne: f.debut - e.debut, duree: f.duree })),
+			lignes: s.lots.map((l) => ({
+				entreprise: l.entreprise ?? TIRET,
+				lot: ouTiret(l.designation),
+				couleur: l.couleur,
+				barres: l.periodes.map((x) => ({ colonne: rangDe(x.debut) - e.debut, duree: x.duree, intitule: x.intitule })),
+			})),
+			periodeTravaux: { debut: semaineEtAnnee(travaux.debut), fin: semaineEtAnnee(travaux.fin) },
+		},
+		cadre: batirCadre(p, maintenant),
+	};
+}
+
+/** Construit depuis une version générée du planning, jamais depuis les données actuelles. */
+export function batirVisa(source: { version: number; donnees: DonneesPlanning }, p: SourceParametres, maintenant: Date): DonneesVisa {
+	const c = source.donnees.contenu;
+	const date = source.donnees.cadre.dateGeneration;
+	const { debut, fin } = c.periodeTravaux;
+	return {
+		type: 'VISA_PLANNING',
+		contenu: {
+			entete: c.entete,
+			planning: { version: source.version, date },
+			periodeTravaux: c.periodeTravaux,
+			phrase: `Planning prévisionnel des travaux sur la période de la Semaine ${debut.semaine} de ${debut.annee} à la Semaine ${fin.semaine} de ${fin.annee} (version ${source.version} du ${date})`,
+			lignes: c.lignes.map((l) => ({ entreprise: l.entreprise, lot: l.lot })),
 		},
 		cadre: batirCadre(p, maintenant),
 	};

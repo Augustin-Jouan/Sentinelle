@@ -82,10 +82,55 @@ export const contenuRecapSchema = z.object({
 	totalTtcTexte: texte,
 });
 
+const iso = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const entier = z.number().int();
+const semaineAnnee = z.object({ semaine: entier, annee: entier });
+const periodeTravauxSchema = z.object({ debut: semaineAnnee, fin: semaineAnnee });
+
+export const entetePlanningSchema = z.object({
+	coordination: texte,
+	maitreOuvrage: texte,
+	projet: texte,
+	adresseChantier: texte,
+});
+
+export const contenuPlanningSchema = z.object({
+	entete: entetePlanningSchema,
+	axe: z.object({
+		premierLundi: iso,
+		/** Une par colonne, dans l'ordre. */
+		semaines: z.array(z.object({ numero: entier, annee: entier })),
+		mois: z.array(z.object({ libelle: texte, nbSemaines: entier })),
+	}),
+	/** Colonnes comptées depuis la première semaine de l'axe. */
+	fermetures: z.array(z.object({ colonne: entier, duree: entier })),
+	/** Tous les lots, dans l'ordre du chantier, y compris ceux sans période. */
+	lignes: z.array(z.object({
+		entreprise: texte,
+		lot: texte,
+		/** Clé de la palette : le gabarit lit la couleur. */
+		couleur: texte,
+		barres: z.array(z.object({ colonne: entier, duree: entier, intitule: texte })),
+	})),
+	periodeTravaux: periodeTravauxSchema,
+});
+
+export const contenuVisaSchema = z.object({
+	entete: entetePlanningSchema,
+	/** Version et date de génération du planning source. */
+	planning: z.object({ version: entier, date }),
+	periodeTravaux: periodeTravauxSchema,
+	/** Composée ici : le gabarit ne formate rien. */
+	phrase: texte,
+	lignes: z.array(z.object({ entreprise: texte, lot: texte })),
+});
+
 export const donneesDocumentSchema = z.discriminatedUnion('type', [
 	z.object({ type: z.literal('MARCHE_GRE_A_GRE'), contenu: contenuMarcheGreAGreSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('MARCHE_SOUS_TRAITANCE'), contenu: contenuMarcheSousTraitanceSchema, cadre: cadreSchema }),
 	z.object({ type: z.literal('RECAPITULATIF'), contenu: contenuRecapSchema, cadre: cadreSchema }),
+	z.object({ type: z.literal('PLANNING'), contenu: contenuPlanningSchema, cadre: cadreSchema }),
+	z.object({ type: z.literal('VISA_PLANNING'), contenu: contenuVisaSchema, cadre: cadreSchema }),
 ]);
 
 export type Cadre = z.infer<typeof cadreSchema>;
@@ -98,3 +143,8 @@ export type DonneesMarcheGreAGre = Extract<DonneesDocument, { type: 'MARCHE_GRE_
 export type DonneesMarcheSousTraitance = Extract<DonneesDocument, { type: 'MARCHE_SOUS_TRAITANCE' }>;
 export type DonneesRecap = Extract<DonneesDocument, { type: 'RECAPITULATIF' }>;
 export type DonneesMarche = DonneesMarcheGreAGre | DonneesMarcheSousTraitance;
+export type EntetePlanning = z.infer<typeof entetePlanningSchema>;
+export type ContenuPlanning = z.infer<typeof contenuPlanningSchema>;
+export type ContenuVisa = z.infer<typeof contenuVisaSchema>;
+export type DonneesPlanning = Extract<DonneesDocument, { type: 'PLANNING' }>;
+export type DonneesVisa = Extract<DonneesDocument, { type: 'VISA_PLANNING' }>;
