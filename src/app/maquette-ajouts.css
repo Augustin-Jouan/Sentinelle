@@ -59,3 +59,6 @@ a.compte-item { display: block; text-decoration: none; color: inherit; }
 
 /* Barre de navigation : l'app navigue par liens là où la maquette avait des boutons. */
 a.nav-marque, a.nav-ic, a.nav-b, a.nav-o { text-decoration: none; }
+
+/* La carte « Nouveau chantier » est un lien dans l'app (un bouton dans la maquette). */
+a.chantier-new { text-decoration: none; color: inherit; }
