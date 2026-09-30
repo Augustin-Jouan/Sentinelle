@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { enTeteTelechargement, nomFichierAvenant, nomFichierCertificat, nomFichierCompteRendu, nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierReception, nomFichierReceptions, nomFichierTableur, nomFichierVisa, slugifier } from './fichiers';
+import { enTeteTelechargement, nomFichierArchive, nomFichierAvenant, nomFichierCertificat, nomFichierCompteRendu, nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierReception, nomFichierReceptions, nomFichierTableur, nomFichierVisa, slugifier } from './fichiers';
 
 describe('noms de fichiers', () => {
 	it('slugifie accents, ligatures et ponctuation', () => {
@@ -48,6 +48,9 @@ describe('noms de fichiers', () => {
 		expect(nomFichierReception({ reference: 'SUIVI', numero: null, designation: 'ESCALIER', nature: 'SOUS_TRAITANCE', version: 2 }))
 			.toBe('SUIVI-ST-ESCALIER-Reception-v2.pdf');
 		expect(nomFichierReceptions('PERRIER — Louisfert')).toBe('PERRIER-LOUISFERT-Receptions.pdf');
+	});
+	it('archive du chantier : référence et jour', () => {
+		expect(nomFichierArchive('PERRIER — Louisfert', '2026-10-06')).toBe('PERRIER-LOUISFERT-Documents-2026-10-06.zip');
 	});
 	it('en-tête de téléchargement ASCII et encodé', () => {
 		expect(enTeteTelechargement('A-Lot02-B-Marche-v1.pdf'))

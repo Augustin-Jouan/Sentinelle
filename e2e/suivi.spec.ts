@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { unzipSync } from 'fflate';
 import { PDFDocument } from 'pdf-lib';
 import { expect, test, type Page } from '@playwright/test';
 import { ADMIN, seConnecter } from './aide';
@@ -124,4 +125,18 @@ test('PV de réception : tous les lots, refus puis 12 PV assemblés ; levée des
 	await expect(casePeinture(page).getByRole('button', { name: 'Annuler la levée' })).toBeVisible();
 	await expect(page.locator('tr[data-lot="02 — GROS ŒUVRE"] [data-case="reception"]')).toHaveAttribute('data-etat', 'sans-reserves');
 	await expect(page.locator('tr[data-lot="12 — ENDUIT EXTÉRIEUR"] [data-case="reception"]')).toHaveCount(0);
+});
+
+// Spec § 10, étape 7.
+test('Tout télécharger : dernières versions rangées et tableur', async ({ page }) => {
+	await ouvrirDocuments(page);
+	const attente = page.waitForEvent('download');
+	await page.getByRole('link', { name: 'Tout télécharger' }).click();
+	const archive = await attente;
+	expect(archive.suggestedFilename()).toMatch(/^SUIVI-Documents-\d{4}-\d{2}-\d{2}\.zip$/);
+	const fichiers = Object.keys(unzipSync(readFileSync(await archive.path())));
+	expect(fichiers).toContain('04 Comptes rendus/SUIVI-CompteRendu01-v2.pdf');
+	expect(fichiers).not.toContain('04 Comptes rendus/SUIVI-CompteRendu01-v1.pdf');
+	expect(fichiers.filter((f) => f.startsWith('05 Réceptions/'))).toHaveLength(12);
+	expect(fichiers).toContain('SUIVI-RecapMarches.xlsx');
 });
