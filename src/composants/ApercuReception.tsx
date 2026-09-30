@@ -5,19 +5,13 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { genererReceptionsAction, modifierChampReceptionAction, modifierChampReceptionCommunAction } from '@/actions/receptions';
 import { Button } from '@/components/ui/button';
+import { telecharger } from '@/composants/telecharger';
 import { ProcesVerbalReception, type EditionReception } from '@/documents/gabarits/ProcesVerbalReception';
 import { TITRES_TYPES } from '@/documents/libelles';
 import { batirReception, type SaisiesReception } from '@/documents/reception';
 import { CSS_DOCUMENTS } from '@/documents/styles';
 import type { ReceptionsOuvertes } from '@/donnees/receptions';
 import { bilanReceptions, TOUS_LES_LOTS, type ChampReception } from '@/domaine/reception';
-
-function telecharger(href: string) {
-	const lien = document.createElement('a');
-	lien.href = href;
-	lien.download = '';
-	lien.click();
-}
 
 /**
  * Aperçu plein écran du PV (spec § 6) : un lot, ou tous les lots attribués, une page chacun. Chaque champ

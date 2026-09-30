@@ -7,20 +7,13 @@ import {
 	abandonnerBrouillonAction, changerConvocationAction, corrigerCompteRenduAction, enregistrerCompteRenduAction, modifierChampCompteRenduAction,
 } from '@/actions/comptesRendus';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { telecharger } from '@/composants/telecharger';
 import { batirCompteRendu, type SaisiesCompteRendu } from '@/documents/compteRendu';
 import { CompteRendu, type EditionCompteRendu } from '@/documents/gabarits/CompteRendu';
 import { TITRES_TYPES } from '@/documents/libelles';
 import { CSS_DOCUMENTS } from '@/documents/styles';
 import type { CompteRenduOuvert } from '@/donnees/comptesRendus';
 import { convocationSuivante, coordinationBase, numeroTexte, type ChampCompteRendu } from '@/domaine/compteRendu';
-
-/** Téléchargement sans quitter la page. */
-function telecharger(documentId: string) {
-	const lien = document.createElement('a');
-	lien.href = `/api/documents/${documentId}/pdf`;
-	lien.download = '';
-	lien.click();
-}
 
 /**
  * Aperçu plein écran du compte rendu (spec § 5).
@@ -137,7 +130,7 @@ export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOu
 			const { documentId, numero } = r.donnees;
 			toast.success(`Compte rendu n° ${numeroTexte(numero)} enregistré.`, {
 				duration: 15_000,
-				action: { label: 'Télécharger le PDF', onClick: () => telecharger(documentId) },
+				action: { label: 'Télécharger le PDF', onClick: () => telecharger(`/api/documents/${documentId}/pdf`) },
 			});
 			fermer(false);
 			router.refresh();
@@ -156,7 +149,7 @@ export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOu
 			toast.success(r.donnees.nouvelle
 				? `Version ${r.donnees.version} générée.`
 				: `Rien n'a changé depuis la version ${r.donnees.version} : elle est téléchargée.`);
-			telecharger(r.donnees.documentId);
+			telecharger(`/api/documents/${r.donnees.documentId}/pdf`);
 			fermer(false);
 			router.refresh();
 		});
