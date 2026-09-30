@@ -171,7 +171,7 @@ export async function genererCertificat(
 		const doc = await tx.document.create({
 			data: {
 				chantierId: lot.chantierId, lotId, serie: serieCertificat(acompte.id), type: 'CERTIFICAT_PAIEMENT', version: 1,
-				donnees: jsonDe(donnees), empreinte: emp, pdf: new Uint8Array(pdf), nomFichier, creeParId: utilisateurId,
+				donnees: jsonDe(avant.donnees), empreinte: emp, pdf: new Uint8Array(pdf), nomFichier, creeParId: utilisateurId,
 			},
 		});
 		return { documentId: doc.id, version: 1, nomFichier, nouvelle: true, acompteId: acompte.id };
@@ -216,7 +216,7 @@ export async function corrigerCertificat(acompteId: string, saisies: SaisiesCert
 		const doc = await tx.document.create({
 			data: {
 				...serie, lotId: a.lotId, type: 'CERTIFICAT_PAIEMENT', version,
-				donnees: jsonDe(donnees), empreinte: emp, pdf: new Uint8Array(pdf), nomFichier, creeParId: utilisateurId,
+				donnees: jsonDe(avant.donnees), empreinte: emp, pdf: new Uint8Array(pdf), nomFichier, creeParId: utilisateurId,
 			},
 		});
 		return { documentId: doc.id, version, nomFichier, nouvelle: true };

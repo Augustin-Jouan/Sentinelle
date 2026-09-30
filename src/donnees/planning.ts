@@ -6,6 +6,7 @@ import { etendueDuPlanning, periodesDuPlanning, rangIso, type PlanningVue, type 
 import { dateParis, lundiDuRang, rangSemaine, semaineDuRang, semaineExiste, versIso } from '@/domaine/semaines';
 import type { Prisma } from '@/generated/prisma/client';
 import { prisma } from './prisma';
+import { verrouillerChantier } from './verrouLot';
 
 type Tx = Prisma.TransactionClient;
 export type ChampPeriode = 'intitule' | 'semaine' | 'annee' | 'duree';
@@ -61,8 +62,7 @@ export function lirePlanning(chantierId: string): Promise<PlanningVue | null> {
  */
 async function sousVerrou(chantierId: string, operation: (tx: Tx, vue: PlanningVue) => Promise<Suite>): Promise<ReponsePlanning> {
 	return prisma.$transaction(async (tx) => {
-		const verrou = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM "Chantier" WHERE id = ${chantierId} FOR UPDATE`;
-		if (!verrou.length) throw new ErreurMetier(INTROUVABLE);
+		if (!(await verrouillerChantier(tx, chantierId))) throw new ErreurMetier(INTROUVABLE);
 		const suite = (await operation(tx, (await lire(tx, chantierId))!)) ?? {};
 		return { planning: (await lire(tx, chantierId))!, ...suite };
 	});

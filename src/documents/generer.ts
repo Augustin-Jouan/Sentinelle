@@ -2,6 +2,8 @@ import { LIBELLES_MANQUES_AVENANT, manquesAvenant } from '@/domaine/avenants';
 import { ErreurMetier } from '@/domaine/erreurs';
 import { nomFichierAvenant, nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierVisa } from '@/domaine/fichiers';
 import { LIBELLES_MANQUES, manquesPourGenerer } from '@/domaine/regles';
+import { estCleEtrangere, estIntrouvable } from '@/donnees/erreursPrisma';
+import { LOT_DISPARU } from '@/donnees/lots';
 import { prisma } from '@/donnees/prisma';
 import type { Prisma } from '@/generated/prisma/client';
 import { empreinteDocument } from './batir';
@@ -69,27 +71,35 @@ async function enregistrerVersion(p: {
 
 	const pdf = await rendrePdfDocument(p.donnees, p.rendrePdf);
 
-	// Données modifiées pendant le rendu : ce PDF est déjà périmé, il ne doit pas devenir la dernière version.
-	// Le verrou ne protège pas de ce cas (les saisies ne le prennent pas), d'où la relecture ici.
-	if ((await p.empreinteActuelle()) !== emp) {
-		throw new ErreurMetier(DONNEES_CHANGEES);
-	}
-
 	return prisma.$transaction(async (tx) => {
 		await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${p.chantierId}), hashtext(${p.serie}))`;
+		try {
+			if ((await p.empreinteActuelle()) !== emp) {
+				throw new ErreurMetier(DONNEES_CHANGEES);
+			}
+		} catch (e) {
+			if (e instanceof ErreurMetier) throw e;
+			if (estIntrouvable(e) || estCleEtrangere(e)) throw new ErreurMetier(p.lotId ? LOT_DISPARU : 'Ce chantier n\'existe plus.');
+			throw e;
+		}
 		const courante = await tx.document.findFirst({ where: serie, orderBy: { version: 'desc' } });
 		if (courante?.empreinte === emp) {
 			return { documentId: courante.id, version: courante.version, nomFichier: courante.nomFichier, nouvelle: false };
 		}
 		const version = (courante?.version ?? 0) + 1;
 		const nomFichier = p.nomFichier(version);
-		const cree = await tx.document.create({
-			data: {
-				...serie, lotId: p.lotId, sourceId: p.sourceId ?? null, type: p.donnees.type, version,
-				donnees: p.donnees as unknown as Prisma.InputJsonValue, empreinte: emp, pdf: new Uint8Array(pdf), nomFichier, creeParId: p.utilisateurId,
-			},
-		});
-		return { documentId: cree.id, version, nomFichier, nouvelle: true };
+		try {
+			const cree = await tx.document.create({
+				data: {
+					...serie, lotId: p.lotId, sourceId: p.sourceId ?? null, type: p.donnees.type, version,
+					donnees: p.donnees as unknown as Prisma.InputJsonValue, empreinte: emp, pdf: new Uint8Array(pdf), nomFichier, creeParId: p.utilisateurId,
+				},
+			});
+			return { documentId: cree.id, version, nomFichier, nouvelle: true };
+		} catch (e) {
+			if (estCleEtrangere(e)) throw new ErreurMetier(p.lotId ? LOT_DISPARU : 'Ce chantier n\'existe plus.');
+			throw e;
+		}
 	});
 }
 

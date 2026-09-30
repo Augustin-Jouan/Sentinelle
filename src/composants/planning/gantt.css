@@ -65,11 +65,8 @@
 	border-radius: var(--p-r);
 	box-shadow: var(--p-ombre);
 	background: var(--p-raise);
-	/* Un seul défilement vertical, celui de la page : le cadre prend toute la hauteur
-	   de son contenu. Seul l'axe horizontal défile ici, ce qui garde la colonne des
-	   lots collée à gauche. En contrepartie l'en-tête des semaines n'est plus collé
-	   en haut — impossible dès lors que le cadre ne défile plus verticalement. */
-	overflow-x: auto;
+	overflow: auto;
+	max-height: calc(100dvh - 12rem);
 	scroll-behavior: smooth;
 	user-select: none;
 	--p-sem-w: 46px;
@@ -242,7 +239,8 @@
 	white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 	pointer-events: none;
 }
-.g-poignee { position: absolute; right: 0; top: 0; bottom: 0; width: 10px; cursor: ew-resize; }
+.g-bar.est-temp { pointer-events: none; }
+.g-poignee { position: absolute; right: 0; top: 0; bottom: 0; width: 8px; cursor: ew-resize; }
 .g-poignee::after {
 	content: ''; position: absolute; right: 3px; top: 50%;
 	width: 2px; height: 0.75rem; margin-top: -0.375rem;

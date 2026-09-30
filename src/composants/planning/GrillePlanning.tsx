@@ -6,6 +6,7 @@ import { couleurDe } from '@/domaine/couleurs';
 import { colonnes, moisDesColonnes } from '@/domaine/planning';
 import { rangIso, type LotPlanning, type PlanningVue } from '@/domaine/planningVue';
 import { cn } from '@/lib/utils';
+import { ID_PERIODE_TEMPORAIRE } from './fileActions';
 import { barresDuLot, HAUTEUR_LIGNE, liens } from './geometrie';
 import type { Outil } from './preferences';
 
@@ -111,7 +112,7 @@ export function GrillePlanning({
 										{barresDuLot(l, d0, w).map((b) => (
 											<Fragment key={b.periode.id}>
 												<div
-													className={cn('g-bar', selection.includes(b.periode.id) && 'is-sel')}
+													className={cn('g-bar', selection.includes(b.periode.id) && 'is-sel', b.periode.id === ID_PERIODE_TEMPORAIRE && 'est-temp')}
 													data-periode={b.periode.id} data-lot={l.id} title={b.titre}
 													style={{ left: b.gauche, width: b.largeur, background: couleur.fond, color: couleur.texte }}
 												>

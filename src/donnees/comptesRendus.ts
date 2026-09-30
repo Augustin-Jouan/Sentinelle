@@ -18,7 +18,7 @@ import { versDateCalendaire, versSaisieDate } from './chantiers';
 import { estDoublon } from './erreursPrisma';
 import { PARAMETRES_PAR_DEFAUT } from './parametres';
 import { prisma } from './prisma';
-import type { Tx } from './verrouLot';
+import { sousVerrouChantier, type Tx } from './verrouLot';
 
 export const convocationsSchema = z.record(z.string(), z.enum(CONVOCATIONS));
 
@@ -138,24 +138,15 @@ function donneesChamp(cr: CompteRendu, champ: ChampCompteRendu, valeur: string):
 	}
 }
 
-/** `SELECT … FOR UPDATE` sur la ligne du brouillon ; enregistré ou abandonné entre-temps : « Ce brouillon n'existe plus. » */
+/** `SELECT … FOR NO KEY UPDATE` sur la ligne du brouillon ; enregistré ou abandonné entre-temps : « Ce brouillon n'existe plus. » */
 async function verrouillerBrouillon(tx: Tx, id: string): Promise<CompteRendu> {
-	const verrou = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM "CompteRendu" WHERE id = ${id} AND statut = 'BROUILLON' FOR UPDATE`;
+	const verrou = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM "CompteRendu" WHERE id = ${id} AND statut = 'BROUILLON' FOR NO KEY UPDATE`;
 	if (!verrou.length) throw new ErreurMetier(BROUILLON_DISPARU);
 	return tx.compteRendu.findUniqueOrThrow({ where: { id } });
 }
 
 function sousVerrouBrouillon<T>(id: string, operation: (tx: Tx, cr: CompteRendu) => Promise<T>): Promise<T> {
 	return prisma.$transaction(async (tx) => operation(tx, await verrouillerBrouillon(tx, id)));
-}
-
-/** Enregistrement et correction : `FOR UPDATE` sur le chantier d'abord, puis sur le compte rendu (spec § 2, « Verrous »). */
-function sousVerrouChantier<T>(chantierId: string, operation: (tx: Tx) => Promise<T>): Promise<T> {
-	return prisma.$transaction(async (tx) => {
-		const verrou = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM "Chantier" WHERE id = ${chantierId} FOR UPDATE`;
-		if (!verrou.length) throw new ErreurMetier(INTROUVABLE);
-		return operation(tx);
-	});
 }
 
 async function estDernier(client: Tx, chantierId: string, numero: number): Promise<boolean> {
@@ -169,35 +160,36 @@ const BROUILLON = { chantierId: true, id: true, numero: true } as const;
  * Deux créations simultanées visent le même numéro : l'unicité (chantier, numéro) refuse la seconde, qui ouvre la première.
  */
 export async function creerBrouillon(chantierId: string, maintenant = new Date()): Promise<{ id: string; numero: number }> {
-	const trouver = () => prisma.compteRendu.findFirst({ where: { chantierId, statut: 'BROUILLON' }, select: { id: true, numero: true } });
-	const existant = await trouver();
-	if (existant) return existant;
-	const chantier = await prisma.chantier.findUnique({
-		where: { id: chantierId },
-		include: { chargeAffaire: { select: { name: true, telephone: true } }, lots: { orderBy: { ordre: 'asc' }, select: { id: true, designation: true } } },
-	});
-	if (!chantier) throw new ErreurMetier(INTROUVABLE);
-	const precedent = await prisma.compteRendu.findFirst({ where: { chantierId, statut: 'ENREGISTRE' }, orderBy: { numero: 'desc' } });
-	const lots = new Set(chantier.lots.map((l) => l.id));
-	const convocations = precedent ? Object.fromEntries(Object.entries(saisiesDe(precedent).convocations).filter(([lotId]) => lots.has(lotId))) : {};
-	const numero = numeroSuivant(precedent ? [precedent.numero] : []);
-	try {
-		const cree = await prisma.compteRendu.create({
-			data: {
-				chantierId, numero, date: dateParis(maintenant),
-				coordination: precedent?.coordination ?? coordinationBase(chantier.lots.map((l) => l.designation)),
-				convocations, redacteur: chantier.chargeAffaire.name, portable: chantier.chargeAffaire.telephone ?? '',
-			},
-			select: BROUILLON,
+	return sousVerrouChantier(chantierId, async (tx) => {
+		const existant = await tx.compteRendu.findFirst({ where: { chantierId, statut: 'BROUILLON' }, select: BROUILLON });
+		if (existant) return existant;
+		const chantier = await tx.chantier.findUnique({
+			where: { id: chantierId },
+			include: { chargeAffaire: { select: { name: true, telephone: true } }, lots: { orderBy: { ordre: 'asc' }, select: { id: true, designation: true } } },
 		});
-		return { id: cree.id, numero: cree.numero };
-	} catch (e) {
-		if (!estDoublon(e)) throw e;
-		const gagnant = await trouver();
-		// Le brouillon gagnant a déjà été enregistré : seul endroit où ce message peut sortir.
-		if (!gagnant) throw new ErreurMetier(numeroPris(numero));
-		return gagnant;
-	}
+		if (!chantier) throw new ErreurMetier(INTROUVABLE);
+		const lots = new Set(chantier.lots.map((l) => l.id));
+		for (let essai = 0; essai < 3; essai++) {
+			const precedent = await tx.compteRendu.findFirst({ where: { chantierId, statut: 'ENREGISTRE' }, orderBy: { numero: 'desc' } });
+			const convocations = precedent ? Object.fromEntries(Object.entries(saisiesDe(precedent).convocations).filter(([lotId]) => lots.has(lotId))) : {};
+			const numero = numeroSuivant(precedent ? [precedent.numero] : []);
+			try {
+				return await tx.compteRendu.create({
+					data: {
+						chantierId, numero, date: dateParis(maintenant),
+						coordination: precedent?.coordination ?? coordinationBase(chantier.lots.map((l) => l.designation)),
+						convocations, redacteur: chantier.chargeAffaire.name, portable: chantier.chargeAffaire.telephone ?? '',
+					},
+					select: BROUILLON,
+				});
+			} catch (e) {
+				if (!estDoublon(e)) throw e;
+				const gagnant = await tx.compteRendu.findFirst({ where: { chantierId, statut: 'BROUILLON' }, select: BROUILLON });
+				if (gagnant) return gagnant;
+			}
+		}
+		throw new ErreurMetier(numeroPris(numeroSuivant([])));
+	});
 }
 
 export async function lireBrouillon(chantierId: string): Promise<CompteRenduOuvert | null> {
@@ -280,6 +272,7 @@ export async function enregistrerCompteRendu(id: string, utilisateurId: string, 
 	const donnees = await construire(prisma, brouillon, saisiesDe(brouillon));
 	const empreinte = empreinteDocument(donnees);
 	const pdf = await rendrePdfDocument(donnees, deps.rendrePdf ?? imprimerPortrait);
+	// Enregistrement et correction : `FOR NO KEY UPDATE` sur le chantier d'abord, puis sur le compte rendu (spec § 2, « Verrous »).
 	return sousVerrouChantier(brouillon.chantierId, async (tx) => {
 		const cr = await verrouillerBrouillon(tx, id);
 		if (empreinteDocument(await construire(tx, cr, saisiesDe(cr))) !== empreinte) throw new ErreurMetier(DONNEES_CHANGEES);
@@ -308,7 +301,7 @@ export async function corrigerCompteRendu(id: string, saisies: SaisiesCompteRend
 	if (dejaLa) return dejaLa;
 	const pdf = await rendrePdfDocument(donnees, deps.rendrePdf ?? imprimerPortrait);
 	return sousVerrouChantier(cr.chantierId, async (tx) => {
-		await tx.$queryRaw`SELECT id FROM "CompteRendu" WHERE id = ${id} FOR UPDATE`;
+		await tx.$queryRaw`SELECT id FROM "CompteRendu" WHERE id = ${id} FOR NO KEY UPDATE`;
 		if (empreinteDocument(await preparer(tx)) !== empreinte) throw new ErreurMetier(DONNEES_CHANGEES);
 		const courante = await tx.document.findFirst({ where: serie, orderBy: { version: 'desc' } });
 		const memeVersion = identique(courante);

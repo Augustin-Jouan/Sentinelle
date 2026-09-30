@@ -35,9 +35,9 @@ function dernierCertificat(acomptes: { id: string; numero: number; manuel: boole
 	return d && !d.manuel ? { id: d.id, numero: d.numero } : null;
 }
 
-export async function lireVueMarches(chantierId: string): Promise<VueMarches> {
+export async function lireVueMarches(chantierId: string): Promise<VueMarches | null> {
 	const [c, artisans] = await Promise.all([
-		prisma.chantier.findUniqueOrThrow({
+		prisma.chantier.findUnique({
 			where: { id: chantierId },
 			include: { lots: { orderBy: { ordre: 'asc' }, include: {
 				artisan: true,
@@ -47,6 +47,7 @@ export async function lireVueMarches(chantierId: string): Promise<VueMarches> {
 		}),
 		prisma.artisan.findMany({ orderBy: { nom: 'asc' } }),
 	]);
+	if (!c) return null;
 	const lots: LotVue[] = c.lots.map((l) => {
 		const ht = l.montantHtInitial.toString();
 		const tva = l.tauxTva.toString();

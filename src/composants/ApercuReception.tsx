@@ -3,8 +3,9 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { genererReceptionsAction, modifierChampReceptionAction, modifierChampReceptionCommunAction } from '@/actions/receptions';
+import { genererReceptionsAction, modifierChampReceptionAction, modifierChampReceptionCommunAction, preparerReceptionsAction } from '@/actions/receptions';
 import { Button } from '@/components/ui/button';
+import { telecharger } from '@/composants/telecharger';
 import { ProcesVerbalReception, type EditionReception } from '@/documents/gabarits/ProcesVerbalReception';
 import { TITRES_TYPES } from '@/documents/libelles';
 import { batirReception, type SaisiesReception } from '@/documents/reception';
@@ -12,28 +13,34 @@ import { CSS_DOCUMENTS } from '@/documents/styles';
 import type { ReceptionsOuvertes } from '@/donnees/receptions';
 import { bilanReceptions, TOUS_LES_LOTS, type ChampReception } from '@/domaine/reception';
 
-function telecharger(href: string) {
-	const lien = document.createElement('a');
-	lien.href = href;
-	lien.download = '';
-	lien.click();
-}
-
 /**
  * Aperçu plein écran du PV (spec § 6) : un lot, ou tous les lots attribués, une page chacun. Chaque champ
  * s'enregistre en base à la saisie (brouillon du lot sous verrou du lot ; champs communs sur le chantier) ;
  * une valeur commune changée sur une page se voit sur toutes.
  */
-export function ApercuReception({ ouvert, reference }: { ouvert: ReceptionsOuvertes; reference: string }) {
+export function ApercuReception({ ouvert: initial, reference }: { ouvert: ReceptionsOuvertes; reference: string }) {
 	const router = useRouter();
 	const chemin = usePathname();
-	const [commun, setCommun] = useState(ouvert.commun);
-	const communCourant = useRef(ouvert.commun);
-	const [saisies, setSaisies] = useState<Record<string, SaisiesReception>>(() => Object.fromEntries(ouvert.pages.map((p) => [p.lotId, p.saisies])));
+	const [ouvert, setOuvert] = useState(initial);
+	const [commun, setCommun] = useState(initial.commun);
+	const communCourant = useRef(initial.commun);
+	const [saisies, setSaisies] = useState<Record<string, SaisiesReception>>(() => Object.fromEntries(initial.pages.map((p) => [p.lotId, p.saisies])));
 	const saisiesCourantes = useRef(saisies);
 	const [enCours, demarrer] = useTransition();
 	const enregistrements = useRef(new Set<Promise<unknown>>());
 	const tous = ouvert.cible === TOUS_LES_LOTS;
+
+	useEffect(() => {
+		void preparerReceptionsAction(initial.chantierId, initial.cible).then((r) => {
+			if (!r.ok || !r.donnees) return;
+			setOuvert(r.donnees);
+			communCourant.current = r.donnees.commun;
+			setCommun(r.donnees.commun);
+			const suivantes = Object.fromEntries(r.donnees.pages.map((p) => [p.lotId, p.saisies]));
+			saisiesCourantes.current = suivantes;
+			setSaisies(suivantes);
+		});
+	}, [initial.chantierId, initial.cible]);
 
 	useEffect(() => {
 		const avant = document.body.style.overflow;
@@ -160,7 +167,7 @@ export function ApercuReception({ ouvert, reference }: { ouvert: ReceptionsOuver
 			<div className="pv-pages flex-1 overflow-auto overscroll-contain p-7">
 				{ouvert.pages.map((p) => (
 					<div key={p.lotId} data-entreprise={p.entreprise}>
-						<ProcesVerbalReception donnees={batirReception(p.source, saisies[p.lotId], commun)} mode="edition" edition={edition(p.lotId)} />
+						<ProcesVerbalReception donnees={batirReception(p.source, saisies[p.lotId] ?? p.saisies, commun)} mode="edition" edition={edition(p.lotId)} />
 					</div>
 				))}
 			</div>

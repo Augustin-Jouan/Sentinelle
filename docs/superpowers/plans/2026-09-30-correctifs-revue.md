@@ -1,6 +1,6 @@
 # Sentinelle Marchés — Correctifs de la revue générale : plan d'implémentation
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Corriger les défauts trouvés par la revue des sous-projets 1 à 3 : pages qui livrent les données des chantiers sans session valide (critique), interblocage entre le verrou du lot et celui du chantier, suppression d'un lot en course avec une génération, montants « 96.250 » lus 96,25, avertissements du linter.
 
@@ -42,7 +42,7 @@
 - Consumes: `exigerPage(opts?)`, `utilisateurConnecte()` (`src/auth/session.ts`, Socle) ; `seConnecter`, `ADMIN` (`e2e/aide.ts`) ; chantier E2E `FINANCIER` (copie seedée de PERRIER, Suivi financier).
 - Produces: règle vérifiée par test — dans `src/app/(app)`, la première attente de chaque `page.tsx` et `layout.tsx` (à partir de `export default`) est `exigerPage(` ; dans `src/app/api` (hors `api/auth`, `api/sante`), la première attente de chaque `route.ts` est `utilisateurConnecte(`.
 
-- [ ] **Step 1: Les tests**
+- [x] **Step 1: Les tests**
 
 Créer `src/app/gardes.test.ts` :
 
@@ -125,7 +125,7 @@ test('sans session valide, aucune page ne livre de données, même avec un cooki
 });
 ```
 
-- [ ] **Step 2: Vérifier l'échec**
+- [x] **Step 2: Vérifier l'échec**
 
 Run: `npm test -- src/app/gardes.test.ts`
 Expected: FAIL pour `(app)/page.tsx`, `chantiers/page.tsx`, `chantiers/[id]/layout.tsx`, `chantiers/[id]/page.tsx`, `marches/page.tsx`, `documents/page.tsx`, `planning/page.tsx` (première attente `params` ou `listerChantiers`, ou aucune) ; PASS pour les autres.
@@ -133,7 +133,7 @@ Expected: FAIL pour `(app)/page.tsx`, `chantiers/page.tsx`, `chantiers/[id]/layo
 Run: `npm run test:e2e -- e2e/gardes.spec.ts`
 Expected: FAIL — le corps de `/chantiers` contient « M. et Mme PERRIER ».
 
-- [ ] **Step 3: Les gardes**
+- [x] **Step 3: Les gardes**
 
 Dans chacun des sept fichiers, importer `exigerPage` (`import { exigerPage } from '@/auth/session';`) et faire de `await exigerPage();` la **première instruction** du composant exporté, avant `await params` et avant toute lecture.
 
@@ -184,12 +184,12 @@ export default async function PageChantier({ params }: { params: Promise<{ id: s
 
 (`utilisateurConnecte` est mis en cache par requête : le layout `(app)` et la page ne font qu'une seule lecture de session.)
 
-- [ ] **Step 4: Vérifier le succès**
+- [x] **Step 4: Vérifier le succès**
 
 Run: `npx tsc --noEmit && npm test -- src/app/gardes.test.ts && npm run test:e2e -- e2e/gardes.spec.ts e2e/connexion.spec.ts e2e/marches.spec.ts`
 Expected: aucune erreur ; PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/gardes.test.ts e2e/gardes.spec.ts "src/app/(app)/page.tsx" "src/app/(app)/chantiers/page.tsx" "src/app/(app)/chantiers/[id]/layout.tsx" "src/app/(app)/chantiers/[id]/page.tsx" "src/app/(app)/chantiers/[id]/marches/page.tsx" "src/app/(app)/chantiers/[id]/documents/page.tsx" "src/app/(app)/chantiers/[id]/planning/page.tsx"
@@ -211,7 +211,7 @@ git commit -m "fix(securite): chaque page vérifie la session avant de lire, plu
   - `sousVerrouChantier<T>(chantierId: string, operation: (tx: Tx) => Promise<T>): Promise<T>` — « Chantier introuvable. » si absent
   - `sousVerrouLot` et `sousVerrouLots` : même signature, `FOR NO KEY UPDATE`
 
-- [ ] **Step 1: Les tests**
+- [x] **Step 1: Les tests**
 
 Créer `src/donnees/verrous.test.ts` :
 
@@ -307,12 +307,12 @@ describe('verrou du lot et verrou du chantier', () => {
 });
 ```
 
-- [ ] **Step 2: Vérifier l'échec**
+- [x] **Step 2: Vérifier l'échec**
 
 Run: `npm test -- src/donnees/verrous.test.ts && npm run test:int -- src/donnees/verrous.int.test.ts`
 Expected: FAIL — `FOR UPDATE` dans `verrouLot.ts`, `planning.ts`, `lots.ts`, `comptesRendus.ts` (code et commentaires) ; `sousVerrouChantier` n'est pas exporté par `./verrouLot`.
 
-- [ ] **Step 3: Le verrou partagé**
+- [x] **Step 3: Le verrou partagé**
 
 Dans `src/donnees/verrouLot.ts` :
 
@@ -341,7 +341,7 @@ export async function sousVerrouChantier<T>(chantierId: string, operation: (tx: 
 }
 ```
 
-- [ ] **Step 4: Les appelants**
+- [x] **Step 4: Les appelants**
 
 `src/donnees/planning.ts`, dans `sousVerrou` : importer `verrouillerChantier` depuis `./verrouLot` et remplacer
 
@@ -371,17 +371,17 @@ Puis vérifier qu'il n'en reste aucun :
 Run: `grep -rn "FOR UPDATE" src | grep -v "NO KEY UPDATE"`
 Expected: aucune ligne.
 
-- [ ] **Step 5: Vérifier le succès**
+- [x] **Step 5: Vérifier le succès**
 
 Run: `npx tsc --noEmit && npm test -- src/donnees/verrous.test.ts && npm run test:int -- src/donnees/verrous.int.test.ts`
 Expected: aucune erreur ; PASS.
 
-- [ ] **Step 6: Les tests de concurrence existants restent verts**
+- [x] **Step 6: Les tests de concurrence existants restent verts**
 
 Run: `npm run test:int`
 Expected: PASS, en particulier `acomptes.int.test.ts`, `avenants.int.test.ts`, `lots.int.test.ts`, `planning.int.test.ts`, `comptesRendus.int.test.ts`, `receptions.int.test.ts` (écritures simultanées sérialisées).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/donnees/verrous.test.ts src/donnees/verrous.int.test.ts src/donnees/verrouLot.ts src/donnees/planning.ts src/donnees/lots.ts src/donnees/comptesRendus.ts
@@ -400,7 +400,7 @@ git commit -m "fix(donnees): verrous FOR NO KEY UPDATE, plus d'interblocage entr
 
 Aujourd'hui `supprimerLot` compte les documents puis supprime, sans verrou : un document inséré entre les deux fait échouer la suppression sur la clé étrangère (`Document.lotId`, `Restrict`) avec « Erreur inattendue ». Et le message parle d'un « marché » alors qu'une lettre d'avenant ou un certificat suffisent à bloquer.
 
-- [ ] **Step 1: Le test**
+- [x] **Step 1: Le test**
 
 Dans `src/donnees/lots.int.test.ts`, importer `LOT_AVEC_DOCUMENTS` depuis `./lots`, remplacer dans le test « supprime un lot sans document, refuse sinon » le message attendu `'Ce lot a déjà un marché généré : il ne peut plus être supprimé.'` par `LOT_AVEC_DOCUMENTS`, puis ajouter :
 
@@ -429,12 +429,12 @@ Dans `src/donnees/lots.int.test.ts`, importer `LOT_AVEC_DOCUMENTS` depuis `./lot
 	});
 ```
 
-- [ ] **Step 2: Vérifier l'échec**
+- [x] **Step 2: Vérifier l'échec**
 
 Run: `npm run test:int -- src/donnees/lots.int.test.ts`
 Expected: FAIL — `LOT_AVEC_DOCUMENTS` n'est pas exporté ; puis le nouveau test échoue sur une erreur Prisma `P2003` au lieu du message.
 
-- [ ] **Step 3: Le correctif**
+- [x] **Step 3: Le correctif**
 
 Dans `src/donnees/erreursPrisma.ts`, ajouter :
 
@@ -471,12 +471,12 @@ Chercher les autres usages de l'ancien message :
 Run: `grep -rn "a déjà un marché généré" src e2e tests`
 Expected: aucune ligne (sinon, remplacer par le nouveau message).
 
-- [ ] **Step 4: Vérifier le succès**
+- [x] **Step 4: Vérifier le succès**
 
 Run: `npx tsc --noEmit && npm run test:int -- src/donnees/lots.int.test.ts`
 Expected: aucune erreur ; PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/donnees/erreursPrisma.ts src/donnees/lots.ts src/donnees/lots.int.test.ts
@@ -495,7 +495,7 @@ git commit -m "fix(lots): suppression refusée proprement si un document paraît
 
 Aujourd'hui « 96.250 » (milliers à l'ancienne) est lu 96,25 : un facteur 1 000 d'écart sur un marché, sans avertissement. La règle « le point ne sépare les milliers que si une virgule suit » reste ; seul ce cas indécidable est refusé plutôt que deviné. `lireNombreFr` sert aux montants, taux et cumuls : les autres formes (« 12.5 », « 0.125 », « 1234.5 », « 1.234,50 ») ne changent pas.
 
-- [ ] **Step 1: Les tests**
+- [x] **Step 1: Les tests**
 
 Dans `src/domaine/montants.test.ts`, dans `describe('lireNombreFr', …)`, ajouter :
 
@@ -517,12 +517,12 @@ Dans `src/domaine/montants.test.ts`, dans `describe('lireNombreFr', …)`, ajout
 	);
 ```
 
-- [ ] **Step 2: Vérifier l'échec**
+- [x] **Step 2: Vérifier l'échec**
 
 Run: `npm test -- src/domaine/montants.test.ts`
 Expected: FAIL — « 96.250 » est lu 96.25 au lieu d'être refusé.
 
-- [ ] **Step 3: Le correctif**
+- [x] **Step 3: Le correctif**
 
 Dans `src/domaine/montants.ts`, au-dessus de `lireNombreFr` :
 
@@ -546,12 +546,12 @@ et, dans `lireNombreFr`, juste après `let s = saisie.replace(/[\s  €%]/g, 
 
 Remarque : `lireMontantAvenant` (`src/domaine/avenants.ts`) attrape toute erreur de `lireNombreFr` et renvoie « Montant : saisissez un nombre. » ; c'est acceptable pour un avenant (la saisie est refusée, pas devinée). Ne pas le modifier dans cette tâche.
 
-- [ ] **Step 4: Vérifier le succès**
+- [x] **Step 4: Vérifier le succès**
 
 Run: `npm test && npm run test:int`
 Expected: PASS (aucun test existant ne saisit de nombre ambigu).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/domaine/montants.ts src/domaine/montants.test.ts
@@ -569,12 +569,12 @@ git commit -m "fix(montants): « 96.250 » refusé comme ambigu au lieu d'être 
 **Interfaces:**
 - Produces: `telecharger(href: string): void` (`src/composants/telecharger.ts`), qui remplace les copies locales et les `window.location.assign`.
 
-- [ ] **Step 1: Constater les avertissements**
+- [x] **Step 1: Constater les avertissements**
 
 Run: `npx eslint .`
 Expected: 0 erreur ; avertissements `@next/next/no-location-assign-relative-destination` (`ApercuDocument.tsx`, `ApercuPlanning.tsx`) et `@typescript-eslint/no-unused-vars` sur des variables préfixées `_` (`_acompte`, `_nom`, `_ref`…).
 
-- [ ] **Step 2: Le téléchargement partagé**
+- [x] **Step 2: Le téléchargement partagé**
 
 Créer `src/composants/telecharger.ts` :
 
@@ -593,7 +593,7 @@ Puis :
 - `ApercuCertificat.tsx` et `ApercuCompteRendu.tsx` : supprimer la fonction locale `telecharger(documentId)`, importer la partagée, et remplacer chaque `telecharger(x)` par `telecharger(\`/api/documents/${x}/pdf\`)` ;
 - `ApercuReception.tsx` : supprimer la fonction locale `telecharger(href)` et importer la partagée (mêmes appels).
 
-- [ ] **Step 3: Les variables volontairement ignorées**
+- [x] **Step 3: Les variables volontairement ignorées**
 
 Dans `eslint.config.mjs`, ajouter après `...nextTs,` :
 
@@ -606,12 +606,12 @@ Dans `eslint.config.mjs`, ajouter après `...nextTs,` :
   },
 ```
 
-- [ ] **Step 4: Vérifier le succès**
+- [x] **Step 4: Vérifier le succès**
 
 Run: `npx eslint . && npx tsc --noEmit && npm run test:e2e`
 Expected: 0 erreur et 0 avertissement ; PASS (les téléchargements des parcours E2E — marché, lettre, planning, visa, certificat, compte rendu, PV — passent par la fonction partagée).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add eslint.config.mjs src/composants/telecharger.ts src/composants/ApercuDocument.tsx src/composants/planning/ApercuPlanning.tsx src/composants/ApercuCertificat.tsx src/composants/ApercuCompteRendu.tsx src/composants/ApercuReception.tsx

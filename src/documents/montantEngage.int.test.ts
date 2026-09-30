@@ -21,7 +21,7 @@ const avenant = (designation: string, numero: number, montantHt: string) =>
 const htInitial = async (designation: string) =>
 	(await prisma.lot.findUniqueOrThrow({ where: { id: p.lots[designation] } })).montantHtInitial.toString();
 const ligneDocuments = async (designation: string) =>
-	(await etatsDocumentsChantier(p.chantierId, deps.maintenant)).entreprises.flatMap((e) => e.lots).find((l) => l.lotId === p.lots[designation])!;
+	(await etatsDocumentsChantier(p.chantierId, deps.maintenant))!.entreprises.flatMap((e) => e.lots).find((l) => l.lotId === p.lots[designation])!;
 
 describe('montant engagé', () => {
 	beforeEach(async () => {
@@ -35,6 +35,7 @@ describe('montant engagé', () => {
 		await avenant('CARRELAGE — FAÏENCE', 1, '850');
 		await avenant('CARRELAGE — FAÏENCE', 2, '-300');
 		const vue = await lireVueMarches(p.chantierId);
+		if (!vue) throw new Error('attendu');
 		expect(vue.lots.find((l) => l.designation === 'CARRELAGE — FAÏENCE')).toMatchObject({
 			htInitial: '12600', sommeAvenants: '550', htEngage: '13150', ttcEngage: '15780',
 		});
@@ -56,7 +57,7 @@ describe('montant engagé', () => {
 		await genererRecap(p.chantierId, p.utilisateurId, deps);
 		await avenant('CARRELAGE — FAÏENCE', 1, '850');
 		expect((await ligneDocuments('CARRELAGE — FAÏENCE')).marche.etat).toBe('a-jour');
-		expect((await etatsDocumentsChantier(p.chantierId, deps.maintenant)).recap.etat).toBe('modifie');
+		expect((await etatsDocumentsChantier(p.chantierId, deps.maintenant))!.recap.etat).toBe('modifie');
 
 		// Le même TTC engagé redonne le même HT initial : rien ne change.
 		await modifierChampLot(p.lots['CARRELAGE — FAÏENCE'], 'montantTtc', '16 140,00');

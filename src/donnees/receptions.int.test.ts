@@ -10,7 +10,7 @@ import { viderBase } from '../../tests/integration/aide';
 import { insererPerrier } from '../../tests/integration/perrier';
 import { prisma } from './prisma';
 import {
-	annulerLevee, assemblerReceptions, genererReceptions, leverReserves, modifierChampReception, modifierChampReceptionCommun,
+	annulerLevee, assemblerReceptions, genererReceptions, leverReserves, lireReceptionsOuvertes, modifierChampReception, modifierChampReceptionCommun,
 	preparerReceptions,
 } from './receptions';
 
@@ -46,6 +46,14 @@ describe('procès-verbaux de réception', () => {
 		p = await insererPerrier();
 		grosOeuvre = p.lots['GROS ŒUVRE'];
 		peinture = p.lots.PEINTURE;
+	});
+
+	it('lire sans préparer n\'écrit pas en base', async () => {
+		const o = await lireReceptionsOuvertes(p.chantierId, grosOeuvre);
+		expect(o?.pages).toHaveLength(1);
+		expect(o?.commun.date).toBe('');
+		expect(await prisma.reception.count()).toBe(0);
+		expect((await prisma.chantier.findUniqueOrThrow({ where: { id: p.chantierId } })).receptionDate).toBeNull();
 	});
 
 	it('première ouverture : champs communs remplis une fois, brouillon du lot avec l\'interlocuteur', async () => {

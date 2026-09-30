@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { ChampReception, ChampReceptionCommun } from '@/domaine/reception';
 import {
-	annulerLevee, genererReceptions, leverReserves, modifierChampReception, modifierChampReceptionCommun, type ResultatReception,
+	annulerLevee, genererReceptions, leverReserves, modifierChampReception, modifierChampReceptionCommun, preparerReceptions,
+	type ReceptionsOuvertes, type ResultatReception,
 } from '@/donnees/receptions';
 import { executer, type Resultat } from './executer';
 
@@ -14,7 +15,10 @@ const champLot = z.enum(['decision', 'dateEffet', 'reserves', 'delai', 'motifs',
 const champCommun = z.enum(['date', 'signataire', 'contrat', 'maitreOeuvre']);
 const valeur = z.string().max(4000);
 
-/** Pas de rafraîchissement : la page Documents ne montre que les PV émis. */
+/** Remplit les champs communs vides et crée les brouillons : POST, pas le GET de la page. */
+export async function preparerReceptionsAction(chantierId: string, cible: string): Promise<Resultat<ReceptionsOuvertes | null>> {
+	return executer({}, async () => preparerReceptions(id.parse(chantierId), z.string().min(1).parse(cible)));
+}
 export async function modifierChampReceptionAction(lotId: string, champ: ChampReception, v: string): Promise<Resultat> {
 	return executer({}, async () => {
 		await modifierChampReception(id.parse(lotId), champLot.parse(champ), valeur.parse(v));
