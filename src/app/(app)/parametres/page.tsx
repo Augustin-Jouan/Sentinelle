@@ -11,11 +11,12 @@ const CHAMPS: { champ: ChampParametres; libelle: string; aide?: string }[] = [
 	{ champ: 'ville', libelle: 'Ville' },
 	{ champ: 'telephone', libelle: 'Téléphone' },
 	{ champ: 'fax', libelle: 'Fax', aide: "Imprimé seulement s'il est renseigné." },
-	{ champ: 'email', libelle: 'E-mail', aide: 'Imprimé sur les certificats de paiement, pas sur les marchés.' },
+	{ champ: 'email', libelle: 'E-mail', aide: 'Imprimé sur les certificats, les comptes rendus et les PV de réception, pas sur les marchés.' },
 	{ champ: 'villeSignature', libelle: 'Ville de signature', aide: '« Fait à … le … »' },
 	{ champ: 'rcs', libelle: 'RCS', aide: 'Certificats de paiement.' },
 	{ champ: 'ape', libelle: 'Code APE', aide: 'Certificats de paiement.' },
 	{ champ: 'tvaIntracommunautaire', libelle: 'N° TVA intracommunautaire', aide: 'Certificats de paiement — « FR », la clé, puis le SIREN.' },
+	{ champ: 'siteWeb', libelle: 'Site web', aide: 'Imprimé sur les comptes rendus.' },
 ];
 
 export default async function PageParametres() {
@@ -25,7 +26,7 @@ export default async function PageParametres() {
 		<section className="max-w-2xl space-y-6">
 			<div>
 				<h1 className="text-2xl font-bold">Paramètres de l&apos;entreprise</h1>
-				<p className="text-sm text-muted-foreground">En-tête imprimé sur les marchés, le récapitulatif et les certificats de paiement. Chaque champ s&apos;enregistre quand on le quitte.</p>
+				<p className="text-sm text-muted-foreground">En-tête imprimé sur les marchés, le récapitulatif, les certificats de paiement, les comptes rendus et les PV de réception. Chaque champ s&apos;enregistre quand on le quitte.</p>
 			</div>
 			<dl className="grid grid-cols-[12rem_1fr] items-center gap-x-4 gap-y-2 rounded-xl border bg-card p-6">
 				{CHAMPS.map(({ champ, libelle, aide }) => (

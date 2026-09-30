@@ -5,5 +5,9 @@ export const SERIES = { RECAPITULATIF: 'RECAPITULATIF', PLANNING: 'PLANNING', VI
 export const serieAvenant = (avenantId: string): string => `AVENANT:${avenantId}`;
 /** Un certificat de paiement : une série par acompte, dont seule la dernière version compte. */
 export const serieCertificat = (acompteId: string): string => `CERTIFICAT:${acompteId}`;
+/** Un compte rendu : la correction du dernier ajoute une version à sa série. */
+export const serieCompteRendu = (compteRenduId: string): string => `CR:${compteRenduId}`;
+/** Les PV d'un lot : chaque PV émis en est une version ; la dernière fait foi. */
+export const serieReception = (lotId: string): string => `RECEPTION:${lotId}`;
 /** L'id de l'avenant d'une série de lettre, ou null pour une autre série. */
 export const avenantDeLaSerie = (serie: string): string | null => (serie.startsWith('AVENANT:') ? serie.slice('AVENANT:'.length) : null);

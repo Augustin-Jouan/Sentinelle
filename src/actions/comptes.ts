@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { bloquerCompte, changerRole, creerCompte, debloquerCompte, reinitialiserMotDePasse } from '@/donnees/comptes';
+import { bloquerCompte, changerRole, creerCompte, debloquerCompte, modifierTelephone, reinitialiserMotDePasse } from '@/donnees/comptes';
 import { executer, type Resultat } from './executer';
 
 const nouveauCompte = z.object({
@@ -39,6 +39,14 @@ export async function bloquerCompteAction(utilisateurId: string, bloquer: boolea
 export async function changerRoleAction(utilisateurId: string, role: 'admin' | 'user'): Promise<Resultat> {
 	return executer({ admin: true }, async (u) => {
 		await changerRole(utilisateurId, z.enum(['admin', 'user']).parse(role), u.id);
+		revalidatePath('/admin/comptes');
+		return null;
+	});
+}
+
+export async function modifierTelephoneAction(utilisateurId: string, valeur: string): Promise<Resultat> {
+	return executer({ admin: true }, async () => {
+		await modifierTelephone(z.string().parse(utilisateurId), z.string().max(200).parse(valeur));
 		revalidatePath('/admin/comptes');
 		return null;
 	});

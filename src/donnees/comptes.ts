@@ -50,6 +50,8 @@ export type CompteListe = {
 	id: string;
 	nom: string;
 	email: string;
+	/** Portable, imprimé sur les comptes rendus du chargé d'affaire ; '' s'il n'est pas saisi. */
+	telephone: string;
 	role: 'admin' | 'user';
 	bloque: boolean;
 	doitChangerMotDePasse: boolean;
@@ -61,6 +63,7 @@ export async function listerComptes(): Promise<CompteListe[]> {
 		id: u.id,
 		nom: u.name,
 		email: u.email,
+		telephone: u.telephone ?? '',
 		role: u.role === 'admin' ? 'admin' : 'user',
 		bloque: Boolean(u.banned),
 		doitChangerMotDePasse: u.doitChangerMotDePasse,
@@ -105,4 +108,10 @@ export async function changerRole(utilisateurId: string, role: 'admin' | 'user',
 		throw new ErreurMetier('Vous ne pouvez pas retirer votre propre rôle administrateur.');
 	}
 	await prisma.utilisateur.update({ where: { id: utilisateurId }, data: { role } });
+}
+
+export async function modifierTelephone(utilisateurId: string, valeur: string): Promise<void> {
+	const t = valeur.trim();
+	if (t.length > 120) throw new ErreurMetier('120 caractères au plus.', 'telephone');
+	await prisma.utilisateur.update({ where: { id: utilisateurId }, data: { telephone: t || null } });
 }

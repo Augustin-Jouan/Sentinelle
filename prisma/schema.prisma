@@ -25,6 +25,19 @@ enum TypeDocument {
   VISA_PLANNING
   AVENANT
   CERTIFICAT_PAIEMENT
+  COMPTE_RENDU
+  PV_RECEPTION
+}
+
+enum StatutCompteRendu {
+  BROUILLON
+  ENREGISTRE
+}
+
+enum DecisionReception {
+  SANS_RESERVES
+  AVEC_RESERVES
+  DIFFEREE
 }
 
 // ---------- Better Auth (noms de champs imposés par la bibliothèque) ----------
@@ -119,6 +132,8 @@ model Parametres {
   rcs                   String  @default("328999503")
   ape                   String  @default("4120A")
   tvaIntracommunautaire String  @default("FR47328999503")
+  /// Imprimé sur les comptes rendus ; facultatif comme l'e-mail.
+  siteWeb               String? @default("socoreve-chateaubriant.com")
 }
 
 model Artisan {
@@ -154,6 +169,12 @@ model Chantier {
   lots                Lot[]
   documents           Document[]
   fermetures          Fermeture[]
+  /// Champs communs à tous les PV de réception du chantier (spec § 6).
+  receptionDate         DateTime?     @db.Date
+  receptionSignataire   String        @default("")
+  contratMoeDate        DateTime?     @db.Date
+  receptionMaitreOeuvre String        @default("")
+  comptesRendus         CompteRendu[]
 }
 
 model Lot {
@@ -180,6 +201,7 @@ model Lot {
   cautionBancaire      Boolean    @default(false)
   avenants             Avenant[]
   acomptes             Acompte[]
+  reception            Reception?
   documents          Document[]
   periodes           Periode[]
 
@@ -277,4 +299,41 @@ model Acompte {
   creeLe         DateTime  @default(now())
 
   @@unique([lotId, numero])
+}
+
+/// Brouillon compris : au plus un brouillon par chantier, qui prend toujours le numéro suivant ;
+/// l'unicité du numéro garantit donc aussi un seul brouillon (spec § 4, écart du plan).
+model CompteRendu {
+  id           String            @id @default(cuid())
+  chantierId   String
+  chantier     Chantier          @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  statut       StatutCompteRendu @default(BROUILLON)
+  numero       Int
+  date         DateTime          @db.Date
+  rdvDate      DateTime?         @db.Date
+  /// 'HH:MM'
+  rdvHeure     String?
+  avancement   String            @default("")
+  coordination String            @default("")
+  redacteur    String            @default("")
+  portable     String            @default("")
+  /// { [lotId]: 'D' | 'C' | 'P' | 'A' | 'E' }
+  convocations Json              @default("{}")
+  creeLe       DateTime          @default(now())
+
+  @@unique([chantierId, numero])
+}
+
+/// Brouillon du PV d'un lot ; les PV émis sont figés dans Document (série RECEPTION:<lotId>).
+model Reception {
+  id               String            @id @default(cuid())
+  lotId            String            @unique
+  lot              Lot               @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  decision         DecisionReception @default(SANS_RESERVES)
+  dateEffet        DateTime?         @db.Date
+  reserves         String            @default("")
+  delai            String            @default("")
+  motifs           String            @default("")
+  representant     String            @default("")
+  reservesLeveesLe DateTime?         @db.Date
 }
