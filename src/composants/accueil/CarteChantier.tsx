@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { marquerTermineAction, supprimerChantierAction } from '@/actions/chantiers';
+import { sansOuvrirLaCarte } from '@/composants/accueil/carteActions';
 import * as Icone from '@/composants/maquette/icones';
 import { useConfirmation } from '@/composants/maquette/Confirmation';
 import { pertesSuppression, SUPPRESSION_IMPOSSIBLE, type CarteChantier as Carte } from '@/domaine/accueil';
@@ -17,8 +18,7 @@ export function CarteChantier({ c, ouvert }: { c: Carte; ouvert: boolean }) {
 	const [, demarrer] = useTransition();
 	const ouvrir = () => router.push(`/chantiers/${c.id}/marches`);
 
-	function terminer(e: React.MouseEvent) {
-		e.stopPropagation();
+	function terminer() {
 		demarrer(async () => {
 			const r = await marquerTermineAction(c.id, !c.termine);
 			if (!r.ok) toast.error(r.erreur);
@@ -26,8 +26,7 @@ export function CarteChantier({ c, ouvert }: { c: Carte; ouvert: boolean }) {
 		});
 	}
 
-	async function supprimer(e: React.MouseEvent) {
-		e.stopPropagation();
+	async function supprimer() {
 		// Refus d'emblée, sans faire confirmer une suppression qui échouerait (le serveur vérifie de toute façon).
 		if (c.documents) { toast.error(SUPPRESSION_IMPOSSIBLE); return; }
 		const pertes = pertesSuppression(c);
@@ -51,10 +50,13 @@ export function CarteChantier({ c, ouvert }: { c: Carte; ouvert: boolean }) {
 				<span className="chantier-ref">{c.reference}</span>
 				<span className="chantier-actions">
 					{c.termine ? <span className="pill pill-fini">Terminé</span> : ouvert && <span className="pill pill-actif">Ouvert</span>}
-					<button type="button" className="btn btn-sm" onClick={terminer} title={c.termine ? 'Rouvrir ce chantier' : 'Marquer ce chantier terminé'}>
+					<button type="button" className="btn btn-sm" onClick={(e) => { sansOuvrirLaCarte(e); terminer(); }}
+						onKeyDown={sansOuvrirLaCarte} title={c.termine ? 'Rouvrir ce chantier' : 'Marquer ce chantier terminé'}>
 						{c.termine ? <><Icone.Rouvrir />Rouvrir</> : <><Icone.Coche />Terminer</>}
 					</button>
-					<button type="button" className="btn btn-sm btn-danger btn-ico" onClick={supprimer} title="Supprimer ce chantier" aria-label={`Supprimer ${c.reference}`}>
+					<button type="button" className="btn btn-sm btn-danger btn-ico"
+						onClick={(e) => { sansOuvrirLaCarte(e); void supprimer(); }} onKeyDown={sansOuvrirLaCarte}
+						title="Supprimer ce chantier" aria-label={`Supprimer ${c.reference}`}>
 						<Icone.Corbeille />
 					</button>
 				</span>

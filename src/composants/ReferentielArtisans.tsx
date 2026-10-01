@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { changerActiviteArtisanAction, creerArtisanAction, modifierChampArtisanAction } from '@/actions/artisans';
+import { enregistrerArtisan, idArtisanOuverte, type FicheArtisan as Fiche } from '@/composants/ficheArtisan';
 import { useConfirmation } from '@/composants/maquette/Confirmation';
 import * as Icone from '@/composants/maquette/icones';
 import { Panneau } from '@/composants/maquette/Panneau';
@@ -11,7 +12,6 @@ import { Recherche } from '@/composants/maquette/Recherche';
 import type { ArtisanFiche, ChampArtisan } from '@/donnees/artisans';
 import { normaliser } from '@/domaine/recherche';
 
-type Fiche = Record<ChampArtisan, string>;
 const VIDE: Fiche = { nom: '', adresse: '', cp: '', commune: '', interlocuteur: '', telephone: '', email: '' };
 const versFiche = (a: ArtisanFiche | undefined): Fiche => (a
 	? { nom: a.nom, adresse: a.adresse, cp: a.cp, commune: a.commune, interlocuteur: a.interlocuteur, telephone: a.telephone, email: a.email }
@@ -64,17 +64,20 @@ export function ReferentielArtisans({ artisans, ficheInitiale }: { artisans: Art
 	function enregistrer() {
 		if (!fiche.nom.trim()) { setErreur({ champ: 'nom', message: 'La raison sociale est obligatoire.' }); document.getElementById('e-nom')?.focus(); return; }
 		demarrer(async () => {
-			let id = actuelle?.id ?? null;
-			if (!id) {
-				const r = await creerArtisanAction(fiche.nom);
-				if (!r.ok) { setErreur({ champ: 'nom', message: r.erreur }); return; }
-				id = r.donnees.id;
-			}
-			for (const { champ } of CHAMPS) {
-				const avant = actuelle ? actuelle[champ] : (champ === 'nom' ? fiche.nom : '');
-				if (fiche[champ] === avant) continue;
-				const r = await modifierChampArtisanAction(id, champ, fiche[champ]);
-				if (!r.ok) { setErreur({ champ, message: r.erreur }); document.getElementById(CHAMPS.find((c) => c.champ === champ)!.id)?.focus(); return; }
+			const r = await enregistrerArtisan({
+				id: idArtisanOuverte(ouverte),
+				fiche,
+				actuelle: actuelle ? versFiche(actuelle) : null,
+				creer: creerArtisanAction,
+				modifier: modifierChampArtisanAction,
+			});
+			// Même si un champ est refusé, l'id créé reste ouvert : « Ajouter » ne recrée pas.
+			if (r.id) setOuverte(r.id);
+			if (r.erreur) {
+				const { champ, message } = r.erreur;
+				setErreur({ champ, message });
+				document.getElementById(CHAMPS.find((c) => c.champ === champ)!.id)?.focus();
+				return;
 			}
 			toast(actuelle ? <><b>{fiche.nom}</b> mise à jour. Les prochains documents la porteront.</> : <><b>{fiche.nom}</b> ajoutée au référentiel.</>);
 			fermer();

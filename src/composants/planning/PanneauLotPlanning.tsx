@@ -28,7 +28,7 @@ export function PanneauLotPlanning({ lot, planning, principale, onFermer, onCoul
 	useEffect(() => { document.querySelector('.panel.is-on tr[data-vise]')?.scrollIntoView({ block: 'nearest' }); }, [lot?.id, principale]);
 	return (
 		<Panneau ouvert={lot !== null} surtitre={lot?.numero ? `LOT ${lot.numero}` : 'LOT'} titre={lot?.designation || 'Désignation à saisir'}
-			libelle={lot?.designation} onFermer={onFermer} pied={<button type="button" className="btn btn-ghost" onClick={onFermer}>Fermer</button>}>
+			libelle={lot?.designation || undefined} onFermer={onFermer} pied={<button type="button" className="btn btn-ghost" onClick={onFermer}>Fermer</button>}>
 			{lot && (
 				<>
 					<div className="block">
