@@ -1,11 +1,9 @@
 'use client';
 
 import { Fragment, type CSSProperties, type PointerEvent, type RefObject } from 'react';
-import { Button } from '@/components/ui/button';
 import { couleurDe } from '@/domaine/couleurs';
 import { colonnes, moisDesColonnes } from '@/domaine/planning';
 import { rangIso, type LotPlanning, type PlanningVue } from '@/domaine/planningVue';
-import { cn } from '@/lib/utils';
 import { ID_PERIODE_TEMPORAIRE } from './fileActions';
 import { barresDuLot, HAUTEUR_LIGNE, liens } from './geometrie';
 import type { Outil } from './preferences';
@@ -43,7 +41,7 @@ export function GrillePlanning({
 	// Alternance des mois : on les distingue sans lire leur nom.
 	const bandesMois = mois.map((m, i) => {
 		const gauche = mois.slice(0, i).reduce((s, x) => s + x.nb, 0) * w;
-		return <div key={`m${i}`} className={cn('g-bmois', i % 2 === 1 && 'pair')} style={{ left: gauche, width: m.nb * w }} />;
+		return <div key={`m${i}`} className={`g-bmois${i % 2 === 1 ? ' pair' : ''}`} style={{ left: gauche, width: m.nb * w }} />;
 	});
 	const fond = (
 		<>
@@ -58,7 +56,7 @@ export function GrillePlanning({
 		<>
 			<div
 				ref={cadre}
-				className={cn('gantt', outil === 'main' && 'outil-main', saisi && 'est-saisi')}
+				className={`gantt${outil === 'main' ? ' outil-main' : ''}${saisi ? ' est-saisi' : ''}`}
 				style={{ '--sem-w': `${w}px` } as CSSProperties}
 				onScroll={onScroll}
 				onPointerDown={onPointerDown}
@@ -112,7 +110,7 @@ export function GrillePlanning({
 										{barresDuLot(l, d0, w).map((b) => (
 											<Fragment key={b.periode.id}>
 												<div
-													className={cn('g-bar', selection.includes(b.periode.id) && 'is-sel', b.periode.id === ID_PERIODE_TEMPORAIRE && 'est-temp')}
+													className={`g-bar${selection.includes(b.periode.id) ? ' is-sel' : ''}${b.periode.id === ID_PERIODE_TEMPORAIRE ? ' est-temp' : ''}`}
 													data-periode={b.periode.id} data-lot={l.id} title={b.titre}
 													style={{ left: b.gauche, width: b.largeur, background: couleur.fond, color: couleur.texte }}
 												>
@@ -145,7 +143,7 @@ export function GrillePlanning({
 				) : (
 					<div className="g-vide">
 						{planning.lots.length ? (
-							<>Tous les lots sont masqués. <Button size="sm" variant="outline" onClick={onToutAfficher}>Tout afficher</Button></>
+							<>Tous les lots sont masqués. <button type="button" className="btn btn-sm" onClick={onToutAfficher}>Tout afficher</button></>
 						) : "Ce chantier n'a pas encore de lot. Ajoutez-les depuis l'écran Marchés."}
 					</div>
 				)}

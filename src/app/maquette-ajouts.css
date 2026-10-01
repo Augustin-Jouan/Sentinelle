@@ -41,21 +41,6 @@ button.context:hover { background: var(--idle-soft); }
 /* Lien d'une barre d'aperçu (« Télécharger le PDF » est un <a>). */
 a.btn { text-decoration: none; }
 
-/* Base UI n'unmount le panneau que quand getAnimations() est fini. Le :focus-visible
-   de la maquette relance outline-color (transition shadcn), le scrim restait. */
-[data-slot='sheet-content'], [data-slot='dialog-content'],
-[data-slot='sheet-overlay'], [data-slot='dialog-overlay'] {
-	transition-property: opacity, transform;
-}
-/* Panneau fermé : opacity 0 mais encore cliquable tant que Base UI attend. La maquette
-   glisse le sien hors écran (transform), le hit-test suit. */
-[data-slot='sheet-overlay'][data-closed], [data-slot='sheet-overlay'][data-ending-style],
-[data-slot='dialog-overlay'][data-closed], [data-slot='dialog-overlay'][data-ending-style],
-[data-slot='sheet-content'][data-closed], [data-slot='sheet-content'][data-ending-style],
-[data-slot='dialog-content'][data-closed], [data-slot='dialog-content'][data-ending-style] {
-	pointer-events: none;
-}
-
 /* Menu du compte : les entrées de l'app sont des liens et un formulaire (écart 1) — même dessin que les boutons de la maquette. */
 a.compte-item { display: block; text-decoration: none; color: inherit; }
 .compte-menu form { margin: 0; }

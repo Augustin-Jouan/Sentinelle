@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 
 export default function PageErreur({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
 	useEffect(() => {
@@ -9,12 +8,18 @@ export default function PageErreur({ error, reset }: { error: Error & { digest?:
 	}, [error]);
 
 	return (
-		<main className="grid min-h-screen place-items-center px-4">
-			<div className="w-full max-w-sm space-y-4 text-center">
-				<h1 className="text-2xl font-bold">Une erreur est survenue</h1>
-				<p className="text-sm text-muted-foreground">Réessayez ; si le problème persiste, prévenez l&apos;administrateur.</p>
-				<Button onClick={reset}>Réessayer</Button>
+		<div className="screen is-on">
+			<div className="login">
+				<div className="login-card">
+					<div className="login-brand">
+						<div className="login-mark">Une erreur est survenue</div>
+						<p className="login-tag">Réessayez ; si le problème persiste, prévenez l&apos;administrateur.</p>
+					</div>
+					<button type="button" className="btn btn-primary" onClick={reset} style={{ justifyContent: 'center', padding: '0.5625rem' }}>
+						Réessayer
+					</button>
+				</div>
 			</div>
-		</main>
+		</div>
 	);
 }

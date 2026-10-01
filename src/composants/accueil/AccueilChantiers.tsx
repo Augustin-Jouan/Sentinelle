@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Interrupteur } from '@/composants/maquette/Interrupteur';
 import { MenuDeroulant } from '@/composants/maquette/MenuDeroulant';
 import { usePreference } from '@/composants/maquette/preference';
@@ -18,8 +18,7 @@ export function AccueilChantiers({ cartes }: { cartes: Carte[] }) {
 	const [requete, setRequete] = useState('');
 	const [tri, setTri] = usePreference<TriChantiers>('sentinelle-tri-chantiers', 'ref', estTri);
 	const [masquer, setMasquer] = usePreference('sentinelle-masquer-termines', true, estBooleen);
-	const [ouvert, setOuvert] = useState<string | null>(null);
-	useEffect(() => { setOuvert(lireChantierOuvert()); }, []);
+	const ouvert = useSyncExternalStore(() => () => {}, lireChantierOuvert, () => null);
 
 	const visibles = chantiersVisibles(cartes, requete, masquer, tri);
 	const q = requete.trim();

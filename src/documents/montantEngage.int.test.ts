@@ -21,7 +21,7 @@ const avenant = (designation: string, numero: number, montantHt: string) =>
 const htInitial = async (designation: string) =>
 	(await prisma.lot.findUniqueOrThrow({ where: { id: p.lots[designation] } })).montantHtInitial.toString();
 const ligneDocuments = async (designation: string) =>
-	(await etatsDocumentsChantier(p.chantierId, deps.maintenant))!.entreprises.flatMap((e) => e.lots).find((l) => l.lotId === p.lots[designation])!;
+	(await etatsDocumentsChantier(p.chantierId, deps.maintenant))!.lots.find((l) => l.lotId === p.lots[designation])!;
 
 describe('montant engagé', () => {
 	beforeEach(async () => {

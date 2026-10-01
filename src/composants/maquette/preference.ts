@@ -1,19 +1,35 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
+
+const abonnes = new Set<() => void>();
+function abonner(rappel: () => void) {
+	abonnes.add(rappel);
+	return () => { abonnes.delete(rappel); };
+}
+function notifier() {
+	for (const r of abonnes) r();
+}
+
+function lireBrut(cle: string): string | null {
+	try {
+		return localStorage.getItem(cle);
+	} catch {
+		return null;
+	}
+}
 
 /** Lue après le montage (le rendu serveur prend le défaut) ; une valeur illisible ou d'une ancienne version est ignorée. */
 export function usePreference<T>(cle: string, defaut: T, valide: (v: unknown) => v is T): [T, (v: T) => void] {
-	const [valeur, setValeur] = useState<T>(defaut);
-	useEffect(() => {
-		try {
-			const lu: unknown = JSON.parse(localStorage.getItem(cle) ?? 'null');
-			if (valide(lu)) setValeur(lu);
-		} catch { /* stockage indisponible ou valeur corrompue : le défaut reste */ }
-	}, [cle]);   // eslint-disable-line react-hooks/exhaustive-deps -- `valide` est une fonction stable du module appelant
+	const brut = useSyncExternalStore(abonner, () => lireBrut(cle), () => null);
+	let valeur = defaut;
+	try {
+		const lu: unknown = JSON.parse(brut ?? 'null');
+		if (valide(lu)) valeur = lu;
+	} catch { /* stockage indisponible ou valeur corrompue : le défaut reste */ }
 	function changer(v: T) {
-		setValeur(v);
 		try { localStorage.setItem(cle, JSON.stringify(v)); } catch { /* le choix vaut pour la page */ }
+		notifier();
 	}
 	return [valeur, changer];
 }
