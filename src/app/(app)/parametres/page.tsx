@@ -1,6 +1,7 @@
 import { modifierParametreAction } from '@/actions/parametres';
 import { exigerPage } from '@/auth/session';
 import { ChampEnLigne } from '@/composants/ChampEnLigne';
+import { Ecran } from '@/composants/maquette/Ecran';
 import { lireParametres, type ChampParametres } from '@/donnees/parametres';
 
 const CHAMPS: { champ: ChampParametres; libelle: string; aide?: string }[] = [
@@ -23,22 +24,22 @@ export default async function PageParametres() {
 	await exigerPage({ admin: true });
 	const p = await lireParametres();
 	return (
-		<section className="max-w-2xl space-y-6">
-			<div>
-				<h1 className="text-2xl font-bold">Paramètres de l&apos;entreprise</h1>
-				<p className="text-sm text-muted-foreground">En-tête imprimé sur les marchés, le récapitulatif, les certificats de paiement, les comptes rendus et les PV de réception. Chaque champ s&apos;enregistre quand on le quitte.</p>
-			</div>
-			<dl className="grid grid-cols-[12rem_1fr] items-center gap-x-4 gap-y-2 rounded-xl border bg-card p-6">
-				{CHAMPS.map(({ champ, libelle, aide }) => (
-					<div key={champ} className="contents">
-						<dt className="text-sm text-muted-foreground">{libelle}</dt>
-						<dd>
-							<ChampEnLigne libelle={libelle} valeur={p[champ] ?? ''} enregistrer={modifierParametreAction.bind(null, champ)} />
-							{aide && <p className="px-1.5 text-xs text-muted-foreground">{aide}</p>}
-						</dd>
+		<Ecran titre="Paramètres de l'entreprise">
+			<div className="form-wrap">
+				<div className="fieldset">
+					<span className="eyebrow">En-tête des documents</span>
+					<p className="hint" style={{ margin: 0 }}>Imprimé sur les marchés, le récapitulatif, les certificats de paiement, les comptes rendus et les PV de réception. Chaque champ s&apos;enregistre quand on le quitte.</p>
+					<div className="grid-2">
+						{CHAMPS.map(({ champ, libelle, aide }) => (
+							<div key={champ} className="field">
+								<label htmlFor={`p-${champ}`}>{libelle}</label>
+								<ChampEnLigne id={`p-${champ}`} variante="champ" libelle={libelle} valeur={p[champ] ?? ''} enregistrer={modifierParametreAction.bind(null, champ)} />
+								{aide && <span className="hint">{aide}</span>}
+							</div>
+						))}
 					</div>
-				))}
-			</dl>
-		</section>
+				</div>
+			</div>
+		</Ecran>
 	);
 }
