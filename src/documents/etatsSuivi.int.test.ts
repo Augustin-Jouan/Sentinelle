@@ -13,7 +13,7 @@ let p: Awaited<ReturnType<typeof insererPerrier>>;
 
 const vue = async () => (await etatsDocumentsChantier(p.chantierId))!;
 const ligne = async (designation: string) =>
-	(await vue()).entreprises.flatMap((g) => g.lots).find((l) => l.lotTexte.endsWith(designation))!;
+	(await vue()).lots.find((l) => l.lotTexte.endsWith(designation))!;
 
 describe('page Documents : comptes rendus et réceptions', () => {
 	beforeEach(async () => {
@@ -86,7 +86,7 @@ describe('page Documents : comptes rendus et réceptions', () => {
 		await prisma.artisan.update({ where: { id: p.artisans['CONSTRUCTIONS REBOURS'] }, data: { nom: 'REBOURS SAS' } });
 		const apres = await vue();
 		expect(apres.comptesRendus).toEqual(avant.comptesRendus);
-		expect(apres.entreprises.flatMap((g) => g.lots).find((x) => x.lotId === p.lots['GROS ŒUVRE'])?.reception)
-			.toEqual(avant.entreprises.flatMap((g) => g.lots).find((x) => x.lotId === p.lots['GROS ŒUVRE'])?.reception);
+		expect(apres.lots.find((x) => x.lotId === p.lots['GROS ŒUVRE'])?.reception)
+			.toEqual(avant.lots.find((x) => x.lotId === p.lots['GROS ŒUVRE'])?.reception);
 	});
 });

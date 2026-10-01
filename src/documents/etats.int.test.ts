@@ -10,7 +10,7 @@ let p: Awaited<ReturnType<typeof insererPerrier>>;
 
 async function etatDe(designation: string) {
 	const vue = await etatsDocumentsChantier(p.chantierId, deps.maintenant);
-	return vue!.entreprises.flatMap((e) => e.lots).find((l) => l.lotId === p.lots[designation])!.marche;
+	return vue!.lots.find((l) => l.lotId === p.lots[designation])!.marche;
 }
 
 describe('états des documents', () => {
@@ -41,13 +41,12 @@ describe('états des documents', () => {
 		expect((await etatDe('GROS ŒUVRE')).etat).toBe('a-jour');
 	});
 
-	it('regroupe par entreprise, lots sans entreprise à part, récap séparé', async () => {
+	it('lots sans entreprise portent les manques, récap séparé', async () => {
 		await genererRecap(p.chantierId, p.utilisateurId, deps);
 		const vue = await etatsDocumentsChantier(p.chantierId, deps.maintenant);
 		expect(vue!.recap.etat).toBe('a-jour');
-		expect(vue!.entreprises).toHaveLength(13);
-		const sansEntreprise = vue!.entreprises.find((e) => e.entreprise === null)!;
-		expect(sansEntreprise.lots[0]).toMatchObject({ lotTexte: '12 — ENDUIT EXTÉRIEUR', manques: ['entreprise', 'montant'] });
+		expect(new Set(vue!.lots.map((l) => l.entreprise)).size).toBe(13);
+		expect(vue!.lots.find((l) => l.entreprise === null)).toMatchObject({ lotTexte: '12 — ENDUIT EXTÉRIEUR', manques: ['entreprise', 'montant'] });
 	});
 
 	it('chantier inconnu : nul', async () => {

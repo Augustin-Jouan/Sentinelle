@@ -14,7 +14,7 @@ let p: Awaited<ReturnType<typeof insererPerrier>>;
 let lotId: string;
 
 const ligne = async (id = lotId) =>
-	(await etatsDocumentsChantier(p.chantierId, deps.maintenant))!.entreprises.flatMap((e) => e.lots).find((l) => l.lotId === id)!;
+	(await etatsDocumentsChantier(p.chantierId, deps.maintenant))!.lots.find((l) => l.lotId === id)!;
 async function avenant(montant: string) {
 	const { id } = await ajouterAvenant(lotId);
 	if (montant !== '0') await modifierChampAvenant(id, 'montantHt', montant);

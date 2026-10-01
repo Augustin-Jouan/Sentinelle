@@ -36,7 +36,7 @@ export function useClavier(o: OptionsClavier) {
 				e.preventDefault();
 				onSupprimer();
 			} else if (e.key === 'Escape' && !panneauOuvert && nbSelection > 1) {
-				// Panneau ouvert : Échap le ferme (le Sheet s'en charge) et garde la sélection.
+				// Panneau ouvert : Échap le ferme (le Panneau s'en charge) et garde la sélection.
 				onVider();
 			}
 		}

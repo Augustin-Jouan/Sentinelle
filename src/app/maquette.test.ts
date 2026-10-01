@@ -25,10 +25,14 @@ describe('feuille de style de la maquette', () => {
 		for (const absent of ['.sheet .col-r', '.cr-tete', '.cp-titre', '.pv-cadre', '@media print']) expect(css, absent).not.toContain(absent);
 	});
 
-	// `.block` de la maquette (cadre d'un bloc du panneau) : l'utilitaire Tailwind du même nom lui prendrait sa place.
+	// Cadre maquette : `className="block"` seul. L'utilitaire Tailwind mélange `block` à d'autres jetons.
 	it.each(sources('src'))('%s : pas d\'utilitaire Tailwind « block »', (fichier) => {
 		const classes = [...readFileSync(fichier, 'utf8').matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\}|\{'([^']*)'\})/g)]
 			.map((m) => m[1] ?? m[2] ?? m[3]);
-		for (const c of classes) expect(c.split(/\s+/), `${fichier} : « ${c} »`).not.toContain('block');
+		for (const c of classes) {
+			const jetons = c.split(/\s+/).filter(Boolean);
+			if (jetons.length === 1 && jetons[0] === 'block') continue;
+			expect(jetons, `${fichier} : « ${c} »`).not.toContain('block');
+		}
 	});
 });

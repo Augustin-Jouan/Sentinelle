@@ -34,12 +34,12 @@ export function ActionsLevee({ lotId, etat }: { lotId: string; etat: EtatRecepti
 	if (etat !== 'avec-reserves') return null;
 	if (!ouvert) return <button type="button" className="dm-th-action" onClick={() => setOuvert(true)}>Réserves levées…</button>;
 	return (
-		<form className="inline-flex items-center gap-1" onSubmit={(e) => {
+		<form className="dm-sous" onSubmit={(e) => {
 			e.preventDefault();
 			const date = String(new FormData(e.currentTarget).get('date') ?? '');
 			envoyer(() => leverReservesAction(lotId, date));
 		}}>
-			<input type="date" name="date" aria-label="Date de levée des réserves" defaultValue={aujourdhui()} className="rounded border px-1 text-xs" />
+			<input type="date" name="date" aria-label="Date de levée des réserves" defaultValue={aujourdhui()} className="date-lot" />
 			<button type="submit" className="dm-th-action" disabled={enCours}>Enregistrer la levée</button>
 		</form>
 	);

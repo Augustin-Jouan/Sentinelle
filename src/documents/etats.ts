@@ -54,7 +54,6 @@ export type VueDocuments = {
 	/** En-tête de la page : « 23 documents · dernier le 06/10/2026 ». `dernierLe` : ISO. */
 	resume: { nombre: number; dernierLe: string | null };
 	lots: LigneDocuments[];
-	entreprises: { entreprise: string | null; lots: LigneDocuments[] }[];
 };
 
 const SELECTION = {
@@ -148,10 +147,8 @@ export async function etatsDocumentsChantier(chantierId: string, maintenant = ne
 	const contenuPv = new Map(proces.map((d) => [d.id, (d.donnees as unknown as DonneesReception).contenu]));
 	const levees = new Map(receptions.map((r) => [r.lotId, r.reservesLeveesLe ? versIso(r.reservesLeveesLe) : null]));
 	const docsDe = (s: string) => docs.filter((d) => d.serie === s);
-	const groupes = new Map<string | null, LigneDocuments[]>();
 	const enOrdre: LigneDocuments[] = [];
 	for (const lot of lots) {
-		const cle = lot.artisan?.nom ?? null;
 		const actuels = new Set(lot.avenants.map((a) => a.id));
 		const acomptesDuLot = acomptes.filter((a) => a.lotId === lot.id);
 		const pvs = docsDe(serieReception(lot.id));
@@ -201,7 +198,6 @@ export async function etatsDocumentsChantier(chantierId: string, maintenant = ne
 				})
 				.sort((a, b) => b.creeLe.localeCompare(a.creeLe)),
 		};
-		groupes.set(cle, [...(groupes.get(cle) ?? []), ligne]);
 		enOrdre.push(ligne);
 	}
 	return {
@@ -219,9 +215,6 @@ export async function etatsDocumentsChantier(chantierId: string, maintenant = ne
 				return plus === null || t > plus ? t : plus;
 			}, null),
 		},
-		entreprises: [...groupes.entries()]
-			.sort(([a], [b]) => (a === null ? 1 : b === null ? -1 : a.localeCompare(b, 'fr')))
-			.map(([entreprise, l]) => ({ entreprise, lots: l })),
 	};
 }
 
