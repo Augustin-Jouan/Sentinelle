@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { nomAccessible } from './nomPanneau';
 
 type Props = {
 	ouvert: boolean;
@@ -29,7 +30,7 @@ export function Panneau({ ouvert, surtitre, titre, onFermer, pied, libelle, sans
 		<>
 			<div className={ouvert ? 'scrim is-on' : 'scrim'} onClick={onFermer} />
 			{/* data-bloque-clavier, seulement ouvert : sinon les raccourcis du planning seraient coupés en permanence (useClavier). */}
-			<aside className={ouvert ? 'panel is-on' : 'panel'} role="dialog" aria-label={libelle ?? titre} aria-hidden={!ouvert}
+			<aside className={ouvert ? 'panel is-on' : 'panel'} role="dialog" aria-label={nomAccessible(libelle, titre)} aria-hidden={!ouvert}
 				data-bloque-clavier={ouvert ? '' : undefined}>
 				<div className="panel-head">
 					<div>

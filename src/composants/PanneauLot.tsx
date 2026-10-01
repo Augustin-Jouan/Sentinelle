@@ -79,7 +79,7 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 
 	return (
 		<Panneau ouvert surtitre={lot.numero ? `LOT ${lot.numero}` : 'LOT NON NUMÉROTÉ'} titre={lot.designation || 'Désignation à saisir'}
-			libelle={lot.designation} onFermer={onFermer} pied={pied}>
+			libelle={lot.designation || undefined} onFermer={onFermer} pied={pied}>
 			<div className="radio-row" role="radiogroup" aria-label="Nature du marché">
 				{NATURES.map(([n, t]) => (
 					<label key={n} role="radio" aria-checked={lot.nature === n} tabIndex={0} className={lot.nature === n ? 'is-on' : undefined}
