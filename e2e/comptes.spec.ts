@@ -4,12 +4,15 @@ import { ADMIN, seConnecter } from './aide';
 test('l\'admin crée un compte, le collègue change son mot de passe provisoire', async ({ page }) => {
 	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
 	await page.goto('/admin/comptes');
+	await page.getByRole('button', { name: 'Nouveau compte' }).click();
 	await page.getByLabel('Nom').fill('Jean Martin');
 	await page.getByLabel('E-mail').fill('jean.martin@socoreve.local');
+	await page.getByRole('radiogroup', { name: 'Rôle' }).getByText('Utilisateur', { exact: true }).click();
 	await page.getByRole('button', { name: 'Créer le compte' }).click();
-	const provisoire = (await page.getByTestId('mot-de-passe-provisoire').textContent()) ?? '';
+	const dialogue = page.getByRole('dialog', { name: 'Mot de passe provisoire' });
+	const provisoire = (await dialogue.getByTestId('mot-de-passe-provisoire').textContent()) ?? '';
 	expect(provisoire).toHaveLength(16);
-	await page.getByRole('button', { name: 'Fermer' }).click();
+	await dialogue.getByRole('button', { name: 'Fermer' }).click();
 	await page.locator('.avatar').click();
 	await page.getByRole('menuitem', { name: 'Se déconnecter' }).click();
 

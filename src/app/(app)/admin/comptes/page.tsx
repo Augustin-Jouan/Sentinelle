@@ -1,13 +1,13 @@
 import { exigerPage } from '@/auth/session';
-import { GestionComptes } from '@/composants/GestionComptes';
+import { BoutonNouveauCompte, GestionComptes } from '@/composants/GestionComptes';
+import { Ecran } from '@/composants/maquette/Ecran';
 import { listerComptes } from '@/donnees/comptes';
 
 export default async function PageComptes() {
 	const moi = await exigerPage({ admin: true });
 	return (
-		<section className="space-y-6">
-			<h1 className="text-2xl font-bold">Comptes</h1>
+		<Ecran titre="Comptes" actions={<BoutonNouveauCompte />}>
 			<GestionComptes comptes={await listerComptes()} moiId={moi.id} />
-		</section>
+		</Ecran>
 	);
 }
