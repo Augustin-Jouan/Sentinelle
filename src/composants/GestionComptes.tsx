@@ -33,6 +33,7 @@ export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moi
 			if (r.ok) {
 				setErreurs({});
 				formulaire.reset();
+				setRole('user');
 				setCreation(false);
 				setProvisoire({ email: saisie.email.trim().toLowerCase(), motDePasse: r.donnees.motDePasse });
 			} else {
