@@ -4,21 +4,6 @@
    nouveau (heritage.selecteurs.txt), aucune règle morte (heritage.test.ts) — et disparaît à la fin de la
    migration. Après chaque écran migré : npx tsx scripts/heritage.ts elaguer */
 
-.num {
-	font-family: 'Spline Sans Mono', ui-monospace, monospace;
-	font-variant-numeric: tabular-nums;
-	font-feature-settings: 'tnum' 1;
-}
-
-.eyebrow {
-	font-family: 'Outfit', 'Figtree', sans-serif;
-	font-size: 0.6875rem;
-	font-weight: 600;
-	letter-spacing: 0.09em;
-	text-transform: uppercase;
-	color: var(--muted);
-}
-
 /* ============================================================
    ÉCRANS
    ============================================================ */
@@ -66,41 +51,8 @@
 /* ============================================================
    BOUTONS
    ============================================================ */
-.btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.4375rem;
-	padding: 0.4375rem 0.8125rem;
-	background: var(--raise);
-	color: var(--ink);
-	border: 1px solid var(--rule-strong);
-	border-radius: var(--r-sm);
-	cursor: pointer;
-	font-size: 0.8125rem;
-	line-height: 1.3;
-	white-space: nowrap;
-	transition: background 0.12s, border-color 0.12s;
-}
-.btn:hover { background: var(--idle-soft); border-color: var(--muted); }
-.btn svg { width: 0.875rem; height: 0.875rem; stroke: currentColor; fill: none; stroke-width: 1.6; }
-
-.btn-primary {
-	background: var(--accent);
-	border-color: var(--accent);
-	color: var(--on-accent);
-	font-weight: 500;
-}
-.btn-primary:hover { background: var(--accent-2); border-color: var(--accent-2); }
-
-.btn-ghost { background: transparent; border-color: transparent; color: var(--muted); }
-.btn-ghost:hover { background: var(--idle-soft); color: var(--ink); border-color: transparent; }
-
-.btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
 
 /* Bouton d'action destructrice : il ne doit jamais se confondre avec son voisin. */
-.btn-danger { color: var(--danger); border-color: var(--rule-strong); }
-.btn-danger:hover { background: var(--danger-soft); border-color: var(--danger); }
-.btn-danger svg { opacity: 0.85; }
 /* bouton réduit à son icône : le libellé passe par title et aria-label */
 
 /* Dans une carte cliquable, un bouton fantôme passe pour du texte : on lui rend un contour. */
@@ -108,40 +60,10 @@
 /* ============================================================
    PASTILLES D'ÉTAT
    ============================================================ */
-.pill {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.375rem;
-	padding: 0.125rem 0.4375rem 0.1875rem;
-	border-radius: var(--r-xs);
-	font-family: 'Outfit', sans-serif;
-	font-size: 0.6875rem;
-	font-weight: 600;
-	letter-spacing: 0.045em;
-	text-transform: uppercase;
-	white-space: nowrap;
-}
-.pill::before {
-	content: '';
-	width: 0.375rem;
-	height: 0.375rem;
-	background: currentColor;
-	border-radius: 50%;
-	flex: none;
-}
-.pill-actif { background: var(--accent-soft); color: var(--accent-2); }
 
 /* ============================================================
    TABLE DES MARCHÉS
    ============================================================ */
-.table-frame {
-	border: 1px solid var(--rule);
-	border-radius: var(--r);
-	box-shadow: var(--ombre);
-	background: var(--raise);
-	overflow-x: auto;
-}
-th.ta-r, td.ta-r { text-align: right; }
 /* un montant ne se coupe jamais : le « € » ne doit pas tomber à la ligne suivante */
 /* marqueur discret posé sur la ligne du lot, à la place de l'ancienne colonne Nature */
 /* le champ et l'étiquette cohabitent dans un conteneur interne :
@@ -162,8 +84,6 @@ th.ta-r, td.ta-r { text-align: right; }
 /* interrupteur « masquer les terminés » */
 
 /* chantier terminé */
-.pill-fini { background: var(--idle-soft); color: var(--muted); }
-.pill-fini::before { background: none; border: 1px solid currentColor; border-radius: 50%; }
 
 /* ============================================================
    FORMULAIRE
@@ -173,44 +93,6 @@ th.ta-r, td.ta-r { text-align: right; }
    et repassent sur une colonne sous 30 rem de large disponibles. */
 /* Trois blocs, trois colonnes dès qu'il y a la place : le formulaire tient alors
    d'un seul écran. Il retombe à deux puis à une colonne quand la fenêtre se resserre. */
-.form-wrap { columns: 3 24rem; column-gap: 1.25rem; }
-.form-wrap .fieldset { break-inside: avoid; }
-.fieldset {
-	border: 1px solid var(--rule);
-	border-radius: var(--r);
-	box-shadow: var(--ombre);
-	background: var(--raise);
-	padding: 1.25rem 1.375rem 1.375rem;
-	margin-bottom: 1rem;
-}
-.fieldset > .eyebrow { display: block; margin-bottom: 0.875rem; padding-bottom: 0.625rem; border-bottom: 1px solid var(--rule); }
-.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.875rem 1rem; }
-.field { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
-.field.span { grid-column: 1 / -1; }
-.field label { font-size: 0.75rem; color: var(--muted); }
-.field input, .field select, .field textarea {
-	background: var(--surface);
-	border: 1px solid var(--rule-strong);
-	border-radius: var(--r-sm);
-	padding: 0.5rem 0.625rem;
-	color: var(--ink);
-	width: 100%;
-}
-.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); outline: none; background: var(--raise); }
-.field .hint { font-size: 0.6875rem; color: var(--faint); }
-.radio-row { display: flex; gap: 0.5rem; }
-.radio-row label {
-	flex: 1;
-	border: 1px solid var(--rule-strong);
-	border-radius: var(--r-sm);
-	padding: 0.5rem 0.625rem;
-	cursor: pointer;
-	font-size: 0.8125rem;
-	color: var(--ink);
-	background: var(--surface);
-}
-.radio-row input { display: none; }
-.radio-row label.is-on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-2); font-weight: 500; }
 /* les actions traversent les colonnes et se posent sous le formulaire,
    au lieu de couler au pied de la dernière */
 
@@ -223,9 +105,6 @@ th.ta-r, td.ta-r { text-align: right; }
 /* Les blocs gardent leur hauteur naturelle : sans cela le flex les comprime, et
    depuis qu'ils sont arrondis leur overflow:hidden coupe le contenu en silence
    au lieu de le laisser déborder. C'est le panneau qui doit défiler, pas eux. */
-
-.block { border: 1px solid var(--rule); border-radius: var(--r); background: var(--raise); overflow: hidden; }
-.block-body { padding: 0.875rem; }
 
 /* ============================================================
    GÉNÉRATION — champs + fac-similé
@@ -293,31 +172,7 @@ th.ta-r, td.ta-r { text-align: right; }
 /* ============================================================
    ARTISANS + DOCUMENTS
    ============================================================ */
-
-table.plain { width: 100%; border-collapse: collapse; min-width: 46rem; }
-table.plain thead th {
-	text-align: left;
-	padding: 0.5rem 0.75rem;
-	background: var(--surface);
-	border-bottom: 1px solid var(--rule-strong);
-	font-family: 'Outfit', sans-serif;
-	font-size: 0.6875rem;
-	font-weight: 600;
-	letter-spacing: 0.07em;
-	text-transform: uppercase;
-	color: var(--muted);
-	white-space: nowrap;
-}
-table.plain tbody td { padding: 0.4375rem 0.75rem; border-bottom: 1px solid var(--rule); }
-table.plain tbody tr:hover { background: var(--surface); }
-table.plain tbody tr[onclick] { cursor: pointer; }
-td.nowrap { white-space: nowrap; }
-table.plain tbody td .btn-sm { visibility: hidden; }
-table.plain tbody tr:hover .btn-sm, table.plain tbody tr:focus-within .btn-sm { visibility: visible; }
 /* une colonne « Actions » annoncée en en-tête ne peut pas rester vide jusqu'au survol */
-table.plain tbody td.cell-actions .btn-sm { visibility: visible; }
-table.plain tbody td.cell-actions { white-space: nowrap; }
-table.plain tbody td.cell-actions .btn + .btn { margin-left: 0.375rem; }
 
 /* rubriques de la page Documents */
 
@@ -349,17 +204,13 @@ table.plain tbody td.cell-actions .btn + .btn { margin-left: 0.375rem; }
 /* Alignement à droite, rappelé en dernier et à forte spécificité : « table.lots thead th »
    et « table.plain thead th » l'emportaient sur .ta-r, si bien que les en-têtes des colonnes
    chiffrées restaient calés à gauche pendant que leurs cellules s'alignaient à droite. */
-table thead th.ta-r, table tbody td.ta-r { text-align: right; }
 
 
 /* Barre temporaire pendant qu'on trace une période (planning) : elle ne capte pas la souris. */
 
 /* Saisie refusée par le serveur : le champ garde le texte et se voit en erreur (la maquette remettait l'ancienne valeur). */
-.field input.est-erreur { border-color: var(--danger); background: var(--danger-soft); }
-.field .erreur { font-size: 0.6875rem; color: var(--danger); }
 
 /* Message d'erreur d'un formulaire (connexion, mot de passe, création) : la maquette n'échouait jamais. */
-.erreur { margin: 0; font-size: 0.75rem; color: var(--danger); }
 
 /* Tailwind (preflight) annule la marge des <p> ; la maquette s'appuie sur celle du navigateur. */
 
@@ -369,19 +220,14 @@ table thead th.ta-r, table tbody td.ta-r { text-align: right; }
 /* Pendant l'enregistrement d'une saisie. */
 
 /* Document modifié depuis sa dernière version, visa périmé : la pastille de la maquette, en accent. */
-.pill-modif { background: var(--accent-soft); color: var(--accent-2); margin-left: 0.25rem; }
 /* Acompte saisi hors de l'application : une case sans lien. */
 /* Action secondaire sous une case (Corriger, Régénérer, Lever les réserves). */
 
 /* Bouton désactivé : la maquette n'en avait pas. */
-.btn:disabled, .btn[aria-disabled='true'] { opacity: 0.5; cursor: not-allowed; }
-.btn:disabled:hover { background: var(--raise); border-color: var(--rule-strong); }
-.btn-primary:disabled:hover { background: var(--accent); border-color: var(--accent); }
 
 /* Bandeau du chantier cliquable : il ouvre l'en-tête du chantier (écart 3). */
 
 /* Lien d'une barre d'aperçu (« Télécharger le PDF » est un <a>). */
-a.btn { text-decoration: none; }
 
 /* Menu du compte : les entrées de l'app sont des liens et un formulaire (écart 1) — même dessin que les boutons de la maquette. */
 
@@ -391,9 +237,7 @@ a.btn { text-decoration: none; }
 
 /* Le TTC du panneau est en gras (style en ligne dans la maquette, que ChampEnLigne ne porte pas). */
 /* Les liens-boutons du pied du panneau et des lignes d'avenant. */
-.cell-actions a.btn { text-decoration: none; }
 /* Nature du marché : des libellés sans bouton radio, comme la maquette ; focus visible au clavier. */
-.radio-row label[role='radio']:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Écran Documents : les cases et actions sont des liens dans l'app (des boutons dans la maquette). */
 
