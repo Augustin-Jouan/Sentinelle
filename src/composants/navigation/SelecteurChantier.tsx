@@ -42,7 +42,7 @@ export function SelecteurChantier({ chantiers, courant }: { chantiers: ChantierN
 	const finis = chantiers.filter((x) => x.termine);
 
 	return (
-		<div ref={racine} className="relative flex-none">
+		<div ref={racine} className="relative max-w-96 flex-none">
 			<button type="button" className={cx(MENU.bouton, 'min-w-60 max-etroit:min-w-0')} aria-haspopup="listbox" aria-expanded={ouvert}
 				title={courant ? `Chantier ouvert : ${nom}` : 'Tous les chantiers — en ouvrir un'}
 				onClick={(e) => { e.stopPropagation(); setOuvert((o) => !o); }}>

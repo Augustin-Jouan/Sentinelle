@@ -41,6 +41,15 @@ describe('briques de formulaire', () => {
 		expect(html).toMatch(/aria-checked="true"[^>]*>Partielle</);
 	});
 
+	it('ChoixSegmente : un seul arrêt de tabulation, sur l\'option cochée', () => {
+		const html = renderToStaticMarkup(
+			<ChoixSegmente libelle="Type de mission" valeur="PARTIELLE" onChoisir={() => {}}
+				options={[{ v: 'COMPLETE', t: 'Complète' }, { v: 'PARTIELLE', t: 'Partielle' }]} />,
+		);
+		expect(html).toMatch(/aria-checked="true" tabindex="0"[^>]*>Partielle</);
+		expect(html).toMatch(/aria-checked="false" tabindex="-1"[^>]*>Complète</);
+	});
+
 	it('Interrupteur discret : le texte du libellé d\'un champ', () => {
 		expect(renderToStaticMarkup(<Interrupteur coche={false} onChange={() => {}} variante="discrete">x</Interrupteur>)).toContain('text-12 text-muted');
 	});
