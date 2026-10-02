@@ -9,7 +9,7 @@ for (const ecran of ECRANS) {
 		await ouvrirEcran(page, CIBLE, ecran);
 		await expect(page).toHaveScreenshot(`${ecran.nom}.png`, {
 			animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.01,
-			mask: (ecran.masques ?? []).map((m) => page.locator(m)),
+			mask: ecran.masques?.(page, CIBLE) ?? [],
 		});
 	});
 }

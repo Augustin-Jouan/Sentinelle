@@ -1,10 +1,21 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import 'dotenv/config';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 export type Cible = 'maquette' | 'app';
-export type Ecran = { nom: string; masques?: string[]; aller?: (page: Page) => Promise<void> };
+/**
+ * Un écran du banc. Les deux côtés n'ont pas le même balisage : `aller` et `masques` reçoivent la cible,
+ * et `selon` choisit le sélecteur. Côté app : rôles, libellés, data-testid — jamais une classe de style
+ * (sauf g-* du Gantt). Côté maquette : ses classes, puisqu'elle ne change plus.
+ */
+export type Ecran = {
+	nom: string;
+	masques?: (page: Page, cible: Cible) => Locator[];
+	aller?: (page: Page, cible: Cible) => Promise<void>;
+};
+
+export const selon = <T>(cible: Cible, maquette: T, app: T): T => (cible === 'maquette' ? maquette : app);
 
 const MAQUETTE = pathToFileURL(path.resolve('docs/maquette/sentinelle-marches.html')).href;
 const POLICES: Record<string, string> = {
@@ -43,22 +54,24 @@ export async function seConnecterSur(page: Page, cible: Cible) {
 	await expect(page.getByRole('heading', { name: 'Mes chantiers' })).toBeVisible();
 }
 
-const ouvrirPerrier = async (page: Page) => {
-	await page.locator('.chantier', { hasText: 'PERRIER — Louisfert' }).first().click();
+const ouvrirPerrier = async (page: Page, cible: Cible) => {
+	await selon(cible, page.locator('.chantier', { hasText: 'PERRIER — Louisfert' }).first(),
+		page.getByRole('button', { name: /^PERRIER — Louisfert/ })).click();
 	await expect(page.getByRole('heading', { name: 'Marchés & récapitulatif' })).toBeVisible();
 };
-const onglet = (nom: string) => async (page: Page) => {
-	await ouvrirPerrier(page);
-	await page.locator('.nav-o', { hasText: nom }).click();
+const onglet = (nom: string) => async (page: Page, cible: Cible) => {
+	await ouvrirPerrier(page, cible);
+	await selon(cible, page.locator('.nav-o', { hasText: nom }),
+		page.locator('header').getByRole('link', { name: new RegExp(`^${nom}`) })).click();
 };
 
 /**
  * Playwright peint le masque sur la boîte de l'élément. Le menu compte de l'app est plus haut
- * (écart 1 : Paramètres, Comptes) : un masque sur `.compte-menu` diffère. Clip de taille fixe,
+ * (écart 1 : Paramètres, Comptes) : un masque sur le menu diffère. Clip de taille fixe,
  * ancré sur le menu, assez grand pour l'app et son ombre (--ombre-h).
  */
-async function poserMasqueCompte(page: Page) {
-	const menu = page.locator('.compte-menu');
+async function poserMasqueCompte(page: Page, cible: Cible) {
+	const menu = selon(cible, page.locator('.compte-menu'), page.getByRole('menu'));
 	await expect(menu).toBeVisible();
 	await menu.evaluate((el) => {
 		const r = el.getBoundingClientRect();
@@ -79,23 +92,35 @@ async function poserMasqueCompte(page: Page) {
 }
 
 export const ECRANS: Ecran[] = [
-	{ nom: 'connexion', masques: ['.login-foot'] },
+	{ nom: 'connexion', masques: (page, cible) => [selon(cible, page.locator('.login-foot'), page.getByText('Accès réservé aux comptes SOCOREVE.'))] },
 	{ nom: 'chantiers', aller: async () => {} },
-	{ nom: 'selecteur', aller: async (page) => { await page.locator('.picker-btn').click(); } },
-	{ nom: 'compte', masques: ['#conformite-masque'], aller: async (page) => {
-		await page.locator('.avatar').click();
-		await poserMasqueCompte(page);
+	{ nom: 'selecteur', aller: async (page, cible) => {
+		await selon(cible, page.locator('.picker-btn'), page.getByRole('button', { name: /^Affichage/ })).click();
+	} },
+	{ nom: 'compte', masques: (page) => [page.locator('#conformite-masque')], aller: async (page, cible) => {
+		await selon(cible, page.locator('.avatar'), page.locator('.avatar')).click();
+		await poserMasqueCompte(page, cible);
 	} },
 	// Chargé d'affaire : un menu de comptes dans l'app, un champ texte dans la maquette (écart 4). Le même cadre est masqué des deux côtés.
-	{ nom: 'nouveau', masques: ['.field:has(#f-ca)'], aller: async (page) => { await page.getByText('Nouveau chantier', { exact: true }).first().click(); } },
+	{ nom: 'nouveau', masques: (page, cible) => [selon(cible, page.locator('.field:has(#f-ca)'), page.locator('#f-ca').locator('xpath=..'))],
+		aller: async (page, cible) => {
+			await selon(cible, page.locator('.topbar-actions .btn-primary', { hasText: 'Nouveau chantier' }),
+				page.getByRole('link', { name: 'Nouveau chantier', exact: true })).click();
+		} },
 	{ nom: 'marches', aller: ouvrirPerrier },
-	{ nom: 'panneau-lot', aller: async (page) => { await ouvrirPerrier(page); await page.locator('table.lots tbody tr', { hasText: 'CONSTRUCTIONS REBOURS' }).locator('.cell-ent').click(); } },
-	{ nom: 'planning', masques: ['.g-auj', '.g-sems .auj'], aller: async (page) => {
-		await onglet('Planning')(page);
+	{ nom: 'panneau-lot', aller: async (page, cible) => {
+		await ouvrirPerrier(page, cible);
+		await selon(cible, page.locator('table.lots tbody tr', { hasText: 'CONSTRUCTIONS REBOURS' }).locator('.cell-ent'),
+			page.getByRole('row').filter({ hasText: 'CONSTRUCTIONS REBOURS' }).getByRole('cell', { name: /CONSTRUCTIONS REBOURS/ })).click();
+	} },
+	{ nom: 'planning', masques: (page) => [page.locator('.g-auj'), page.locator('.g-sems .auj')], aller: async (page, cible) => {
+		await onglet('Planning')(page, cible);
 		await page.locator('.gantt').evaluate((g) => { g.style.scrollBehavior = 'auto'; g.scrollLeft = 0; });
 	} },
 	{ nom: 'documents', aller: onglet('Documents') },
-	{ nom: 'artisans', aller: async (page) => { await page.locator('.nav-b', { hasText: 'Artisans' }).click(); } },
+	{ nom: 'artisans', aller: async (page, cible) => {
+		await selon(cible, page.locator('.nav-b', { hasText: 'Artisans' }), page.getByRole('link', { name: /^Artisans/ })).click();
+	} },
 ];
 
 export async function ouvrirEcran(page: Page, cible: Cible, ecran: Ecran) {
@@ -109,6 +134,6 @@ export async function ouvrirEcran(page: Page, cible: Cible, ecran: Ecran) {
 		return;
 	}
 	await seConnecterSur(page, cible);
-	await ecran.aller?.(page);
+	await ecran.aller?.(page, cible);
 	await page.mouse.move(0, 0);   // aucun survol dans la capture
 }
