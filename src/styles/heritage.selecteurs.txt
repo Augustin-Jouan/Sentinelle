@@ -25,9 +25,6 @@
 .btn-danger svg
 .btn-ico
 .btn-ico svg
-.chantier-actions .btn
-.chantier-actions .btn:hover
-.chantier-actions .btn svg
 .pill
 .pill::before
 .pill-actif
@@ -63,27 +60,8 @@ tr.empty-row .btn
 .total-k
 .total-v
 .total-v.grand
-.chantier-grid
-.chantier
-.chantier:hover
-.chantier:active
-.chantier-top
-.chantier-ref
-.chantier-meta
-.chantier-foot
-.chantier-total
-.chantier-lots
-.chantier-sig
-.chantier-new
-.chantier-new .plus
-.chantier-new .chantier-ref
-.chantier-total small
-.chantier.is-done
-.chantier.is-done .chantier-ref
 .pill-fini
 .pill-fini::before
-.chantier-actions
-.chantier-grid .empty-list
 .form-wrap
 .form-wrap .fieldset
 .fieldset
@@ -295,12 +273,6 @@ tr.dm-inactif .dm-lot-e
 .dm-autre:last-child
 .dm-autre span
 .doc-link:hover
-.synthese
-.synth-cell
-.synth-k
-.synth-v
-.synth-sous
-.synth-cell.alerte .synth-v
 table thead th.ta-r
 table tbody td.ta-r
 .g-bar.est-temp
@@ -318,7 +290,6 @@ table tbody td.ta-r
 button.context
 button.context:hover
 a.btn
-a.chantier-new
 .cell-actions a.btn
 .radio-row label[role='radio']:focus-visible
 a.dm-case
