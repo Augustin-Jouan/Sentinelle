@@ -1,119 +1,8 @@
-/* GÉNÉRÉ par scripts/extraire-css-maquette.mjs depuis docs/maquette/sentinelle-marches.html.
-   Ne pas éditer : relancer le script. Les ajouts propres à l'app vont dans maquette-ajouts.css. */
-/* ============================================================
-   JETONS — palette bleu de plan
-   ============================================================ */
-:root {
-	--paper: #eceef0;
-	--surface: #f6f8f9;
-	--raise: #ffffff;
-	--ink: #101619;
-	--ink-2: #38424a;
-	--muted: #6b747c;
-	--faint: #97a0a7;
-	--rule: #d0d5da;
-	--rule-strong: #b2bac1;
-	--accent: #1c4e80;
-	--accent-2: #143a60;
-	--accent-soft: #dbe6f1;
-	/* texte porté par un aplat d'accent : blanc en clair, encre sombre sur le bleu pâle du thème sombre */
-	--on-accent: #ffffff;
-	--danger: #8c1d18;
-	--danger-soft: #f7e2e0;
-	--idle-soft: #e0e4e8;
-	--band: rgba(16, 22, 25, 0.06);
-	/* liseré des barres du planning : il doit cerner aussi bien un lot clair qu'un lot noir */
-	--bar-ring: rgba(0, 0, 0, 0.22);
-	--focus: #1c4e80;
-	/* Échelle de rondeur et d'élévation : la DA repose dessus, elle se règle ici.
-	   Les fac-similés imprimés gardent leurs angles vifs, ils imitent du papier. */
-	--r-xs: 5px;
-	--r-sm: 9px;
-	--r: 14px;
-	--r-lg: 18px;
-	--ombre: 0 1px 2px rgba(16, 22, 25, 0.04), 0 6px 16px -4px rgba(16, 22, 25, 0.10);
-	--ombre-h: 0 2px 4px rgba(16, 22, 25, 0.05), 0 14px 30px -8px rgba(16, 22, 25, 0.18);
-	--sem-w: 26px;
-}
-
-@media (prefers-color-scheme: dark) {
-	:root:not([data-theme='light']) {
-		/* pas un noir neutre : l'ardoise prussienne du cyanotype, négatif du bleu de plan */
-		--paper: #14202b;
-		--surface: #1b2a37;
-		--raise: #223442;
-		--ink: #e9eff5;
-		--ink-2: #c3d1dd;
-		--muted: #8fa4b5;
-		--faint: #748a9d;
-		--rule: #2d4050;
-		--rule-strong: #43596d;
-		--accent: #6fb0e8;
-		--accent-2: #9ccbf2;
-		--accent-soft: #1c3a52;
-		--on-accent: #0d1720;
-		--danger: #f08c84;
-		--danger-soft: #3d2226;
-		--idle-soft: #27394a;
-		--band: rgba(255, 255, 255, 0.06);
-		--bar-ring: rgba(255, 255, 255, 0.30);
-		--focus: #6fb0e8;
-		/* sur fond sombre une ombre ne se voit pas : elle creuse, elle ne soulève pas */
-		--ombre: 0 1px 2px rgba(0, 0, 0, 0.40), 0 6px 16px -4px rgba(0, 0, 0, 0.50);
-		--ombre-h: 0 2px 6px rgba(0, 0, 0, 0.50), 0 14px 30px -8px rgba(0, 0, 0, 0.60);
-	}
-}
-
-:root[data-theme='dark'] {
-	/* pas un noir neutre : l'ardoise prussienne du cyanotype, négatif du bleu de plan */
-	--paper: #14202b;
-	--surface: #1b2a37;
-	--raise: #223442;
-	--ink: #e9eff5;
-	--ink-2: #c3d1dd;
-	--muted: #8fa4b5;
-	--faint: #748a9d;
-	--rule: #2d4050;
-	--rule-strong: #43596d;
-	--accent: #6fb0e8;
-	--accent-2: #9ccbf2;
-	--accent-soft: #1c3a52;
-	--on-accent: #0d1720;
-	--danger: #f08c84;
-	--danger-soft: #3d2226;
-	--idle-soft: #27394a;
-	--band: rgba(255, 255, 255, 0.06);
-	--bar-ring: rgba(255, 255, 255, 0.30);
-	--focus: #6fb0e8;
-	--ombre: 0 1px 2px rgba(0, 0, 0, 0.40), 0 6px 16px -4px rgba(0, 0, 0, 0.50);
-	--ombre-h: 0 2px 6px rgba(0, 0, 0, 0.50), 0 14px 30px -8px rgba(0, 0, 0, 0.60);
-}
-
-/* ============================================================
-   BASE
-   ============================================================ */
-* { box-sizing: border-box; }
-
-body {
-	margin: 0;
-	background: var(--paper);
-	color: var(--ink);
-	font-family: 'Figtree', system-ui, -apple-system, sans-serif;
-	font-size: 0.875rem;
-	line-height: 1.5;
-	-webkit-font-smoothing: antialiased;
-}
-
-button, input, select, textarea { font: inherit; color: inherit; }
-
-:focus-visible {
-	outline: 2px solid var(--focus);
-	outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	* { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-}
+/* L'HÉRITAGE de la maquette : l'ancien src/app/maquette.css, sans ses jetons ni ses règles d'éléments
+   (partis dans jetons.css et base.css), suivi de l'ancien maquette-ajouts.css. Importé dans la couche
+   components : au-dessus du preflight, sous les utilitaires. Il ne fait que maigrir — aucun sélecteur
+   nouveau (heritage.selecteurs.txt), aucune règle morte (heritage.test.ts) — et disparaît à la fin de la
+   migration. Après chaque écran migré : npx tsx scripts/heritage.ts elaguer */
 
 .num {
 	font-family: 'Spline Sans Mono', ui-monospace, monospace;
@@ -128,14 +17,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 	letter-spacing: 0.09em;
 	text-transform: uppercase;
 	color: var(--muted);
-}
-
-h1, h2, h3 {
-	font-family: 'Outfit', 'Figtree', sans-serif;
-	font-weight: 600;
-	text-wrap: balance;
-	margin: 0;
-	letter-spacing: -0.005em;
 }
 
 /* ============================================================
@@ -995,7 +876,7 @@ html:has(.gen.is-on), html:has(.panel.is-on), html:has(.ask.is-on) { overflow: h
 	cursor: default;
 	border: 1px solid transparent;
 }
-.frow:hover, .frow.lit { background: var(--accent-soft); border-color: var(--accent); }
+.frow:hover { background: var(--accent-soft); border-color: var(--accent); }
 .frow dt { font-size: 0.75rem; color: var(--muted); }
 .frow dd { margin: 0; font-size: 0.8125rem; word-break: break-word; }
 .frow dd .num { font-size: 0.8125rem; }
@@ -1472,8 +1353,6 @@ tr.dm-inactif .dm-lot-d, tr.dm-inactif .dm-lot-e { color: var(--muted); }
 
 /* ---------- certificat de paiement — fac-similé du certificat SOCOREVE ---------- */
 
-.cp-alerte { margin: 0; padding: 0.5rem 0.625rem; border: 1px solid var(--danger); border-radius: var(--r-sm); background: var(--danger-soft); color: var(--danger); font-size: 0.75rem; }
-
 /* ---------- procès-verbal de réception — fac-similé de « 3- PV de réception.ods » ---------- */
 /* « .sheet hr » l'emporterait sans le double sélecteur */
 .doc-link:hover { text-decoration: underline; }
@@ -1514,7 +1393,6 @@ tr.dm-inactif .dm-lot-d, tr.dm-inactif .dm-lot-e { color: var(--muted); }
 /* ============================================================
    TOAST
    ============================================================ */
-.toast-zone { position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%); z-index: 90; display: flex; flex-direction: column; gap: 0.5rem; align-items: center; pointer-events: none; }
 .toast {
 	background: var(--ink);
 	color: var(--paper);
@@ -1582,3 +1460,71 @@ tr.dm-inactif .dm-lot-d, tr.dm-inactif .dm-lot-e { color: var(--muted); }
    et « table.plain thead th » l'emportaient sur .ta-r, si bien que les en-têtes des colonnes
    chiffrées restaient calés à gauche pendant que leurs cellules s'alignaient à droite. */
 table thead th.ta-r, table tbody td.ta-r { text-align: right; }
+
+
+/* Barre temporaire pendant qu'on trace une période (planning) : elle ne capte pas la souris. */
+.g-bar.est-temp { pointer-events: none; }
+
+/* Saisie refusée par le serveur : le champ garde le texte et se voit en erreur (la maquette remettait l'ancienne valeur). */
+.text-input.est-erreur, .money-input.est-erreur, .field input.est-erreur { border-color: var(--danger); background: var(--danger-soft); }
+.field .erreur { font-size: 0.6875rem; color: var(--danger); }
+
+/* Message d'erreur d'un formulaire (connexion, mot de passe, création) : la maquette n'échouait jamais. */
+.erreur { margin: 0; font-size: 0.75rem; color: var(--danger); }
+
+/* Tailwind (preflight) annule la marge des <p> ; la maquette s'appuie sur celle du navigateur. */
+.login-tag, .login-foot { margin: 1em 0; }
+
+/* Tailwind (preflight) met le padding des input à 0 ; Chrome en laisse 1px sur type=search.
+   Sans ça, la barre de recherche Artisans (seul item haut du toolbar) est trop basse de 2px. */
+.search input { padding-block: 1px; }
+
+/* Pendant l'enregistrement d'une saisie. */
+.est-en-cours { opacity: 0.7; }
+
+/* Document modifié depuis sa dernière version, visa périmé : la pastille de la maquette, en accent. */
+.pill-modif { background: var(--accent-soft); color: var(--accent-2); margin-left: 0.25rem; }
+/* Acompte saisi hors de l'application : une case sans lien. */
+.dm-case.est-hors { background: var(--idle-soft); color: var(--muted); cursor: default; }
+/* Action secondaire sous une case (Corriger, Régénérer, Lever les réserves). */
+.dm-sous { display: flex; gap: 0.5rem; margin-top: 0.1875rem; }
+.dm-sous .dm-th-action { margin-left: 0; }
+
+/* Bouton désactivé : la maquette n'en avait pas. */
+.btn:disabled, .btn[aria-disabled='true'] { opacity: 0.5; cursor: not-allowed; }
+.btn:disabled:hover { background: var(--raise); border-color: var(--rule-strong); }
+.btn-primary:disabled:hover { background: var(--accent); border-color: var(--accent); }
+
+/* Bandeau du chantier cliquable : il ouvre l'en-tête du chantier (écart 3). */
+button.context { width: 100%; margin: 0; padding: 0; border: 0; border-top: 1px solid var(--rule); border-radius: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+button.context:hover { background: var(--idle-soft); }
+
+/* Lien d'une barre d'aperçu (« Télécharger le PDF » est un <a>). */
+a.btn { text-decoration: none; }
+
+/* Menu du compte : les entrées de l'app sont des liens et un formulaire (écart 1) — même dessin que les boutons de la maquette. */
+a.compte-item { display: block; text-decoration: none; color: inherit; }
+.compte-menu form { margin: 0; }
+.compte-menu form .compte-item { width: 100%; }
+
+/* Barre de navigation : l'app navigue par liens là où la maquette avait des boutons. */
+a.nav-marque, a.nav-ic, a.nav-b, a.nav-o { text-decoration: none; }
+
+/* La carte « Nouveau chantier » est un lien dans l'app (un bouton dans la maquette). */
+a.chantier-new { text-decoration: none; color: inherit; }
+
+/* Le TTC du panneau est en gras (style en ligne dans la maquette, que ChampEnLigne ne porte pas). */
+.champ-kv.est-gras { font-weight: 600; }
+/* Les liens-boutons du pied du panneau et des lignes d'avenant. */
+.panel-foot a.btn, .cell-actions a.btn { text-decoration: none; }
+/* Nature du marché : des libellés sans bouton radio, comme la maquette ; focus visible au clavier. */
+.radio-row label[role='radio']:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Écran Documents : les cases et actions sont des liens dans l'app (des boutons dans la maquette). */
+a.dm-case, a.dm-ajout, a.dm-carte-v, a.dm-th-action, a.doc-link { text-decoration: none; }
+span.dm-ajout[aria-disabled='true'] { opacity: 0.4; cursor: not-allowed; }
+
+/* Sous le titre d'un aperçu : ce qui empêche de générer (danger) ou une précision sur la version (discret). */
+.gen-note { margin: 0.375rem 0 0; font-size: 0.75rem; color: var(--danger); }
+.gen-note.est-info { color: var(--muted); }
+.gen-head a.btn { text-decoration: none; }

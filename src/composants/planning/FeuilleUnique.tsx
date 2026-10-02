@@ -32,7 +32,7 @@ export function FeuilleUnique({ children, onMesure }: { children: ReactNode; onM
 		<div
 			id="feuille-unique"
 			// shrink-0 : dans le conteneur flex de l'aperçu, la feuille garde la largeur mesurée.
-			className="mode-impression shrink-0 shadow-md"
+			className="mode-impression shrink-0 shadow-ombre"
 			data-pas={mesure?.pas}
 			data-echelle={mesure?.echelle}
 			style={mesure ? { width: LARGEUR_UTILE_PX / mesure.echelle, zoom: mesure.echelle } : { width: LARGEUR_UTILE_PX }}
