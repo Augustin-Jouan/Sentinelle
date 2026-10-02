@@ -5,8 +5,10 @@ import { ApercuDocument } from '@/composants/ApercuDocument';
 import { ApercuReception } from '@/composants/ApercuReception';
 import { CartesDocuments } from '@/composants/documents/CartesDocuments';
 import { AutresDocuments, TableauDocuments } from '@/composants/documents/TableauDocuments';
+import { Bouton } from '@/composants/briques/Bouton';
 import { Ecran } from '@/composants/briques/Ecran';
 import * as Icone from '@/composants/briques/icones';
+import { Surtitre } from '@/composants/briques/Surtitre';
 import { construireDonneesRecap } from '@/documents/donnees';
 import { etatsDocumentsChantier, lireDocument, versionsDeLaSerie, type VueDocuments } from '@/documents/etats';
 import { TITRES_TYPES, type TypeDocument } from '@/documents/libelles';
@@ -74,12 +76,12 @@ export default async function PageDocuments({ params, searchParams }: Props) {
 	return (
 		<Ecran
 			titre="Documents du chantier"
-			sousTitre={<span className="eyebrow" data-testid="resume-documents">{texteResume(vue.resume)}</span>}
+			sousTitre={<Surtitre data-testid="resume-documents">{texteResume(vue.resume)}</Surtitre>}
 			actions={vue.resume.nombre
-				? <a className="btn" href={`/api/chantiers/${id}/archive`} download><Icone.Telecharger />Tout télécharger</a>
-				: <button type="button" className="btn" disabled title="Aucun document à télécharger"><Icone.Telecharger />Tout télécharger</button>}
+				? <Bouton natif href={`/api/chantiers/${id}/archive`} download><Icone.Telecharger />Tout télécharger</Bouton>
+				: <Bouton desactive title="Aucun document à télécharger"><Icone.Telecharger />Tout télécharger</Bouton>}
 		>
-			<div className="doc-sections">
+			<div className="flex min-w-0 flex-col gap-4">
 				<CartesDocuments vue={vue} etendue={etendue} attribues={vue.lots.filter((l) => l.entreprise).length} />
 				<TableauDocuments vue={vue} />
 				<AutresDocuments vue={vue} />

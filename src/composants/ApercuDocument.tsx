@@ -9,7 +9,8 @@ import type { Resultat } from '@/actions/executer';
 import { modifierChampLotAction } from '@/actions/lots';
 import { ChampsMarche } from '@/composants/apercu/ChampsMarche';
 import { MenuVersions } from '@/composants/apercu/MenuVersions';
-import { CadreApercu } from '@/composants/briques/CadreApercu';
+import { Bouton } from '@/composants/briques/Bouton';
+import { CadreApercu, NoteApercu } from '@/composants/briques/CadreApercu';
 import * as Icone from '@/composants/briques/icones';
 import { FeuilleUnique } from '@/composants/planning/FeuilleUnique';
 import { telecharger } from '@/composants/telecharger';
@@ -74,22 +75,22 @@ export function ApercuDocument({ titre, sousTitre, donnees, source, manques = []
 	const courante = source.type === 'version' ? source.documentId : null;
 	const actions = (
 		<>
-			<button type="button" className="btn btn-ghost" onClick={fermer}>Fermer</button>
+			<Bouton variante="fantome" onClick={fermer}>Fermer</Bouton>
 			<MenuVersions chantierId={chantierId} versions={versions} courante={courante} retourActuel={retourActuel} />
-			{source.type === 'recap' && <a className="btn" href={`/api/chantiers/${source.chantierId}/recap-xlsx`}><Icone.Telecharger />Télécharger le tableur</a>}
+			{source.type === 'recap' && <Bouton natif href={`/api/chantiers/${source.chantierId}/recap-xlsx`}><Icone.Telecharger />Télécharger le tableur</Bouton>}
 			{source.type === 'version' ? (
-				<a className="btn btn-primary" href={`/api/documents/${source.documentId}/pdf`}><Icone.Telecharger />Télécharger le PDF</a>
+				<Bouton variante="primaire" natif href={`/api/documents/${source.documentId}/pdf`}><Icone.Telecharger />Télécharger le PDF</Bouton>
 			) : (
-				<button type="button" className="btn btn-primary" onClick={generer} disabled={enCours || manques.length > 0} title={manques.length ? `Manque : ${manques.join(', ')}` : undefined}>
+				<Bouton variante="primaire" onClick={generer} enCours={enCours} desactive={manques.length > 0} title={manques.length ? `Manque : ${manques.join(', ')}` : undefined}>
 					<Icone.Telecharger />{enCours ? 'Génération…' : 'Générer le PDF'}
-				</button>
+				</Bouton>
 			)}
 		</>
 	);
 	const notes = (
 		<>
-			{source.type === 'version' && <p role="note" className="gen-note est-info">Le PDF téléchargé fait foi ; cet aperçu suit le modèle actuel.</p>}
-			{manques.length > 0 && <p role="note" className="gen-note">Pour générer {source.type === 'avenant' ? 'cette lettre' : 'ce marché'} : {manques.join(', ')}.</p>}
+			{source.type === 'version' && <NoteApercu info>Le PDF téléchargé fait foi ; cet aperçu suit le modèle actuel.</NoteApercu>}
+			{manques.length > 0 && <NoteApercu>Pour générer {source.type === 'avenant' ? 'cette lettre' : 'ce marché'} : {manques.join(', ')}.</NoteApercu>}
 		</>
 	);
 	const saisirPuisRafraichir = (cle: CleZone, texte: string) => { void saisir(cle, texte)?.then(() => router.refresh()); };

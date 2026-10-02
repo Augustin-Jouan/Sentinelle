@@ -5,6 +5,7 @@ import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { genererMarchesManquantsAction } from '@/actions/documents';
 import { Bouton } from '@/composants/briques/Bouton';
+import { LienAction } from '@/composants/briques/LienAction';
 
 export function BoutonMarchesManquants({ chantierId, forme = 'barre', texte }: { chantierId: string; forme?: 'barre' | 'entete'; texte?: string }) {
 	const [enCours, demarrer] = useTransition();
@@ -25,6 +26,6 @@ export function BoutonMarchesManquants({ chantierId, forme = 'barre', texte }: {
 	return forme === 'barre' ? (
 		<Bouton variante="primaire" enCours={enCours} onClick={clic}>{enCours ? 'Génération…' : 'Générer les marchés manquants'}</Bouton>
 	) : (
-		<button type="button" className="dm-th-action" disabled={enCours} onClick={clic}>{enCours ? 'Génération…' : texte}</button>
+		<LienAction className="ml-1.5" disabled={enCours} onClick={clic}>{enCours ? 'Génération…' : texte}</LienAction>
 	);
 }
