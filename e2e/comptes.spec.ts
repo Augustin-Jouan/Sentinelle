@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { ADMIN, seConnecter } from './aide';
+import { ADMIN, ouvrirMenuCompte, seConnecter } from './aide';
 
 test('l\'admin crée un compte, le collègue change son mot de passe provisoire', async ({ page }) => {
 	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
@@ -13,7 +13,7 @@ test('l\'admin crée un compte, le collègue change son mot de passe provisoire'
 	const provisoire = (await dialogue.getByTestId('mot-de-passe-provisoire').textContent()) ?? '';
 	expect(provisoire).toHaveLength(16);
 	await dialogue.getByRole('button', { name: 'Fermer' }).click();
-	await page.locator('.avatar').click();
+	await ouvrirMenuCompte(page);
 	await page.getByRole('menuitem', { name: 'Se déconnecter' }).click();
 
 	await seConnecter(page, 'jean.martin@socoreve.local', provisoire);
@@ -23,7 +23,7 @@ test('l\'admin crée un compte, le collègue change son mot de passe provisoire'
 	await page.getByLabel('Confirmer le nouveau mot de passe').fill('nouveau-mot-de-passe-jean');
 	await page.getByRole('button', { name: 'Enregistrer' }).click();
 	await expect(page.getByRole('heading', { name: 'Mes chantiers' })).toBeVisible();
-	await page.locator('.avatar').click();
+	await ouvrirMenuCompte(page);
 	await expect(page.getByRole('menuitem', { name: 'Se déconnecter' })).toBeVisible();
 	await expect(page.getByRole('menuitem', { name: 'Comptes' })).toHaveCount(0);
 });

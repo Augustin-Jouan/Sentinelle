@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { unzipSync } from 'fflate';
 import { PDFDocument } from 'pdf-lib';
 import { expect, test, type Page } from '@playwright/test';
-import { ADMIN, seConnecter } from './aide';
+import { ADMIN, onglet, seConnecter } from './aide';
 import { telecharger } from './aidePlanning';
 
 test.describe.configure({ mode: 'serial' });
@@ -12,7 +12,7 @@ async function ouvrirDocuments(page: Page) {
 	await page.goto('/chantiers');
 	await page.locator('.chantier', { hasText: 'SUIVI' }).click();
 	await expect(page).toHaveURL(/\/marches$/);
-	await page.locator('.nav-o', { hasText: 'Documents' }).click();
+	await onglet(page, 'Documents').click();
 	await expect(page.getByRole('heading', { name: 'Documents du chantier' })).toBeVisible();
 }
 

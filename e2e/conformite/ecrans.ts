@@ -98,7 +98,7 @@ export const ECRANS: Ecran[] = [
 		await selon(cible, page.locator('.picker-btn'), page.getByRole('button', { name: /^Affichage/ })).click();
 	} },
 	{ nom: 'compte', masques: (page) => [page.locator('#conformite-masque')], aller: async (page, cible) => {
-		await selon(cible, page.locator('.avatar'), page.locator('.avatar')).click();
+		await selon(cible, page.locator('.avatar'), page.getByRole('button', { name: 'Mon compte' })).click();
 		await poserMasqueCompte(page, cible);
 	} },
 	// Chargé d'affaire : un menu de comptes dans l'app, un champ texte dans la maquette (écart 4). Le même cadre est masqué des deux côtés.

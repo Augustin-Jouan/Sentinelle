@@ -7,7 +7,7 @@ test.describe('écran Planning', () => {
 	});
 
 	test('onglet, résumé, grille, fermetures, entreprises, infobulles et flèches', async ({ page }) => {
-		const onglets = page.locator('.nav-o');
+		const onglets = page.getByRole('navigation', { name: 'Écrans du chantier' }).getByRole('link');
 		await expect(onglets).toHaveText([/Marchés/, /Planning/, /Documents/]);
 		await expect(page.locator('#g-resume')).toHaveText('23 périodes · semaine 15 de 2026 à la semaine 13 de 2027');
 		await expect(page.locator('.g-row[data-lot]')).toHaveCount(13);

@@ -2,62 +2,6 @@
 .eyebrow
 .screen
 .screen.is-on
-.app
-.app.is-on
-.nav
-.nav-haut
-.nav-marque
-.nav-marque:hover
-.nav-fin
-.nav-b
-.nav-b:hover
-.nav-b.is-on
-.nav-b svg
-.nav-b .count
-.nav-b.is-on .count
-.nav-ic
-.nav-ic:hover
-.nav-ic.is-on
-.nav-ic svg
-.nav-onglets
-.nav-onglets::-webkit-scrollbar
-.app.sans-onglets .nav-onglets
-.nav-o
-.nav-o:hover
-.nav-o.is-on
-.nav-o svg
-.nav-o .count
-.nav-o.is-on .count
-.picker
-.picker-btn
-.picker-btn:hover
-.picker-k
-.picker-v
-.picker-caret
-.picker.is-open .picker-caret
-.picker-menu
-.picker.is-open .picker-menu
-.picker-item
-.picker-item:hover
-.picker-item.is-current
-.picker-item-name
-.picker-item-meta
-.picker-item.is-done .picker-item-name
-.picker-head
-.picker-sep
-.picker-item.picker-new
-.compte
-.avatar
-.avatar:hover
-.compte-menu
-.compte.is-open .compte-menu
-.compte-id
-.compte-nom
-.compte-role
-.compte-mail
-.compte-item
-.compte-item:hover
-.main
 .topbar
 .topbar-row
 .page-title
@@ -357,7 +301,6 @@ tr.dm-inactif .dm-lot-e
 .synth-v
 .synth-sous
 .synth-cell.alerte .synth-v
-.nav-b .nav-txt
 table thead th.ta-r
 table tbody td.ta-r
 .g-bar.est-temp
@@ -375,13 +318,6 @@ table tbody td.ta-r
 button.context
 button.context:hover
 a.btn
-a.compte-item
-.compte-menu form
-.compte-menu form .compte-item
-a.nav-marque
-a.nav-ic
-a.nav-b
-a.nav-o
 a.chantier-new
 .cell-actions a.btn
 .radio-row label[role='radio']:focus-visible
