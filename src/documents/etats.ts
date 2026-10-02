@@ -1,3 +1,4 @@
+import Decimal from 'decimal.js';
 import { manquesAvenant, sommeAvenants, type ManqueAvenant } from '@/domaine/avenants';
 import { certificatPossible, dateCourteSlash } from '@/domaine/certificats';
 import { texteRendezVous } from '@/domaine/compteRendu';
@@ -5,7 +6,7 @@ import { etatReception, type CaseReceptionEtat } from '@/domaine/reception';
 import { versIso } from '@/domaine/semaines';
 import { ErreurMetier } from '@/domaine/erreurs';
 import { htEngage } from '@/domaine/montants';
-import { manquesPourGenerer, type Manque } from '@/domaine/regles';
+import { manquesPourGenerer, type Manque, type Nature } from '@/domaine/regles';
 import { prisma } from '@/donnees/prisma';
 import { batirAvenant, batirMarche, batirPlanning, batirRecap, empreinteDocument } from './batir';
 import { lireSourcePlanning, lireSources } from './donnees';
@@ -24,7 +25,7 @@ export type VersionResume = {
 };
 export type SerieDocuments = { etat: EtatSerie; versions: VersionResume[] };
 export type SerieVisa = { etat: EtatVisa; versions: VersionResume[]; surVersion: number | null; derniereVersionPlanning: number | null };
-export type CaseAvenant = { avenantId: string; numero: number; etat: EtatSerie; versions: VersionResume[]; manques: ManqueAvenant[] };
+export type CaseAvenant = { avenantId: string; numero: number; montantHt: string; etat: EtatSerie; versions: VersionResume[]; manques: ManqueAvenant[] };
 /** Pas d'état : un certificat est un acte de paiement, figé tel qu'émis ; seule sa correction crée une version (spec § 6). */
 export type CaseCertificat = { acompteId: string; numero: number; manuel: boolean; versions: VersionResume[]; corrigeable: boolean };
 /** La case Réception d'un lot attribué : l'état du dernier PV émis (jamais « modifié » : un PV est un acte daté). */
@@ -39,7 +40,8 @@ export type CarteComptesRendus = {
 	prochainRdv: string | null;
 };
 export type LigneDocuments = {
-	lotId: string; lotTexte: string; manques: Manque[]; marche: SerieDocuments;
+	lotId: string; lotTexte: string; numero: string | null; designation: string; nature: Nature; entreprise: string | null;
+	manques: Manque[]; marche: SerieDocuments;
 	avenants: CaseAvenant[]; certificats: CaseCertificat[]; certificatPossible: boolean;
 	/** Nul pour un lot sans entreprise. */
 	reception: CaseReception | null;
@@ -51,7 +53,7 @@ export type VueDocuments = {
 	comptesRendus: CarteComptesRendus;
 	/** En-tête de la page : « 23 documents · dernier le 06/10/2026 ». `dernierLe` : ISO. */
 	resume: { nombre: number; dernierLe: string | null };
-	entreprises: { entreprise: string | null; lots: LigneDocuments[] }[];
+	lots: LigneDocuments[];
 };
 
 const SELECTION = {
@@ -145,9 +147,8 @@ export async function etatsDocumentsChantier(chantierId: string, maintenant = ne
 	const contenuPv = new Map(proces.map((d) => [d.id, (d.donnees as unknown as DonneesReception).contenu]));
 	const levees = new Map(receptions.map((r) => [r.lotId, r.reservesLeveesLe ? versIso(r.reservesLeveesLe) : null]));
 	const docsDe = (s: string) => docs.filter((d) => d.serie === s);
-	const groupes = new Map<string | null, LigneDocuments[]>();
+	const enOrdre: LigneDocuments[] = [];
 	for (const lot of lots) {
-		const cle = lot.artisan?.nom ?? null;
 		const actuels = new Set(lot.avenants.map((a) => a.id));
 		const acomptesDuLot = acomptes.filter((a) => a.lotId === lot.id);
 		const pvs = docsDe(serieReception(lot.id));
@@ -156,6 +157,10 @@ export async function etatsDocumentsChantier(chantierId: string, maintenant = ne
 		const ligne: LigneDocuments = {
 			lotId: lot.id,
 			lotTexte: `${lot.numero ? `${lot.numero} — ` : ''}${lot.designation}`,
+			numero: lot.numero,
+			designation: lot.designation,
+			nature: lot.nature,
+			entreprise: lot.artisan?.nom ?? null,
 			manques: manquesPourGenerer({
 				artisanId: lot.artisanId, montantHtInitial: lot.montantHtInitial,
 				maitreOuvrage: chantier.maitreOuvrage, adresseChantier: chantier.adresse,
@@ -164,6 +169,7 @@ export async function etatsDocumentsChantier(chantierId: string, maintenant = ne
 			avenants: lot.avenants.map((a) => ({
 				avenantId: a.id,
 				numero: a.numero,
+				montantHt: new Decimal(a.montantHt).toFixed(),
 				manques: manquesAvenant({ artisanId: lot.artisanId, montantHt: a.montantHt }),
 				...serie(docsDe(serieAvenant(a.id)), empreinteDocument(batirAvenant(chantier, lot, a.id, parametres, maintenant))),
 			})),
@@ -192,7 +198,7 @@ export async function etatsDocumentsChantier(chantierId: string, maintenant = ne
 				})
 				.sort((a, b) => b.creeLe.localeCompare(a.creeLe)),
 		};
-		groupes.set(cle, [...(groupes.get(cle) ?? []), ligne]);
+		enOrdre.push(ligne);
 	}
 	return {
 		chantierId,
@@ -201,6 +207,7 @@ export async function etatsDocumentsChantier(chantierId: string, maintenant = ne
 		planning: serie(docsDe(SERIES.PLANNING), empreinteDuPlanning),
 		visa: serieVisa(docsDe(SERIES.VISA), docsDe(SERIES.PLANNING)),
 		comptesRendus: carteComptesRendus(comptesRendus, docsDe),
+		lots: enOrdre,
 		resume: {
 			nombre: docs.length,
 			dernierLe: docs.reduce<string | null>((plus, d) => {
@@ -208,14 +215,17 @@ export async function etatsDocumentsChantier(chantierId: string, maintenant = ne
 				return plus === null || t > plus ? t : plus;
 			}, null),
 		},
-		entreprises: [...groupes.entries()]
-			.sort(([a], [b]) => (a === null ? 1 : b === null ? -1 : a.localeCompare(b, 'fr')))
-			.map(([entreprise, l]) => ({ entreprise, lots: l })),
 	};
 }
 
-export async function lireDocument(id: string): Promise<{ id: string; chantierId: string; lotId: string | null; version: number; donnees: DonneesDocument; nomFichier: string } | null> {
-	const d = await prisma.document.findUnique({ where: { id }, select: { id: true, chantierId: true, lotId: true, version: true, donnees: true, nomFichier: true } });
+/** Les versions d'une série (le menu « Version » de l'aperçu), de la plus récente à la plus ancienne. */
+export async function versionsDeLaSerie(chantierId: string, serie: string): Promise<VersionResume[]> {
+	const docs = await prisma.document.findMany({ where: { chantierId, serie }, orderBy: { version: 'desc' }, select: SELECTION });
+	return docs.map(resume);
+}
+
+export async function lireDocument(id: string): Promise<{ id: string; chantierId: string; lotId: string | null; version: number; serie: string; type: TypeDocument; donnees: DonneesDocument; nomFichier: string } | null> {
+	const d = await prisma.document.findUnique({ where: { id }, select: { id: true, chantierId: true, lotId: true, version: true, serie: true, type: true, donnees: true, nomFichier: true } });
 	if (!d) return null;
 	return { ...d, donnees: donneesDocumentSchema.parse(d.donnees) };
 }

@@ -1,16 +1,15 @@
 import { notFound } from 'next/navigation';
 import { exigerPage } from '@/auth/session';
-import { EnTeteChantier } from '@/composants/EnTeteChantier';
-import { lireEnTeteChantier, listerChargesAffaire } from '@/donnees/chantiers';
+import { MemoriserChantierOuvert } from '@/composants/navigation/chantierOuvert';
+import { lireEnTeteChantier } from '@/donnees/chantiers';
 
 export default async function LayoutChantier({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
 	await exigerPage();
 	const { id } = await params;
-	const chantier = await lireEnTeteChantier(id);
-	if (!chantier) notFound();
+	if (!(await lireEnTeteChantier(id))) notFound();
 	return (
 		<>
-			<EnTeteChantier chantier={chantier} chargesAffaire={await listerChargesAffaire()} />
+			<MemoriserChantierOuvert id={id} />
 			{children}
 		</>
 	);

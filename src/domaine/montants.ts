@@ -61,6 +61,11 @@ export function formatTauxSaisie(v: Valeur): string {
 	return new Decimal(v).toFixed(2).replace('.', ',');
 }
 
+/** 20.00 — un taux tel que la maquette l'affiche dans ses champs (toFixed(2)) ; lireNombreFr le relit. */
+export function formatTauxPoint(v: Valeur): string {
+	return new Decimal(v).toFixed(2);
+}
+
 /** 20,00 % — toujours deux décimales. */
 export function formatPourcentFixe(v: Valeur): string {
 	return `${new Decimal(v).toFixed(2).replace('.', ',')}${INSECABLE}%`;

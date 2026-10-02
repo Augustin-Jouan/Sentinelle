@@ -1,93 +1,119 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition, type FormEvent } from 'react';
+import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
 import { creerChantierAction } from '@/actions/chantiers';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Bouton } from '@/composants/briques/Bouton';
+import { Champ, ColonnesFormulaire, GrilleChamps, GroupeChamps, PiedFormulaire, Saisie } from '@/composants/briques/Champ';
+import { ChoixSegmente } from '@/composants/briques/ChoixSegmente';
+import { Ecran } from '@/composants/briques/Ecran';
+import { Interrupteur } from '@/composants/briques/Interrupteur';
+import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
 
-type Props = { chargesAffaire: { id: string; nom: string }[]; moiId: string };
+type Props = { chargesAffaire: { id: string; nom: string }[]; moi: { id: string; nom: string } };
+type Valeurs = { maitreOuvrage: string; adresseClient: string; natureTravaux: string; adresse: string; cp: string; commune: string; dateSignaturePrevue: string; reference: string };
 
-export function FormulaireChantier({ chargesAffaire, moiId }: Props) {
+const MISSIONS = [{ v: 'COMPLETE', t: 'Complète' }, { v: 'PARTIELLE', t: 'Partielle' }] as const;
+
+const VIDE: Valeurs = { maitreOuvrage: '', adresseClient: '', natureTravaux: '', adresse: '', cp: '', commune: '', dateSignaturePrevue: '', reference: '' };
+/** fillExample() de la maquette. */
+const EXEMPLE: Valeurs = {
+	maitreOuvrage: 'M. et Mme BLANCHARD', adresseClient: '7 rue des Tilleuls, 44110 CHÂTEAUBRIANT', natureTravaux: "Construction d'une maison individuelle — 118 m²",
+	adresse: 'La Grande Noë', cp: '44520', commune: 'ISSÉ', dateSignaturePrevue: '2026-10-02', reference: 'BLANCHARD — Issé',
+};
+
+export function FormulaireChantier({ chargesAffaire, moi }: Props) {
 	const router = useRouter();
+	const [s, setS] = useState<Valeurs>(VIDE);
 	const [surPlace, setSurPlace] = useState(false);
+	const [mission, setMission] = useState<'COMPLETE' | 'PARTIELLE'>('COMPLETE');
+	const [chargeAffaireId, setChargeAffaireId] = useState(moi.id);
 	const [lotsDeBase, setLotsDeBase] = useState(true);
 	const [erreurs, setErreurs] = useState<Record<string, string>>({});
 	const [enCours, demarrer] = useTransition();
+	const maj = (champ: keyof Valeurs) => (e: React.ChangeEvent<HTMLInputElement>) => setS({ ...s, [champ]: e.target.value });
+	// Rénovation, extension : le client vit sur le chantier, son adresse en est recopiée (syncAdresseClient).
+	const adresseChantier = [s.adresse.trim(), [s.cp.trim(), s.commune.trim()].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+	const adresseClient = surPlace ? adresseChantier : s.adresseClient;
 
-	function soumettre(e: FormEvent<HTMLFormElement>) {
-		e.preventDefault();
-		const f = new FormData(e.currentTarget);
-		const t = (nom: string) => String(f.get(nom) ?? '');
+	function creer() {
+		if (!s.maitreOuvrage.trim()) {
+			document.getElementById('f-mo')?.focus();
+			toast("Renseignez au moins le maître d'ouvrage.");
+			return;
+		}
 		demarrer(async () => {
 			const r = await creerChantierAction({
-				reference: t('reference'), maitreOuvrage: t('maitreOuvrage'), adresseClient: t('adresseClient'),
-				natureTravaux: t('natureTravaux'), adresse: t('adresse'), cp: t('cp'), commune: t('commune'),
-				clientHabiteSurPlace: surPlace, mission: t('mission') === 'PARTIELLE' ? 'PARTIELLE' : 'COMPLETE',
-				dateSignaturePrevue: t('dateSignaturePrevue'), chargeAffaireId: t('chargeAffaireId'), partirDesLotsDeBase: lotsDeBase,
+				...s, adresseClient, reference: s.reference.trim() || s.maitreOuvrage.trim(),
+				clientHabiteSurPlace: surPlace, mission, chargeAffaireId, partirDesLotsDeBase: lotsDeBase,
 			});
 			if (r.ok) router.push(`/chantiers/${r.donnees.id}/marches`);
-			else setErreurs(r.champs ?? { general: r.erreur });
+			else { setErreurs(r.champs ?? {}); toast.error(r.erreur); }
 		});
 	}
 
-	const champ = (nom: string, libelle: string, aide?: string, props: React.ComponentProps<typeof Input> = {}) => (
-		<div className="space-y-1">
-			<Label htmlFor={nom}>{libelle}</Label>
-			<Input id={nom} name={nom} aria-invalid={Boolean(erreurs[nom])} {...props} />
-			{aide && <p className="text-xs text-muted-foreground">{aide}</p>}
-			{erreurs[nom] && <p className="text-sm text-destructive">{erreurs[nom]}</p>}
-		</div>
+	const champ = (id: string, nom: keyof Valeurs, libelle: string, o: { placeholder?: string; aide?: React.ReactNode; span?: boolean; type?: string; num?: boolean; valeur?: string; lecture?: boolean } = {}) => (
+		<Champ libelle={libelle} pour={id} aide={o.aide} erreur={erreurs[nom]} pleineLargeur={o.span}>
+			<Saisie id={id} type={o.type ?? 'text'} placeholder={o.placeholder} value={o.valeur ?? s[nom]} onChange={maj(nom)} readOnly={o.lecture}
+				chiffres={o.num} erreur={erreurs[nom]} />
+		</Champ>
 	);
 
+	const annuler = () => router.push('/chantiers');
 	return (
-		<form onSubmit={soumettre} className="max-w-3xl space-y-8 rounded-xl border bg-card p-6">
-			<fieldset className="space-y-3">
-				<legend className="font-titre text-lg font-semibold">Client</legend>
-				{champ('maitreOuvrage', 'Nom du client', 'Imprimé sous la mention « Maître d\'Ouvrage » dans les marchés.', { required: true })}
-				<div className="flex items-center gap-2 text-sm">
-					<Switch checked={surPlace} onCheckedChange={setSurPlace} aria-label="Client déjà sur place" />
-					<button type="button" className="text-left" onClick={() => setSurPlace((v) => !v)}>
-						Le client habite déjà à l&apos;adresse du chantier
-					</button>
-				</div>
-				{!surPlace && champ('adresseClient', 'Adresse actuelle du client', 'Là où lui écrire aujourd\'hui — pas le chantier. Imprimée sous « Demeurant ».')}
-			</fieldset>
-			<fieldset className="space-y-3">
-				<legend className="font-titre text-lg font-semibold">Chantier</legend>
-				{champ('natureTravaux', 'Nature des travaux')}
-				{champ('adresse', 'Adresse du chantier', 'Imprimée sous « Située » sur les marchés.')}
-				<div className="grid grid-cols-[8rem_1fr] gap-3">{champ('cp', 'Code postal')}{champ('commune', 'Commune')}</div>
-			</fieldset>
-			<fieldset className="space-y-3">
-				<legend className="font-titre text-lg font-semibold">Mission</legend>
-				<div className="flex gap-4 text-sm">
-					<label className="flex items-center gap-2"><input type="radio" name="mission" value="COMPLETE" defaultChecked /> Complète</label>
-					<label className="flex items-center gap-2"><input type="radio" name="mission" value="PARTIELLE" /> Partielle</label>
-				</div>
-				{champ('dateSignaturePrevue', 'Signature des marchés prévue le', undefined, { type: 'date' })}
-				<div className="space-y-1">
-					<Label htmlFor="chargeAffaireId">Chargé d&apos;affaire</Label>
-					<select id="chargeAffaireId" name="chargeAffaireId" defaultValue={moiId} className="h-9 w-full rounded-md border border-input bg-card px-2 text-sm">
-						{chargesAffaire.map((c) => <option key={c.id} value={c.id}>{c.nom}</option>)}
-					</select>
-				</div>
-				{champ('reference', 'Référence dossier', 'Unique ; elle nomme les fichiers (ex. « PERRIER — Louisfert »).', { required: true })}
-			</fieldset>
-			<fieldset className="space-y-2">
-				<legend className="font-titre text-lg font-semibold">Lots</legend>
-				<label className="flex items-center gap-2 text-sm">
-					<Switch checked={lotsDeBase} onCheckedChange={setLotsDeBase} /> Partir des 13 lots de base
-				</label>
-				<p className="text-xs text-muted-foreground">Terrassement, gros œuvre, charpente… jusqu&apos;à l&apos;escalier en sous-traitance, sans entreprise ni montant. Il suffit ensuite de supprimer ceux qui ne servent pas.</p>
-			</fieldset>
-			{erreurs.general && <p role="alert" className="text-sm text-destructive">{erreurs.general}</p>}
-			<div className="flex gap-3">
-				<Button type="submit" disabled={enCours}>Créer le chantier</Button>
-				<Button type="button" variant="outline" onClick={() => router.back()}>Annuler</Button>
-			</div>
-		</form>
+		<Ecran titre="Nouveau chantier" actions={<>
+			<Bouton variante="fantome" onClick={annuler}>Annuler</Bouton>
+			<Bouton variante="primaire" enCours={enCours} onClick={creer}>Créer le chantier</Bouton>
+		</>}>
+			<ColonnesFormulaire>
+				<GroupeChamps titre="Client">
+					<GrilleChamps>
+						{champ('f-mo', 'maitreOuvrage', 'Nom du client', { span: true, placeholder: 'M. et Mme MARTIN — ou SCI LES CHÊNES',
+							aide: "Imprimé sous la mention « Maître d'Ouvrage » dans les marchés, et « Mr/Mme » en tête du récap." })}
+						{champ('f-dem', 'adresseClient', 'Adresse actuelle du client', { span: true, placeholder: '12 rue de la Barre, 44110 CHÂTEAUBRIANT', valeur: adresseClient, lecture: surPlace,
+							aide: <>Là où lui écrire <b>aujourd&apos;hui</b> — pas le chantier. En construction neuve il n&apos;y habite pas encore. Imprimée sous « Demeurant » sur les marchés.</> })}
+					</GrilleChamps>
+				</GroupeChamps>
+
+				<GroupeChamps titre="Chantier">
+					<GrilleChamps>
+						{champ('f-nat', 'natureTravaux', 'Nature des travaux', { span: true, placeholder: "Construction d'une maison individuelle — 120 m²" })}
+						{champ('f-adr', 'adresse', 'Adresse du chantier', { span: true, placeholder: 'Le Haut Bois', aide: 'Là où les travaux ont lieu. Imprimée sous « Située » sur les marchés.' })}
+						{champ('f-cp', 'cp', 'Code postal', { placeholder: '44110', num: true })}
+						{champ('f-com', 'commune', 'Commune', { placeholder: 'LOUISFERT' })}
+						<Champ pleineLargeur aide={<>Cas d&apos;une rénovation ou d&apos;une extension&nbsp;: son adresse actuelle est recopiée du chantier.</>}>
+							<Interrupteur id="f-meme" variante="discrete" coche={surPlace} onChange={setSurPlace}>Le client habite déjà à cette adresse</Interrupteur>
+						</Champ>
+					</GrilleChamps>
+				</GroupeChamps>
+
+				<GroupeChamps titre="Mission">
+					<GrilleChamps>
+						<Champ libelle="Type de mission" pleineLargeur>
+							<ChoixSegmente libelle="Type de mission" options={MISSIONS} valeur={mission} onChoisir={setMission} />
+						</Champ>
+						{champ('f-sig', 'dateSignaturePrevue', 'Signature des marchés prévue le', { type: 'date' })}
+						<Champ libelle="Chargé d'affaire" pour="f-ca" aide="Chez vous, pas chez le client." erreur={erreurs.chargeAffaireId}>
+							<MenuDeroulant id="f-ca" k="Compte" largeur="pleine" valeur={chargeAffaireId} onChoisir={setChargeAffaireId}
+								options={chargesAffaire.map((c) => ({ v: c.id, t: c.nom }))} />
+						</Champ>
+						{champ('f-ref', 'reference', 'Référence dossier', { placeholder: "Repris du maître d'ouvrage si vide" })}
+					</GrilleChamps>
+				</GroupeChamps>
+
+				<GroupeChamps titre="Lots">
+					<Champ aide="Terrassement, gros œuvre, charpente… jusqu'à l'escalier en sous-traitance, sans entreprise ni montant. Il suffit ensuite de supprimer ceux qui ne servent pas.">
+						<Interrupteur id="f-lots-base" variante="discrete" coche={lotsDeBase} onChange={setLotsDeBase}>Partir des 13 lots de base</Interrupteur>
+					</Champ>
+				</GroupeChamps>
+
+				<PiedFormulaire>
+					<Bouton variante="primaire" enCours={enCours} onClick={creer}>Créer le chantier</Bouton>
+					<Bouton onClick={() => { setS(EXEMPLE); setSurPlace(false); setChargeAffaireId(moi.id); toast('Exemple chargé. Vous pouvez modifier avant de créer.'); }}>Remplir un exemple</Bouton>
+					<Bouton variante="fantome" onClick={annuler}>Annuler</Bouton>
+				</PiedFormulaire>
+			</ColonnesFormulaire>
+		</Ecran>
 	);
 }

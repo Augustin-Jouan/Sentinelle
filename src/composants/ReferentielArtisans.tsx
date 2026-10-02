@@ -1,81 +1,183 @@
 'use client';
 
-import { useState, useTransition, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { changerActiviteArtisanAction, creerArtisanAction, modifierChampArtisanAction } from '@/actions/artisans';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
+import { enregistrerArtisan, idArtisanOuverte, type FicheArtisan as Fiche } from '@/composants/ficheArtisan';
+import { BarreOutils } from '@/composants/briques/BarreOutils';
+import { Bloc } from '@/composants/briques/Bloc';
+import { Bouton } from '@/composants/briques/Bouton';
+import { Champ, GrilleChamps, Saisie } from '@/composants/briques/Champ';
+import { useConfirmation } from '@/composants/briques/Confirmation';
+import { cx } from '@/composants/briques/cx';
+import * as Icone from '@/composants/briques/icones';
+import { Panneau } from '@/composants/briques/Panneau';
+import { Pastille } from '@/composants/briques/Pastille';
+import { Recherche } from '@/composants/briques/Recherche';
+import { Surtitre } from '@/composants/briques/Surtitre';
+import { CadreTableau, Tableau } from '@/composants/briques/Tableau';
+import { CHIFFRES } from '@/composants/briques/typo';
 import type { ArtisanFiche, ChampArtisan } from '@/donnees/artisans';
-import { filtrerArtisans } from '@/domaine/recherche';
-import { ChampEnLigne } from './ChampEnLigne';
+import { normaliser } from '@/domaine/recherche';
 
-const COLONNES: { champ: ChampArtisan; titre: string }[] = [
-	{ champ: 'nom', titre: 'Entreprise' },
-	{ champ: 'adresse', titre: 'Adresse' },
-	{ champ: 'cp', titre: 'CP' },
-	{ champ: 'commune', titre: 'Commune' },
-	{ champ: 'interlocuteur', titre: 'Interlocuteur' },
-	{ champ: 'telephone', titre: 'Téléphone' },
-	{ champ: 'email', titre: 'E-mail' },
+const VIDE: Fiche = { nom: '', adresse: '', cp: '', commune: '', interlocuteur: '', telephone: '', email: '' };
+const versFiche = (a: ArtisanFiche | undefined): Fiche => (a
+	? { nom: a.nom, adresse: a.adresse, cp: a.cp, commune: a.commune, interlocuteur: a.interlocuteur, telephone: a.telephone, email: a.email }
+	: VIDE);
+/** « Ajouter une entreprise » est dans la barre de titre, rendue par la page : il ouvre la fiche vide par cet événement. */
+const OUVRIR_FICHE_VIDE = 'sentinelle:nouvelle-entreprise';
+const CHAMPS: { champ: ChampArtisan; id: string; libelle: string; placeholder: string; span?: boolean; num?: boolean; type?: string; aide?: string }[] = [
+	{ champ: 'nom', id: 'e-nom', libelle: 'Raison sociale', placeholder: 'AM COUVERTURE', span: true, aide: 'Le nom imprimé sur le marché. Il doit être unique.' },
+	{ champ: 'adresse', id: 'e-adr', libelle: 'Adresse', placeholder: 'Z.I. Le Champ Jubin', span: true },
+	{ champ: 'cp', id: 'e-cp', libelle: 'Code postal', placeholder: '44590', num: true },
+	{ champ: 'commune', id: 'e-com', libelle: 'Commune', placeholder: 'DERVAL' },
+	{ champ: 'interlocuteur', id: 'e-int', libelle: 'Interlocuteur', placeholder: 'Stéphane BIORET' },
+	{ champ: 'telephone', id: 'e-tel', libelle: 'Téléphone', placeholder: '02-28-50-46-95', num: true },
+	{ champ: 'email', id: 'e-mail', libelle: 'Courriel (optionnel)', placeholder: 'contact@entreprise.fr', span: true, type: 'email' },
 ];
+const vide = (v: string, texte = '—') => v || <span className="text-faint">{texte}</span>;
 
-export function ReferentielArtisans({ artisans }: { artisans: ArtisanFiche[] }) {
+export function ReferentielArtisans({ artisans, ficheInitiale }: { artisans: ArtisanFiche[]; ficheInitiale: string | null }) {
+	const router = useRouter();
+	const confirmer = useConfirmation();
 	const [requete, setRequete] = useState('');
+	/** null : fermé ; 'nouvelle' : fiche vide ; sinon l'id de l'entreprise. */
+	const [ouverte, setOuverte] = useState<string | null>(ficheInitiale);
+	const [fiche, setFiche] = useState<Fiche>(() => versFiche(artisans.find((a) => a.id === ficheInitiale)));
+	const [erreur, setErreur] = useState<{ champ: string; message: string } | null>(null);
 	const [enCours, demarrer] = useTransition();
+	const actuelle = artisans.find((a) => a.id === ouverte) ?? null;
 
-	function ajouter(e: FormEvent<HTMLFormElement>) {
-		e.preventDefault();
-		const formulaire = e.currentTarget;
-		const nom = String(new FormData(formulaire).get('nom'));
+	// Tout est listé, archivées comprises : les masquer reviendrait à les supprimer (visiblesEnts de la maquette).
+	const mots = normaliser(requete).split(/\s+/).filter(Boolean);
+	const vues = artisans.filter((a) => mots.every((m) => normaliser([a.nom, a.adresse, a.cp, a.commune, a.interlocuteur, a.telephone].join(' ')).includes(m)));
+	const archivees = artisans.filter((a) => !a.actif).length;
+
+	function ouvrir(a: ArtisanFiche | null) {
+		setOuverte(a ? a.id : 'nouvelle');
+		setFiche(versFiche(a ?? undefined));
+		setErreur(null);
+	}
+	useEffect(() => {
+		const nouvelle = () => ouvrir(null);
+		window.addEventListener(OUVRIR_FICHE_VIDE, nouvelle);
+		return () => window.removeEventListener(OUVRIR_FICHE_VIDE, nouvelle);
+	}, []);
+	function fermer() {
+		setOuverte(null);
+		if (ficheInitiale) router.replace('/artisans', { scroll: false });
+	}
+
+	/** Enregistre champ par champ (les règles du serveur sont par champ) ; s'arrête au premier refus, sur son champ. */
+	function enregistrer() {
+		if (!fiche.nom.trim()) { setErreur({ champ: 'nom', message: 'La raison sociale est obligatoire.' }); document.getElementById('e-nom')?.focus(); return; }
 		demarrer(async () => {
-			const r = await creerArtisanAction(nom);
-			if (r.ok) { formulaire.reset(); toast.success('Entreprise ajoutée.'); } else toast.error(r.erreur);
+			const r = await enregistrerArtisan({
+				id: idArtisanOuverte(ouverte),
+				fiche,
+				actuelle: actuelle ? versFiche(actuelle) : null,
+				creer: creerArtisanAction,
+				modifier: modifierChampArtisanAction,
+			});
+			// Même si un champ est refusé, l'id créé reste ouvert : « Ajouter » ne recrée pas.
+			if (r.id) setOuverte(r.id);
+			if (r.erreur) {
+				const { champ, message } = r.erreur;
+				setErreur({ champ, message });
+				document.getElementById(CHAMPS.find((c) => c.champ === champ)!.id)?.focus();
+				return;
+			}
+			toast(actuelle ? <><b>{fiche.nom}</b> mise à jour. Les prochains documents la porteront.</> : <><b>{fiche.nom}</b> ajoutée au référentiel.</>);
+			fermer();
 		});
 	}
 
-	function basculer(a: ArtisanFiche, actif: boolean) {
+	/** removeArtisan() de la maquette : une archivée se réactive ; une active s'archive (jamais de suppression, écart 6). */
+	async function supprimer(a: ArtisanFiche) {
+		if (a.actif) {
+			const oui = await confirmer(a.nombreLots
+				? { texte: <><b>{a.nom}</b> est attribuée à {a.nombreLots} lot{a.nombreLots > 1 ? 's' : ''}. Elle ne peut pas être supprimée sans trahir ces marchés.<br /><br />L&apos;archiver&nbsp;? Elle disparaîtra des listes d&apos;attribution mais restera lisible sur les documents déjà établis.</>, libelle: 'Archiver' }
+				: { texte: <>Archiver <b>{a.nom}</b>&nbsp;? Elle disparaîtra des listes d&apos;attribution ; « Réactiver » la fera revenir.</>, libelle: 'Archiver' });
+			if (!oui) return;
+		}
 		demarrer(async () => {
-			const r = await changerActiviteArtisanAction(a.id, actif);
-			if (!r.ok) toast.error(r.erreur);
+			const r = await changerActiviteArtisanAction(a.id, !a.actif);
+			if (!r.ok) { toast.error(r.erreur); return; }
+			toast(a.actif ? <><b>{a.nom}</b> archivée{a.nombreLots ? ` — ${a.nombreLots} lot(s) conservent son nom` : ''}.</> : <><b>{a.nom}</b> réactivée.</>);
+			if (ouverte === a.id) fermer();
 		});
 	}
 
-	const vus = filtrerArtisans(artisans, requete);
 	return (
-		<div className="space-y-4">
-			<div className="flex flex-wrap items-center gap-3">
-				<Input className="max-w-sm" placeholder="Rechercher : nom, commune…" value={requete} onChange={(e) => setRequete(e.target.value)} aria-label="Rechercher une entreprise" />
-				<form onSubmit={ajouter} className="ml-auto flex gap-2">
-					<Input name="nom" placeholder="Nom de la nouvelle entreprise" aria-label="Nom de la nouvelle entreprise" required />
-					<Button type="submit" disabled={enCours}>Ajouter une entreprise</Button>
-				</form>
-			</div>
-			<div className="overflow-x-auto rounded-xl border bg-card">
-				<table className="w-full min-w-[60rem] text-sm">
-					<thead>
-						<tr className="border-b text-left text-muted-foreground">
-							{COLONNES.map((c) => <th key={c.champ} className="p-2 font-medium">{c.titre}</th>)}
-							<th className="p-2 font-medium">Actif</th>
-						</tr>
-					</thead>
+		<>
+			<BarreOutils>
+				<Recherche placeholder="Rechercher une entreprise, une commune, un interlocuteur…" libelle="Rechercher une entreprise" valeur={requete} onChange={setRequete} />
+				<Surtitre>
+					{`${vues.length} entreprise${vues.length > 1 ? 's' : ''}${vues.length !== artisans.length ? ` sur ${artisans.length}` : ''}${archivees ? ` · ${archivees} archivée${archivees > 1 ? 's' : ''}` : ''}`}
+				</Surtitre>
+			</BarreOutils>
+			<CadreTableau>
+				<Tableau variante="plain">
+					<thead><tr><th>Entreprise</th><th>Adresse</th><th>CP</th><th>Commune</th><th>Interlocuteur</th><th>Téléphone</th><th data-droite>Actions</th></tr></thead>
 					<tbody>
-						{vus.map((a) => (
-							<tr key={a.id} className={a.actif ? 'border-b last:border-0' : 'border-b opacity-60 last:border-0'}>
-								{COLONNES.map((c) => (
-									<td key={c.champ} className="p-1">
-										<ChampEnLigne libelle={`${c.titre} de ${a.nom}`} valeur={a[c.champ]} enregistrer={modifierChampArtisanAction.bind(null, a.id, c.champ)} />
-									</td>
-								))}
-								<td className="p-2">
-									<Switch checked={a.actif} onCheckedChange={(v) => basculer(a, v)} aria-label={`${a.nom} actif`} />
-									{a.nombreLots > 0 && <span className="ml-2 text-xs text-muted-foreground">{a.nombreLots} lot{a.nombreLots > 1 ? 's' : ''}</span>}
+						{vues.map((a) => (
+							<tr key={a.id} data-inactif={a.actif ? undefined : ''} className="cursor-pointer" onClick={() => ouvrir(a)}>
+								<td className={cx('font-medium', !a.actif && 'line-through decoration-1')}>
+									{a.nom}{!a.actif && <> <Pastille ton="neutre" className="ml-1.5 align-[1px]">Archivée</Pastille></>}
+								</td>
+								<td>{vide(a.adresse)}</td>
+								<td className={cx(CHIFFRES, 'text-12')}>{vide(a.cp)}</td>
+								<td>{vide(a.commune)}</td>
+								<td>{vide(a.interlocuteur, 'non renseigné')}</td>
+								<td className={cx(CHIFFRES, 'text-12')}>{vide(a.telephone)}</td>
+								<td data-droite data-actions>
+									<Bouton taille="sm" title="Modifier cette entreprise" onClick={(e) => { e.stopPropagation(); ouvrir(a); }}><Icone.Crayon />Modifier</Bouton>
+									{' '}
+									{a.actif
+										? <Bouton taille="sm" variante="danger" title="Archiver cette entreprise" onClick={(e) => { e.stopPropagation(); void supprimer(a); }}><Icone.Corbeille />Supprimer</Bouton>
+										: <Bouton taille="sm" title="Remettre cette entreprise en service" onClick={(e) => { e.stopPropagation(); void supprimer(a); }}><Icone.Reactiver />Réactiver</Bouton>}
 								</td>
 							</tr>
 						))}
+						{!vues.length && <tr><td data-vide colSpan={7}>Aucune entreprise ne correspond.</td></tr>}
 					</tbody>
-				</table>
-			</div>
-		</div>
+				</Tableau>
+			</CadreTableau>
+			<Panneau ouvert={ouverte !== null} surtitre={actuelle ? 'ENTREPRISE' : 'NOUVELLE ENTREPRISE'} titre={actuelle ? actuelle.nom : 'Ajouter au référentiel'} onFermer={fermer}
+				pied={<>
+					<Bouton variante="primaire" desactive={enCours} onClick={enregistrer}>{actuelle ? 'Enregistrer' : 'Ajouter'}</Bouton>
+					{actuelle && <Bouton variante="fantome" desactive={enCours} onClick={() => void supprimer(actuelle)}>{actuelle.actif ? 'Supprimer' : 'Réactiver'}</Bouton>}
+					<Bouton variante="fantome" onClick={fermer}>Annuler</Bouton>
+				</>}>
+				<GrilleChamps>
+					{CHAMPS.map((c) => {
+						const message = erreur?.champ === c.champ ? erreur.message : undefined;
+						return (
+							<Champ key={c.champ} libelle={c.libelle} pour={c.id} aide={c.aide} erreur={message} pleineLargeur={c.span}>
+								<Saisie id={c.id} type={c.type ?? 'text'} placeholder={c.placeholder} value={fiche[c.champ]} chiffres={c.num} erreur={message}
+									onChange={(e) => setFiche({ ...fiche, [c.champ]: e.target.value })} />
+							</Champ>
+						);
+					})}
+				</GrilleChamps>
+				{actuelle && actuelle.nombreLots > 0 && (
+					<Bloc>
+						<p className="text-13 text-muted">
+							Attribuée à <b>{actuelle.nombreLots} lot{actuelle.nombreLots > 1 ? 's' : ''}</b> dans vos chantiers. Renommer l&apos;entreprise met ces lots à jour ; la supprimer n&apos;est pas possible.
+						</p>
+					</Bloc>
+				)}
+			</Panneau>
+		</>
+	);
+}
+
+/** « Ajouter une entreprise » de la barre de titre : ouvre la fiche vide du référentiel. */
+export function BoutonAjouterEntreprise() {
+	return (
+		<Bouton variante="primaire" onClick={() => window.dispatchEvent(new Event(OUVRIR_FICHE_VIDE))}>
+			<Icone.Plus />Ajouter une entreprise
+		</Bouton>
 	);
 }

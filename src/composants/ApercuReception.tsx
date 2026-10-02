@@ -4,12 +4,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { genererReceptionsAction, modifierChampReceptionAction, modifierChampReceptionCommunAction, preparerReceptionsAction } from '@/actions/receptions';
-import { Button } from '@/components/ui/button';
+import { Bouton } from '@/composants/briques/Bouton';
+import { CadreApercu, NoteApercu } from '@/composants/briques/CadreApercu';
+import * as Icone from '@/composants/briques/icones';
+import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
 import { telecharger } from '@/composants/telecharger';
 import { ProcesVerbalReception, type EditionReception } from '@/documents/gabarits/ProcesVerbalReception';
 import { TITRES_TYPES } from '@/documents/libelles';
 import { batirReception, type SaisiesReception } from '@/documents/reception';
-import { CSS_DOCUMENTS } from '@/documents/styles';
 import type { ReceptionsOuvertes } from '@/donnees/receptions';
 import { bilanReceptions, TOUS_LES_LOTS, type ChampReception } from '@/domaine/reception';
 
@@ -41,17 +43,6 @@ export function ApercuReception({ ouvert: initial, reference }: { ouvert: Recept
 			setSaisies(suivantes);
 		});
 	}, [initial.chantierId, initial.cible]);
-
-	useEffect(() => {
-		const avant = document.body.style.overflow;
-		document.body.style.overflow = 'hidden';
-		const touche = (e: KeyboardEvent) => { if (e.key === 'Escape') router.replace(chemin, { scroll: false }); };
-		window.addEventListener('keydown', touche);
-		return () => {
-			document.body.style.overflow = avant;
-			window.removeEventListener('keydown', touche);
-		};
-	}, [router, chemin]);
 
 	function suivre(envoi: Promise<unknown>) {
 		enregistrements.current.add(envoi);
@@ -134,43 +125,30 @@ export function ApercuReception({ ouvert: initial, reference }: { ouvert: Recept
 	}
 
 	return (
-		<div role="dialog" aria-label={TITRES_TYPES.PV_RECEPTION} className="fixed inset-0 z-50 flex flex-col bg-background">
-			<style dangerouslySetInnerHTML={{ __html: CSS_DOCUMENTS }} />
-			<header className="flex flex-wrap items-center gap-4 border-b bg-card px-6 py-3">
-				<div>
-					<p className="text-xs uppercase tracking-wide text-muted-foreground">{TITRES_TYPES.PV_RECEPTION}</p>
-					<p className="font-semibold">{tous ? `${reference} — ${ouvert.pages.length} lots, une page chacun` : reference}</p>
-				</div>
+		<CadreApercu libelle={TITRES_TYPES.PV_RECEPTION} surtitre={TITRES_TYPES.PV_RECEPTION} disposition="solo" onFermer={fermer}
+			titre={tous ? `${reference} — ${ouvert.pages.length} lots, une page chacun` : reference}
+			aide={ouvert.blocage ? undefined : "Chaque champ bleu s'enregistre aussitôt — le bleu ne s'imprime pas."}
+			notes={ouvert.blocage && <NoteApercu>{ouvert.blocage}</NoteApercu>}
+			actions={<>
 				{ouvert.options.length > 0 && (
-					<label className="flex items-center gap-2 text-sm">
-						<span className="text-muted-foreground">Procès-verbal pour</span>
-						<select aria-label="Procès-verbal pour" value={ouvert.cible} className="rounded-md border bg-background px-2 py-1"
-							onChange={(e) => aller(e.target.value)}>
-							{ouvert.options.map((o) => <option key={o.lotId} value={o.lotId}>{`${o.libelle} — ${o.entreprise}`}</option>)}
-							<option value={TOUS_LES_LOTS}>Tous les lots attribués — une page chacun</option>
-						</select>
-					</label>
+					<MenuDeroulant id="pv-lot" k="Procès-verbal pour" valeur={ouvert.cible} recherche largeur="large"
+						options={[...ouvert.options.map((o) => ({ v: o.lotId, t: o.libelle, meta: o.entreprise })), { sep: true as const }, { v: TOUS_LES_LOTS, t: 'Tous les lots attribués — une page chacun' }]}
+						onChoisir={aller} />
 				)}
-				<div className="ml-auto flex items-center gap-3">
-					{!ouvert.blocage && (
-						<>
-							<span className="text-xs text-muted-foreground">Chaque champ bleu s&apos;enregistre aussitôt — le bleu ne s&apos;imprime pas.</span>
-							<Button onClick={generer} disabled={enCours}>
-								{enCours ? 'Génération…' : tous ? `Générer les ${ouvert.pages.length} PV` : 'Générer le PDF'}
-							</Button>
-						</>
-					)}
-					<Button variant="outline" onClick={fermer}>Fermer</Button>
-				</div>
-			</header>
-			{ouvert.blocage && <p role="note" className="border-b bg-destructive-soft px-6 py-2 text-sm">{ouvert.blocage}</p>}
-			<div className="pv-pages flex-1 overflow-auto overscroll-contain p-7">
+				<Bouton variante="fantome" onClick={fermer}>Fermer</Bouton>
+				{!ouvert.blocage && (
+					<Bouton variante="primaire" onClick={generer} enCours={enCours}>
+						<Icone.Telecharger />{enCours ? 'Génération…' : tous ? `Générer les ${ouvert.pages.length} PV` : 'Générer le PDF'}
+					</Bouton>
+				)}
+			</>}>
+			<div className="pv-pages">
 				{ouvert.pages.map((p) => (
 					<div key={p.lotId} data-entreprise={p.entreprise}>
 						<ProcesVerbalReception donnees={batirReception(p.source, saisies[p.lotId] ?? p.saisies, commun)} mode="edition" edition={edition(p.lotId)} />
 					</div>
 				))}
 			</div>
-		</div>
+		</CadreApercu>
 	);
 }

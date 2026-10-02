@@ -106,4 +106,9 @@ describe('lireNombreFr', () => {
 			expect(lireNombreFr(saisie).toString()).toBe(attendu);
 		},
 	);
+
+	it('relit un taux affiché à la façon de la maquette (« 20.00 », « 5.50 »)', () => {
+		expect(lireNombreFr('20.00').toString()).toBe('20');
+		expect(lireNombreFr('5.50').toString()).toBe('5.5');
+	});
 });

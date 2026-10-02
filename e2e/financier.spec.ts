@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { ADMIN, seConnecter } from './aide';
+import { ADMIN, carteChantier, seConnecter } from './aide';
 import { telecharger } from './aidePlanning';
 
 /** Les espaces de formatEuros : fine insécable entre les milliers, insécable avant « € ». */
@@ -20,7 +20,7 @@ test('avenant, lettre, acomptes antérieurs, certificat et correction', async ({
 	test.setTimeout(180_000);
 	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
 	await page.goto('/chantiers');
-	await page.getByRole('link', { name: 'FINANCIER', exact: true }).click();
+	await carteChantier(page, 'FINANCIER').click();
 	await expect(page).toHaveURL(/\/marches$/);
 	const ttc = lignePeinture(page).getByLabel('Montant TTC');
 	await expect(ttc).toHaveValue(saisie('11 340,00'));
@@ -100,22 +100,22 @@ test('avenant, lettre, acomptes antérieurs, certificat et correction', async ({
 	await expect(cp).toBeHidden();
 
 	// 5. Documents : colonnes Avenants et Certificats ; « n° 01 · hors appli », « n° 03 · v2 », sans pastille « modifié ».
-	await page.getByRole('link', { name: 'Documents', exact: true }).click();
+	await page.getByRole('link', { name: 'Documents' }).click();
 	const ligneDoc = page.locator('tr[data-lot="11 — PEINTURE"]');
 	const colonne = (i: number) => ligneDoc.locator('td').nth(i);
 	await expect(page.getByRole('columnheader', { name: 'Avenants' }).first()).toBeVisible();
 	await expect(page.getByRole('columnheader', { name: 'Certificats' }).first()).toBeVisible();
 	// Le marché généré avant l'avenant reste à jour ; la lettre aussi.
-	await expect(colonne(1).getByText('modifié', { exact: true })).toHaveCount(0);
-	await expect(colonne(2).locator('[data-case="avenant"]')).toHaveText('n° 01 · v1');
-	const certificats = colonne(3).locator('[data-case="certificat"]');
-	await expect(certificats).toHaveCount(3);
-	await expect(certificats.nth(0)).toHaveText('n° 01 · hors appli');
-	await expect(certificats.nth(1)).toHaveText('n° 02 · hors appli');
-	await expect(certificats.nth(2)).toContainText('n° 03 · v2');
-	await expect(colonne(3).getByText('modifié', { exact: true })).toHaveCount(0);
-	await expect(colonne(5)).toContainText('2 versions');
-	await certificats.nth(2).getByRole('link', { name: 'n° 03 · v2' }).click();
+	await expect(colonne(0).getByText('modifié', { exact: true })).toHaveCount(0);
+	await expect(colonne(1).locator('[data-case="avenant"]')).toHaveText(/n° 01 · − 300/);
+	const certificats = colonne(2).locator('[data-case="certificat"]');
+	await expect(colonne(2).getByText('1 avant')).toBeVisible();
+	await expect(certificats).toHaveCount(2);
+	await expect(certificats.nth(0)).toHaveText('n° 02 · hors appli');
+	await expect(certificats.nth(1)).toContainText('n° 03 · v2');
+	await expect(colonne(2).getByText('modifié', { exact: true })).toHaveCount(0);
+	// Historique des versions : aperçu, Task 12.
+	await certificats.nth(1).click();
 	const version = page.getByRole('dialog', { name: 'Certificat de paiement — version 2' });
 	await expect(version.locator('.cp-somme')).toHaveText(eur('3 000,00'));
 	await expect(version.getByRole('link', { name: 'Télécharger le PDF' })).toBeVisible();

@@ -1,0 +1,52 @@
+/* L'identité « bleu de plan » de la maquette : un jeton par ligne, light-dark(clair, sombre).
+   data-theme (posé par SCRIPT_THEME, changé par basculerTheme) choisit le thème ; sans lui, le système décide. */
+:root { color-scheme: light dark; }
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark'] { color-scheme: dark; }
+
+:root {
+	/* surfaces — en sombre, pas un noir neutre : l'ardoise prussienne du cyanotype */
+	--paper: light-dark(#eceef0, #14202b);
+	--surface: light-dark(#f6f8f9, #1b2a37);
+	--raise: light-dark(#ffffff, #223442);
+	/* texte */
+	--ink: light-dark(#101619, #e9eff5);
+	--ink-2: light-dark(#38424a, #c3d1dd);
+	--muted: light-dark(#6b747c, #8fa4b5);
+	--faint: light-dark(#97a0a7, #748a9d);
+	/* filets */
+	--rule: light-dark(#d0d5da, #2d4050);
+	--rule-strong: light-dark(#b2bac1, #43596d);
+	/* accent ; on-accent : le texte porté par un aplat d'accent */
+	--accent: light-dark(#1c4e80, #6fb0e8);
+	--accent-2: light-dark(#143a60, #9ccbf2);
+	--accent-soft: light-dark(#dbe6f1, #1c3a52);
+	--on-accent: light-dark(#ffffff, #0d1720);
+	--focus: light-dark(#1c4e80, #6fb0e8);
+	/* danger */
+	--danger: light-dark(#8c1d18, #f08c84);
+	--danger-soft: light-dark(#f7e2e0, #3d2226);
+	/* alerte orangée : réserves à suivre (écrite en dur sous .dm-case.est-alerte dans la maquette) */
+	--alerte: light-dark(#7a3d00, #f2c38a);
+	--alerte-soft: light-dark(#fbeedd, #3d2e1c);
+	--alerte-trait: #b35c00;
+	/* divers */
+	--idle-soft: light-dark(#e0e4e8, #27394a);
+	--band: light-dark(rgba(16, 22, 25, 0.06), rgba(255, 255, 255, 0.06));
+	/* liseré des barres du planning : il cerne aussi bien un lot clair qu'un lot noir */
+	--bar-ring: light-dark(rgba(0, 0, 0, 0.22), rgba(255, 255, 255, 0.30));
+	/* voile des surcouches, dosé par l'opacité de Tailwind (bg-voile/42, bg-voile/50) */
+	--voile: rgb(10 14 16);
+	/* rondeur ; les fac-similés imprimés gardent leurs angles vifs */
+	--r-xs: 5px;
+	--r-sm: 9px;
+	--r: 14px;
+	--r-lg: 18px;
+	/* élévation — en sombre elle creuse plus qu'elle ne soulève. Les deux thèmes n'ont pas le même flou :
+	   chaque couche garde sa géométrie et devient transparente dans l'autre thème. */
+	--ombre: 0 1px 2px light-dark(rgba(16, 22, 25, 0.04), rgba(0, 0, 0, 0.40)), 0 6px 16px -4px light-dark(rgba(16, 22, 25, 0.10), rgba(0, 0, 0, 0.50));
+	--ombre-h: 0 2px 4px light-dark(rgba(16, 22, 25, 0.05), transparent), 0 2px 6px light-dark(transparent, rgba(0, 0, 0, 0.50)), 0 14px 30px -8px light-dark(rgba(16, 22, 25, 0.18), rgba(0, 0, 0, 0.60));
+	--ombre-toast: 0 4px 16px rgba(0, 0, 0, 0.18);
+	/* planning : largeur d'une semaine (le Gantt la redéfinit selon la densité) */
+	--sem-w: 26px;
+}

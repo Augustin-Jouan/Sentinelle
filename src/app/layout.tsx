@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Toaster } from '@/components/ui/sonner';
+import { SCRIPT_THEME } from '@/composants/briques/theme';
+import { Toasts } from '@/composants/briques/Toasts';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -9,10 +10,14 @@ export const metadata: Metadata = {
 
 export default function LayoutRacine({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="fr">
+		// data-theme est posé par SCRIPT_THEME avant l'hydratation : React ne doit pas s'en offusquer.
+		<html lang="fr" suppressHydrationWarning>
+			<head>
+				<script dangerouslySetInnerHTML={{ __html: SCRIPT_THEME }} />
+			</head>
 			<body>
 				{children}
-				<Toaster position="bottom-right" richColors />
+				<Toasts />
 			</body>
 		</html>
 	);

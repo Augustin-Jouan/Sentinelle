@@ -53,7 +53,7 @@ const REPOS: RenduGeste = { saisi: false, positions: null, fantome: null, lasso:
 /** Au-delà de ce déplacement (px), un clic devient un glisser. */
 const SEUIL = 3;
 /** Largeur (px) du bord droit d'une barre qui l'allonge. */
-const BORD = 8;
+const BORD = 10;
 
 export function appliquerPositions(vue: PlanningVue, positions: Positions): PlanningVue {
 	return {

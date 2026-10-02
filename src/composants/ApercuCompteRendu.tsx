@@ -1,17 +1,19 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import {
 	abandonnerBrouillonAction, changerConvocationAction, corrigerCompteRenduAction, enregistrerCompteRenduAction, modifierChampCompteRenduAction,
 } from '@/actions/comptesRendus';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Bouton } from '@/composants/briques/Bouton';
+import { CadreApercu, NoteApercu } from '@/composants/briques/CadreApercu';
+import { useConfirmation } from '@/composants/briques/Confirmation';
+import * as Icone from '@/composants/briques/icones';
 import { telecharger } from '@/composants/telecharger';
 import { batirCompteRendu, type SaisiesCompteRendu } from '@/documents/compteRendu';
 import { CompteRendu, type EditionCompteRendu } from '@/documents/gabarits/CompteRendu';
 import { TITRES_TYPES } from '@/documents/libelles';
-import { CSS_DOCUMENTS } from '@/documents/styles';
 import type { CompteRenduOuvert } from '@/donnees/comptesRendus';
 import { convocationSuivante, coordinationBase, numeroTexte, type ChampCompteRendu } from '@/domaine/compteRendu';
 
@@ -25,6 +27,7 @@ import { convocationSuivante, coordinationBase, numeroTexte, type ChampCompteRen
 export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOuvert; reference: string }) {
 	const router = useRouter();
 	const chemin = usePathname();
+	const confirmer = useConfirmation();
 	const [saisies, setSaisies] = useState(ouvert.saisies);
 	const courant = useRef(ouvert.saisies);
 	const [generation, setGeneration] = useState(0);
@@ -34,24 +37,11 @@ export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOu
 	const { mode } = ouvert;
 	const n = numeroTexte(ouvert.numero);
 
-	function fermer(confirmer = true) {
-		if (confirmer && mode === 'correction' && modifie && !window.confirm('Fermer sans enregistrer la correction ?')) return;
+	async function fermer(confirmerSortie = true) {
+		if (confirmerSortie && mode === 'correction' && modifie
+			&& !(await confirmer({ texte: 'Fermer sans enregistrer la correction ?', libelle: 'Fermer' }))) return;
 		router.replace(chemin, { scroll: false });
 	}
-
-	// Un document ouvert bloque le défilement de la page de derrière ; Échap le ferme.
-	const fermerRef = useRef(fermer);
-	useEffect(() => { fermerRef.current = fermer; });
-	useEffect(() => {
-		const avant = document.body.style.overflow;
-		document.body.style.overflow = 'hidden';
-		const touche = (e: KeyboardEvent) => { if (e.key === 'Escape') fermerRef.current(); };
-		window.addEventListener('keydown', touche);
-		return () => {
-			document.body.style.overflow = avant;
-			window.removeEventListener('keydown', touche);
-		};
-	}, []);
 
 	function changer(suivantes: SaisiesCompteRendu) {
 		courant.current = suivantes;
@@ -93,8 +83,8 @@ export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOu
 		}));
 	}
 
-	function repartir() {
-		if (!window.confirm('Remplacer la coordination par les seuls intitulés des lots ? Le texte saisi sera perdu.')) return;
+	async function repartir() {
+		if (!(await confirmer({ texte: 'Remplacer la coordination par les seuls intitulés des lots ? Le texte saisi sera perdu.', libelle: 'Repartir des lots', dangereux: true }))) return;
 		surChamp('coordination', coordinationBase(ouvert.source.lots.map((l) => l.designation)));
 		setGeneration((g) => g + 1);
 	}
@@ -105,8 +95,8 @@ export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOu
 		await Promise.all(enregistrements.current);
 	}
 
-	function abandonner() {
-		if (!window.confirm('Abandonner ce brouillon ? Son contenu sera perdu.')) return;
+	async function abandonner() {
+		if (!(await confirmer({ texte: 'Abandonner ce brouillon ? Son contenu sera perdu.', libelle: 'Abandonner', dangereux: true }))) return;
 		demarrer(async () => {
 			await attendreSaisies();
 			const r = await abandonnerBrouillonAction(ouvert.id);
@@ -162,38 +152,29 @@ export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOu
 		: `N° ${n}${ouvert.derniere ? ` — version ${ouvert.derniere.version}` : ''}`;
 
 	return (
-		<div role="dialog" aria-label={TITRES_TYPES.COMPTE_RENDU} className="fixed inset-0 z-50 flex flex-col bg-background">
-			<style dangerouslySetInnerHTML={{ __html: CSS_DOCUMENTS }} />
-			<header className="flex flex-wrap items-center gap-4 border-b bg-card px-6 py-3">
-				<div>
-					<p className="text-xs uppercase tracking-wide text-muted-foreground">{entete}</p>
-					<p className="font-semibold">{reference}</p>
-				</div>
-				<div className="ml-auto flex flex-wrap items-center gap-3">
-					{mode === 'brouillon' && (
-						<>
-							<span className="text-xs text-muted-foreground">Chaque champ bleu s&apos;enregistre quand on le quitte — le bleu ne s&apos;imprime pas.</span>
-							<Button variant="outline" onClick={repartir} disabled={enCours}>Repartir des lots</Button>
-							<Button variant="outline" onClick={abandonner} disabled={enCours}>Abandonner le brouillon</Button>
-							<Button onClick={enregistrer} disabled={enCours}>{enCours ? 'Enregistrement…' : `Enregistrer le n° ${n}`}</Button>
-						</>
-					)}
-					{mode === 'correction' && (
-						<Button onClick={corriger} disabled={enCours}>{enCours ? 'Génération…' : `Générer la v${(ouvert.derniere?.version ?? 0) + 1}`}</Button>
-					)}
-					{lecture && ouvert.derniere && (
-						<a href={`/api/documents/${ouvert.derniere.documentId}/pdf`} className={buttonVariants({ variant: 'outline' })}>Télécharger le PDF</a>
-					)}
-					{lecture && ouvert.dernier && (
-						<Button variant="outline" onClick={() => router.replace(`${chemin}?corriger-cr=${ouvert.id}`, { scroll: false })}>{`Corriger le n° ${n}`}</Button>
-					)}
-					<Button variant="outline" onClick={() => fermer()}>Fermer</Button>
-				</div>
-			</header>
-			{ouvert.blocage && <p role="note" className="border-b bg-destructive-soft px-6 py-2 text-sm">{ouvert.blocage}</p>}
-			<div className="flex flex-1 flex-col items-center gap-3 overflow-auto overscroll-contain p-7">
-				<CompteRendu donnees={donnees} mode={lecture ? 'lecture' : 'edition'} edition={lecture ? undefined : edition} />
-			</div>
-		</div>
+		<CadreApercu libelle={TITRES_TYPES.COMPTE_RENDU} surtitre={entete} titre={reference} disposition="solo" onFermer={() => void fermer()}
+			aide={mode === 'brouillon' ? "Écrivez directement dans les zones bleues — le bleu ne s'imprime pas." : undefined}
+			notes={ouvert.blocage && <NoteApercu>{ouvert.blocage}</NoteApercu>}
+			actions={<>
+				<Bouton variante="fantome" onClick={() => void fermer()}>Fermer</Bouton>
+				{mode === 'brouillon' && (
+					<>
+						<Bouton onClick={repartir} desactive={enCours} title="Remplacer la coordination par les seuls intitulés des lots">Repartir des lots</Bouton>
+						<Bouton onClick={abandonner} desactive={enCours}>Abandonner le brouillon</Bouton>
+						<Bouton variante="primaire" onClick={enregistrer} enCours={enCours}>{enCours ? 'Enregistrement…' : `Enregistrer le n° ${n}`}</Bouton>
+					</>
+				)}
+				{mode === 'correction' && (
+					<Bouton variante="primaire" onClick={corriger} enCours={enCours}>{enCours ? 'Génération…' : `Générer la v${(ouvert.derniere?.version ?? 0) + 1}`}</Bouton>
+				)}
+				{lecture && ouvert.dernier && (
+					<Bouton onClick={() => router.replace(`${chemin}?corriger-cr=${ouvert.id}`, { scroll: false })}>{`Corriger le n° ${n}`}</Bouton>
+				)}
+				{lecture && ouvert.derniere && (
+					<Bouton variante="primaire" natif href={`/api/documents/${ouvert.derniere.documentId}/pdf`}><Icone.Telecharger />Télécharger le PDF</Bouton>
+				)}
+			</>}>
+			<CompteRendu donnees={donnees} mode={lecture ? 'lecture' : 'edition'} edition={lecture ? undefined : edition} />
+		</CadreApercu>
 	);
 }

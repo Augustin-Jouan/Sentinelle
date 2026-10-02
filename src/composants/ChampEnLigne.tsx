@@ -3,7 +3,8 @@
 import { useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import type { Resultat } from '@/actions/executer';
-import { cn } from '@/lib/utils';
+import { classesSaisie, type VarianteSaisie } from '@/composants/briques/Champ';
+import { cx } from '@/composants/briques/cx';
 
 type Props = {
 	valeur: string;
@@ -11,9 +12,15 @@ type Props = {
 	libelle: string;
 	type?: 'text' | 'date' | 'email' | 'tel';
 	multiligne?: boolean;
+	/** Placement seulement. */
 	className?: string;
 	placeholder?: string;
-	alignement?: 'gauche' | 'droite';
+	variante?: VarianteSaisie;
+	/** Graisse 600 : le TTC du panneau, l'intitulé de la période visée. */
+	gras?: boolean;
+	/** Chiffres alignés : un code postal. */
+	chiffres?: boolean;
+	id?: string;
 };
 
 /**
@@ -21,7 +28,7 @@ type Props = {
  * et garde la saisie. Il se recale sur la valeur du serveur quand celle-ci change
  * (TTC reformaté, modification d'un collègue).
  */
-export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', multiligne, className, placeholder, alignement = 'gauche' }: Props) {
+export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', multiligne, className, placeholder, variante = 'texte', gras, chiffres, id }: Props) {
 	const [texte, setTexte] = useState(valeur);
 	const [valeurRecue, setValeurRecue] = useState(valeur);
 	const [enErreur, setEnErreur] = useState(false);
@@ -51,20 +58,15 @@ export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', mult
 		});
 	}
 
-	const classes = cn(
-		'w-full rounded-sm border border-transparent bg-transparent px-1.5 py-0.5 hover:border-input focus:border-ring focus:bg-card focus:outline-none',
-		alignement === 'droite' && 'text-right font-mono tabular-nums',
-		enErreur && 'border-destructive bg-destructive-soft',
-		enCours && 'opacity-70',
-		className,
-	);
 	const communs = {
+		id,
 		'aria-label': libelle,
 		'aria-invalid': enErreur,
+		'aria-busy': enCours || undefined,
 		placeholder,
 		value: texte,
 		onBlur: quitter,
-		className: classes,
+		className: cx(classesSaisie(variante, { gras, chiffres }), className),
 	};
 	return multiligne ? (
 		<textarea {...communs} rows={3} onChange={(e) => setTexte(e.target.value)} />

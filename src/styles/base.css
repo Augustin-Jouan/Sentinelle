@@ -1,0 +1,48 @@
+/* Les polices de la maquette, servies localement (public/polices, scripts/copier-polices.mjs). */
+@font-face { font-family: 'Figtree'; font-weight: 400; font-display: swap; src: url('/polices/figtree-400.woff2') format('woff2'); }
+@font-face { font-family: 'Figtree'; font-weight: 500; font-display: swap; src: url('/polices/figtree-500.woff2') format('woff2'); }
+@font-face { font-family: 'Figtree'; font-weight: 600; font-display: swap; src: url('/polices/figtree-600.woff2') format('woff2'); }
+@font-face { font-family: 'Outfit'; font-weight: 500; font-display: swap; src: url('/polices/outfit-500.woff2') format('woff2'); }
+@font-face { font-family: 'Outfit'; font-weight: 600; font-display: swap; src: url('/polices/outfit-600.woff2') format('woff2'); }
+@font-face { font-family: 'Outfit'; font-weight: 700; font-display: swap; src: url('/polices/outfit-700.woff2') format('woff2'); }
+@font-face { font-family: 'Spline Sans Mono'; font-weight: 400; font-display: swap; src: url('/polices/spline-sans-mono-400.woff2') format('woff2'); }
+@font-face { font-family: 'Spline Sans Mono'; font-weight: 500; font-display: swap; src: url('/polices/spline-sans-mono-500.woff2') format('woff2'); }
+@font-face { font-family: 'Spline Sans Mono'; font-weight: 600; font-display: swap; src: url('/polices/spline-sans-mono-600.woff2') format('woff2'); }
+
+/* Les règles d'éléments de la maquette, après le preflight de Tailwind. */
+@layer base {
+	/* Filet par défaut d'un élément bordé qui ne nomme pas sa couleur (la couche shadcn le posait déjà). */
+	* { border-color: var(--rule); }
+
+	body {
+		margin: 0;
+		background: var(--paper);
+		color: var(--ink);
+		font-family: 'Figtree', system-ui, -apple-system, sans-serif;
+		font-size: 0.875rem;
+		line-height: 1.5;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	button, input, select, textarea { font: inherit; color: inherit; }
+
+	:focus-visible {
+		outline: 2px solid var(--focus);
+		outline-offset: 2px;
+	}
+
+	h1, h2, h3 {
+		font-family: 'Outfit', 'Figtree', sans-serif;
+		font-weight: 600;
+		text-wrap: balance;
+		margin: 0;
+		letter-spacing: -0.005em;
+	}
+
+	/* Une surcouche ouverte (panneau, confirmation, aperçu) fige la page de derrière : la molette ne fait défiler qu'elle. */
+	html:has([data-verrou-defilement]) { overflow: hidden; }
+
+	@media (prefers-reduced-motion: reduce) {
+		* { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+	}
+}

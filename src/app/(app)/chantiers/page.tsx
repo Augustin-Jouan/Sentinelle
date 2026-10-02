@@ -1,18 +1,15 @@
-import Link from 'next/link';
 import { exigerPage } from '@/auth/session';
-import { buttonVariants } from '@/components/ui/button';
-import { ListeChantiers } from '@/composants/ListeChantiers';
-import { listerChantiers } from '@/donnees/chantiers';
+import { AccueilChantiers } from '@/composants/accueil/AccueilChantiers';
+import { Bouton } from '@/composants/briques/Bouton';
+import { Ecran } from '@/composants/briques/Ecran';
+import * as Icone from '@/composants/briques/icones';
+import { lireAccueil } from '@/donnees/accueil';
 
 export default async function PageChantiers() {
 	await exigerPage();
 	return (
-		<section className="space-y-4">
-			<div className="flex items-center justify-between">
-				<h1 className="text-2xl font-bold">Mes chantiers</h1>
-				<Link href="/chantiers/nouveau" className={buttonVariants()}>Nouveau chantier</Link>
-			</div>
-			<ListeChantiers chantiers={await listerChantiers()} />
-		</section>
+		<Ecran titre="Mes chantiers" actions={<Bouton variante="primaire" href="/chantiers/nouveau"><Icone.Plus />Nouveau chantier</Bouton>}>
+			<AccueilChantiers cartes={await lireAccueil()} />
+		</Ecran>
 	);
 }
