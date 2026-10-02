@@ -7,3 +7,4 @@
 @import '../styles/base.css';
 /* Au-dessus du preflight, sous les utilitaires : une règle restée là ne peut pas écraser une brique. */
 @import '../styles/heritage.css' layer(components);
+@import '../composants/planning/planning.css' layer(components);

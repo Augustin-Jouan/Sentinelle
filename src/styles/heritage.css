@@ -102,8 +102,6 @@
 .btn-danger:hover { background: var(--danger-soft); border-color: var(--danger); }
 .btn-danger svg { opacity: 0.85; }
 /* bouton réduit à son icône : le libellé passe par title et aria-label */
-.btn-ico { padding: 0.25rem; gap: 0; }
-.btn-ico svg { width: 0.875rem; height: 0.875rem; }
 
 /* Dans une carte cliquable, un bouton fantôme passe pour du texte : on lui rend un contour. */
 
@@ -235,15 +233,6 @@ tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
    au lieu de le laisser déborder. C'est le panneau qui doit défiler, pas eux. */
 
 .block { border: 1px solid var(--rule); border-radius: var(--r); background: var(--raise); overflow: hidden; }
-.block-head {
-	padding: 0.5rem 0.875rem;
-	border-bottom: 1px solid var(--rule);
-	background: var(--surface);
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 0.75rem;
-}
 .block-body { padding: 0.875rem; }
 
 /* ============================================================
@@ -265,284 +254,39 @@ tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
 /* ============================================================
    PLANNING — diagramme de Gantt
    ============================================================ */
-.g-toolbar { justify-content: space-between; align-items: center; }
-.g-outils { display: flex; align-items: center; gap: 0.75rem; }
-.zoom { display: inline-flex; align-items: center; gap: 0.5rem; }
-.zoom-lbl {
-	font-family: 'Outfit', sans-serif;
-	font-size: 0.625rem; font-weight: 600;
-	letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint);
-}
-.zoom-b {
-	background: var(--raise);
-	border: 1px solid var(--rule-strong);
-	border-radius: var(--r-xs);
-	padding: 0.3125rem 0.625rem;
-	font-size: 0.75rem;
-	color: var(--muted);
-	cursor: pointer;
-	margin-left: -1px;
-}
-.zoom-b:first-of-type { margin-left: 0; }
-.zoom-b:hover { color: var(--ink); background: var(--idle-soft); }
-.zoom-b.is-on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 500; }
 /* les deux outils : une icône seule, le libellé passe par le titre */
-.zoom-ic { padding: 0.3125rem 0.5rem; line-height: 0; }
-.zoom-ic svg { width: 0.9375rem; height: 0.9375rem; stroke: currentColor; fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 
 /* L'outil courant se lit au curseur autant qu'au bouton : la cible vise une semaine,
    la main saisit la nappe — et se referme pendant qu'on la déplace. */
-.gantt.outil-main .g-piste { cursor: grab; }
-.gantt.outil-main.est-saisi,
-.gantt.outil-main.est-saisi .g-piste,
-.gantt.outil-main.est-saisi .g-bar { cursor: grabbing; }
 /* le défilement doux interpolerait chaque pas du glissement */
-.gantt.est-saisi { scroll-behavior: auto; }
-
-.gantt {
-	border: 1px solid var(--rule);
-	border-radius: var(--r);
-	box-shadow: var(--ombre);
-	background: var(--raise);
-	/* Un seul défilement vertical, celui de la page : le cadre prend toute la hauteur
-	   de son contenu. Seul l'axe horizontal défile ici, ce qui garde la colonne des
-	   lots collée à gauche. En contrepartie l'en-tête des semaines n'est plus collé
-	   en haut — impossible dès lors que le cadre ne défile plus verticalement. */
-	overflow-x: auto;
-	scroll-behavior: smooth;
-	user-select: none;
-	--sem-w: 46px;
-}
 /* chaque ligne fait la largeur de son contenu, sinon les bordures, le survol
    et l'étendue du défilement s'arrêtent au bord visible */
-.g-row {
-	display: flex;
-	align-items: stretch;
-	width: max-content;
-	min-width: 100%;
-	border-bottom: 1px solid var(--rule);
-}
-.g-row:last-child { border-bottom: 0; }
-.g-row:not(.g-head):not(.g-ferm-row):hover { background: var(--surface); }
 
 /* colonne figée : le lot sur une ligne, l'entreprise dessous — plus lisible que trois colonnes serrées */
-.g-fixe {
-	position: sticky;
-	left: 0;
-	z-index: 6;
-	flex: none;
-	width: 21rem;
-	display: grid;
-	grid-template-columns: 0.625rem minmax(0, 1fr);
-	align-content: center;
-	gap: 0.125rem 0.625rem;
-	padding: 0.625rem 1rem;
-	background: var(--raise);
-	border-right: 2px solid var(--rule-strong);
-	cursor: pointer;
-}
-.g-row:not(.g-head):not(.g-ferm-row):hover .g-fixe { background: var(--surface); }
-.g-puce { grid-column: 1; grid-row: 1; width: 0.625rem; height: 0.625rem; border-radius: var(--r-xs); align-self: center; }
-.g-nom {
-	grid-column: 2; grid-row: 1;
-	font-size: 0.875rem; font-weight: 500;
-	overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.g-sous {
-	grid-column: 2; grid-row: 2;
-	font-size: 0.75rem; color: var(--muted);
-	overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.g-sous .unset { color: var(--faint); }
-.g-sous .num { font-size: 0.6875rem; }
-
-.g-head { position: sticky; top: 0; z-index: 8; background: var(--surface); border-bottom: 2px solid var(--rule-strong); }
 /* l'angle doit passer au-dessus de l'en-tête ET de la colonne figée */
-.g-head .g-fixe { background: var(--surface); cursor: default; align-content: end; z-index: 9; }
-.g-th {
-	grid-column: 1 / -1;
-	font-family: 'Outfit', sans-serif;
-	font-size: 0.6875rem; font-weight: 600;
-	letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted);
-}
-.g-axe { flex: none; }
-.g-mois, .g-sems { display: flex; }
-.g-mois span {
-	flex: none;
-	font-family: 'Outfit', sans-serif;
-	font-size: 0.8125rem; font-weight: 600;
-	letter-spacing: 0.02em;
-	padding: 0.4375rem 0.5rem 0.3125rem;
-	border-left: 1px solid var(--rule-strong);
-	color: var(--ink);
-	overflow: hidden; white-space: nowrap;
-}
-.g-mois span.pair { background: var(--band); }
-.g-sems span {
-	flex: none;
-	font-family: 'Spline Sans Mono', monospace;
-	font-size: 0.6875rem;
-	text-align: center;
-	padding: 0.1875rem 0 0.375rem;
-	border-left: 1px solid var(--rule);
-	color: var(--muted);
-}
-.g-sems span.an-neuf { border-left-color: var(--ink); color: var(--ink); font-weight: 600; }
-.g-sems span.auj { background: var(--accent); color: var(--on-accent); font-weight: 600; border-left-color: var(--accent); }
-
-.g-corps { position: relative; }
 /* la nappe des liens couvre les pistes, décalée de la colonne figée */
-.g-liens {
-	position: absolute; top: 0; left: 21rem;
-	pointer-events: none;
-	z-index: 4;
-	overflow: visible;
-}
-.g-liens path { fill: none; stroke: var(--ink-2); stroke-width: 1.5; opacity: 0.55; }
-.g-liens marker path { fill: var(--ink-2); stroke: none; opacity: 1; }
 
 /* hauteur fixe : les flèches sont dessinées d'après elle (voir HAUTEUR_LIGNE) */
-.g-row[data-lot] { height: 3.75rem; }
-.g-piste {
-	position: relative;
-	flex: none;
-	min-height: 3.5rem;
-	background-image: repeating-linear-gradient(to right,
-		var(--rule) 0 1px, transparent 1px var(--sem-w));
-	cursor: crosshair;
-}
-.g-bmois {
-	position: absolute; top: 0; bottom: 0;
-	border-left: 1px solid var(--rule-strong);   /* la limite de mois se voit sur chaque ligne */
-	pointer-events: none;
-}
-.g-bmois.pair { background: var(--band); }
-
-.g-ferm-row { background: var(--surface); }
-.g-ferm-row .g-fixe { background: var(--surface); cursor: default; }
-.g-fixe-lbl {
-	display: block;
-	font-family: 'Outfit', sans-serif;
-	font-size: 0.625rem; font-weight: 600;
-	letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint);
-	padding-top: 0.4375rem;
-}
-.g-piste-lbl { min-height: 1.75rem; cursor: default; background-image: none; }
-.g-ferm-lbl {
-	position: absolute; top: 0.25rem; bottom: 0.25rem;
-	display: flex; align-items: center; justify-content: center;
-	font-family: 'Outfit', sans-serif;
-	font-size: 0.6875rem; font-weight: 600;
-	letter-spacing: 0.05em;
-	color: var(--muted);
-	background: var(--idle-soft);
-	border-radius: var(--r-xs);
-	overflow: hidden; white-space: nowrap;
-}
 
 /* congés : hachures sur toute la hauteur */
-.g-ferm {
-	position: absolute; top: 0; bottom: 0;
-	background: repeating-linear-gradient(135deg,
-		var(--rule-strong) 0 2px, transparent 2px 7px);
-	opacity: 0.5;
-	pointer-events: none;
-}
 
 /* la semaine en cours */
-.g-auj { position: absolute; top: 0; bottom: 0; border-left: 2px solid var(--accent); pointer-events: none; }
-
-.g-bar {
-	position: absolute; top: 0.4375rem; bottom: 0.4375rem;
-	border-radius: var(--r-xs);
-	display: flex; align-items: center;
-	padding: 0 0.5rem;
-	font-size: 0.75rem;
-	font-weight: 500;
-	line-height: 1.2;
-	cursor: grab;
-	overflow: hidden;
-	box-shadow: inset 0 0 0 1px var(--bar-ring), 0 1px 2px rgba(0, 0, 0, 0.12);
-}
-.g-bar:hover { filter: brightness(1.08); }
-.g-bar:active { cursor: grabbing; }
 /* Anneau neutre plutôt qu'un anneau d'accent : le bleu de plan et le bleu foncé
    du .ods sont trop proches, la sélection disparaîtrait sur ce lot-là. */
-.g-bar.is-sel { box-shadow: inset 0 0 0 2px var(--raise), 0 0 0 2px var(--ink); }
-.g-bar-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
 /* nom d'une période trop courte pour le porter : posé à sa droite, hors de la souris */
-.g-etiq {
-	position: absolute; top: 50%;
-	transform: translateY(-50%);
-	margin-left: 0.4375rem;
-	max-width: 14rem;
-	font-size: 0.75rem;
-	color: var(--ink-2);
-	white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-	pointer-events: none;
-}
-.g-poignee { position: absolute; right: 0; top: 0; bottom: 0; width: 10px; cursor: ew-resize; }
-.g-poignee::after {
-	content: ''; position: absolute; right: 3px; top: 50%;
-	width: 2px; height: 0.75rem; margin-top: -0.375rem;
-	background: currentColor; opacity: 0; border-radius: 1px;
-}
-.g-bar:hover .g-poignee::after { opacity: 0.55; }
-
-.g-fantome {
-	position: absolute; top: 0.4375rem; bottom: 0.4375rem;
-	background: var(--accent-soft);
-	border: 2px dashed var(--accent);
-	border-radius: var(--r-xs);
-	pointer-events: none;
-}
-.g-vide { padding: 3rem 1.25rem; text-align: center; color: var(--muted); font-style: italic; }
-
-.g-legende { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-top: 1rem; }
-.leg { display: inline-flex; align-items: center; gap: 0.4375rem; font-size: 0.75rem; color: var(--muted); }
-.leg i { width: 0.75rem; height: 0.75rem; border-radius: var(--r-xs); flex: none; }
 
 /* palette du panneau */
-.pal { display: flex; flex-wrap: wrap; gap: 0.375rem; }
-.pal-c {
-	width: 1.75rem; height: 1.75rem;
-	border: 1px solid var(--rule-strong);
-	border-radius: var(--r-xs); cursor: pointer; padding: 0;
-}
-.pal-c.is-on { box-shadow: 0 0 0 2px var(--accent); border-color: var(--accent); }
-.pal-note { margin: 0.625rem 0 0; font-size: 0.75rem; color: var(--muted); }
 
 /* .plain-mini est déclaré avant .plain : sans le double sélecteur, la règle large
    l'emporterait et le tableau déborderait du panneau */
-table.plain.plain-mini { min-width: 0; font-size: 0.8125rem; }
-table.plain.plain-mini thead th { padding: 0.375rem 0.5rem; }
-table.plain.plain-mini tbody td { padding: 0.1875rem 0.25rem; }
-table.plain.plain-mini tbody td:first-child { padding-left: 0.25rem; }
 /* les colonnes de chiffres se serrent sur leur contenu — l'intitulé prend le reste */
-table.plain.plain-mini th.ta-r, table.plain.plain-mini td.ta-r { width: 1%; white-space: nowrap; }
 /* la date de signature et les avenants vivent dans le panneau du lot */
 /* marqueur porté par la ligne du lot, comme celui de la sous-traitance */
 
-.vide-mini { margin: 0; padding: 1.25rem 0.875rem; text-align: center; font-style: italic; color: var(--muted); font-size: 0.8125rem; }
-
 /* le lien de précédence, en second rang sous sa période — c'est ce qui fait la chaîne */
-table.plain.plain-mini tbody tr.ligne-per td { border-bottom: 0; }
-table.plain.plain-mini tbody tr.ligne-dep td {
-	position: relative;
-	padding: 0 0.25rem 0.4375rem 1.375rem;
-	border-bottom: 1px solid var(--rule);
-}
-tr.ligne-dep td::before {
-	content: '\21B3';
-	position: absolute; left: 0.375rem; top: -0.0625rem;
-	color: var(--faint); font-size: 0.8125rem;
-}
 
 /* La période venue de la grille : même bleu que la ligne ouverte d'un tableau,
    plus un filet d'accent à gauche qui court sur les deux rangs. */
-table.plain.plain-mini tbody tr.est-vise td { background: var(--accent-soft); }
-table.plain.plain-mini tbody tr.est-vise td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
-table.plain.plain-mini tbody tr.ligne-dep.est-vise td::before { color: var(--accent); }
 
 /* la pastille qui suit le curseur pendant un glisser — on lit les semaines sans lâcher */
 /* ---------- écrire directement sur la feuille ----------
@@ -550,20 +294,6 @@ table.plain.plain-mini tbody tr.ligne-dep.est-vise td::before { color: var(--acc
    redeviennent du texte ordinaire. Une zone vide montre son invite, jamais imprimée. */
 
 /* sélection de plusieurs périodes */
-.g-tete-g { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
-.g-sel-aide, .g-sel { white-space: nowrap; }
-.g-sel-aide { font-size: 0.75rem; color: var(--muted); }
-.g-sel { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.8125rem; color: var(--accent-2);
-	background: var(--accent-soft); border-radius: var(--r-sm); padding: 0.25rem 0.375rem 0.25rem 0.625rem; }
-.g-sel kbd { font-family: 'Spline Sans Mono', monospace; font-size: 0.6875rem; border: 1px solid currentColor; border-radius: 3px; padding: 0 0.25rem; opacity: 0.8; }
-.g-lasso { position: fixed; z-index: 85; pointer-events: none; border: 1.5px dashed var(--accent); background: rgba(28, 78, 128, 0.08); border-radius: 3px; }
-.g-chip {
-	position: fixed; z-index: 90; pointer-events: none;
-	background: var(--ink); color: var(--paper);
-	font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem;
-	padding: 0.25rem 0.5rem; border-radius: var(--r-xs); white-space: nowrap;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
 
 /* ---------- documents du planning ---------- */
 /* Les feuilles d'un planning découpé s'empilent, et se séparent à l'impression. */
@@ -637,7 +367,6 @@ table thead th.ta-r, table tbody td.ta-r { text-align: right; }
 
 
 /* Barre temporaire pendant qu'on trace une période (planning) : elle ne capte pas la souris. */
-.g-bar.est-temp { pointer-events: none; }
 
 /* Saisie refusée par le serveur : le champ garde le texte et se voit en erreur (la maquette remettait l'ancienne valeur). */
 .field input.est-erreur { border-color: var(--danger); background: var(--danger-soft); }
@@ -683,5 +412,3 @@ a.btn { text-decoration: none; }
 /* Écran Documents : les cases et actions sont des liens dans l'app (des boutons dans la maquette). */
 
 /* Sous le titre d'un aperçu : ce qui empêche de générer (danger) ou une précision sur la version (discret). */
-.gen-note { margin: 0.375rem 0 0; font-size: 0.75rem; color: var(--danger); }
-.gen-note.est-info { color: var(--muted); }

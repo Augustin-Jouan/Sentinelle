@@ -3,10 +3,14 @@
 import { useEffect } from 'react';
 import type { Resultat } from '@/actions/executer';
 import { ChampEnLigne } from '@/composants/ChampEnLigne';
+import { Bloc } from '@/composants/briques/Bloc';
+import { Bouton } from '@/composants/briques/Bouton';
+import { cx } from '@/composants/briques/cx';
 import * as Icone from '@/composants/briques/icones';
 import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
 import { Panneau } from '@/composants/briques/Panneau';
 import { PANNEAU_OUVERT } from '@/composants/briques/surcouches';
+import { Vide } from '@/composants/briques/Vide';
 import { COULEURS } from '@/domaine/couleurs';
 import { rangIso, type LotPlanning, type PeriodeVue, type PlanningVue } from '@/domaine/planningVue';
 import { semaineDuRang } from '@/domaine/semaines';
@@ -29,35 +33,29 @@ export function PanneauLotPlanning({ lot, planning, principale, onFermer, onCoul
 	useEffect(() => { document.querySelector(`${PANNEAU_OUVERT} tr[data-vise]`)?.scrollIntoView({ block: 'nearest' }); }, [lot?.id, principale]);
 	return (
 		<Panneau ouvert={lot !== null} surtitre={lot?.numero ? `LOT ${lot.numero}` : 'LOT'} titre={lot?.designation || 'Désignation à saisir'}
-			libelle={lot?.designation || undefined} onFermer={onFermer} pied={<button type="button" className="btn btn-ghost" onClick={onFermer}>Fermer</button>}>
+			libelle={lot?.designation || undefined} onFermer={onFermer} pied={<Bouton variante="fantome" onClick={onFermer}>Fermer</Bouton>}>
 			{lot && (
 				<>
-					<div className="block">
-						<div className="block-head"><span className="eyebrow">Couleur du lot</span></div>
-						<div className="block-body">
-							<div className="pal">
-								{COULEURS.map((c) => (
-									<button key={c.cle} type="button" className={c.cle === lot.couleur ? 'pal-c is-on' : 'pal-c'} style={{ background: c.fond }}
-										title={c.nom} aria-label={c.nom} aria-pressed={c.cle === lot.couleur} onClick={() => onCouleur(c.cle)} />
+					<Bloc titre="Couleur du lot">
+						<div className="flex flex-wrap gap-1.5">
+							{COULEURS.map((c) => (
+								<button key={c.cle} type="button" style={{ background: c.fond }} title={c.nom} aria-label={c.nom} aria-pressed={c.cle === lot.couleur} onClick={() => onCouleur(c.cle)}
+									className={cx('size-7 cursor-pointer rounded-xs border p-0', c.cle === lot.couleur ? 'border-accent ring-2 ring-accent' : 'border-rule-strong')} />
+							))}
+						</div>
+						<p className="mt-2.5 text-12 text-muted">Donnez la même couleur à des lots d&apos;une même famille — les fluides, les menuiseries — comme dans votre planning actuel.</p>
+					</Bloc>
+					<Bloc titre="Périodes" corps="nu" action={<Bouton taille="sm" onClick={onAjouter}>Ajouter</Bouton>}>
+						{lot.periodes.length ? (
+							<table className="periodes">
+								<thead><tr><th>Intitulé</th><th data-droite>Sem.</th><th data-droite>Année</th><th data-droite>Durée</th><th /></tr></thead>
+								{lot.periodes.map((x) => (
+									<LignePeriode key={x.id} periode={x} vise={x.id === principale} options={optionsGroupees(planning, x.id)}
+										onModifier={onModifier} onLier={onLier} onSupprimer={onSupprimer} />
 								))}
-							</div>
-							<p className="pal-note">Donnez la même couleur à des lots d&apos;une même famille — les fluides, les menuiseries — comme dans votre planning actuel.</p>
-						</div>
-					</div>
-					<div className="block">
-						<div className="block-head"><span className="eyebrow">Périodes</span><button type="button" className="btn btn-sm" onClick={onAjouter}>Ajouter</button></div>
-						<div className="block-body" style={{ padding: 0 }}>
-							{lot.periodes.length ? (
-								<table className="plain plain-mini">
-									<thead><tr><th>Intitulé</th><th className="ta-r">Sem.</th><th className="ta-r">Année</th><th className="ta-r">Durée</th><th /></tr></thead>
-									{lot.periodes.map((x) => (
-										<LignePeriode key={x.id} periode={x} vise={x.id === principale} options={optionsGroupees(planning, x.id)}
-											onModifier={onModifier} onLier={onLier} onSupprimer={onSupprimer} />
-									))}
-								</table>
-							) : <p className="vide-mini">Aucune période. Tracez-en une à la souris sur la grille, ou cliquez « Ajouter ».</p>}
-						</div>
-					</div>
+							</table>
+						) : <Vide variante="mini">Aucune période. Tracez-en une à la souris sur la grille, ou cliquez « Ajouter ».</Vide>}
+					</Bloc>
 				</>
 			)}
 		</Panneau>
@@ -80,12 +78,12 @@ function LignePeriode({ periode: x, vise, options, onModifier, onLier, onSupprim
 		<tbody data-periode={x.id}>
 			<tr className={vise ? 'ligne-per est-vise' : 'ligne-per'} data-vise={vise ? '1' : undefined}>
 				<td><ChampEnLigne gras={vise} libelle="Intitulé" placeholder="sans intitulé" valeur={x.intitule} enregistrer={(v) => onModifier(x.id, 'intitule', v)} /></td>
-				<td className="ta-r"><ChampEnLigne variante="montant-etroit" libelle="Semaine" valeur={String(s.semaine)} enregistrer={(v) => onModifier(x.id, 'semaine', v)} /></td>
-				<td className="ta-r"><ChampEnLigne variante="montant-etroit" libelle="Année" valeur={String(s.annee)} enregistrer={(v) => onModifier(x.id, 'annee', v)} /></td>
-				<td className="ta-r"><ChampEnLigne variante="montant-etroit" libelle="Durée" valeur={String(x.duree)} enregistrer={(v) => onModifier(x.id, 'duree', v)} /></td>
-				<td className="ta-r cell-actions">
-					<button type="button" className="btn btn-sm btn-danger btn-ico" onClick={() => onSupprimer(x.id)}
-						title="Supprimer cette période" aria-label={`Supprimer la période ${x.intitule || 'sans intitulé'}`}><Icone.Corbeille /></button>
+				<td data-droite><ChampEnLigne variante="montant-etroit" libelle="Semaine" valeur={String(s.semaine)} enregistrer={(v) => onModifier(x.id, 'semaine', v)} /></td>
+				<td data-droite><ChampEnLigne variante="montant-etroit" libelle="Année" valeur={String(s.annee)} enregistrer={(v) => onModifier(x.id, 'annee', v)} /></td>
+				<td data-droite><ChampEnLigne variante="montant-etroit" libelle="Durée" valeur={String(x.duree)} enregistrer={(v) => onModifier(x.id, 'duree', v)} /></td>
+				<td data-droite data-actions>
+					<Bouton taille="sm" variante="danger" seulIcone onClick={() => onSupprimer(x.id)}
+						title="Supprimer cette période" aria-label={`Supprimer la période ${x.intitule || 'sans intitulé'}`}><Icone.Corbeille /></Bouton>
 				</td>
 			</tr>
 			<tr className={vise ? 'ligne-dep est-vise' : 'ligne-dep'}>

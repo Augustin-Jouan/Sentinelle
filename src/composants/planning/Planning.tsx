@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -9,6 +8,7 @@ import {
 	ajouterFermetureAction, changerCouleurLotAction, creerPeriodeAction, deplacerPeriodesAction, lierPeriodeAction,
 	modifierFermetureAction, modifierPeriodeAction, supprimerFermetureAction, supprimerPeriodesAction,
 } from '@/actions/planning';
+import { Bouton } from '@/composants/briques/Bouton';
 import { useConfirmation } from '@/composants/briques/Confirmation';
 import { Ecran } from '@/composants/briques/Ecran';
 import * as Icone from '@/composants/briques/icones';
@@ -211,9 +211,9 @@ export function Planning({ planningInitial, aujourdhui, contexte }: { planningIn
 		<Ecran
 			titre="Planning des travaux"
 			actions={<>
-				<button type="button" className="btn" onClick={() => setFermeturesOuvertes(true)}><Icone.Calendrier />Fermetures</button>
-				<Link className="btn" href="?apercu=visa" scroll={false}><Icone.Visa />Feuille de visa</Link>
-				<Link className="btn btn-primary" href="?apercu=planning" scroll={false}><Icone.Imprimer />Planning imprimable</Link>
+				<Bouton onClick={() => setFermeturesOuvertes(true)}><Icone.Calendrier />Fermetures</Bouton>
+				<Bouton href="?apercu=visa" scroll={false}><Icone.Visa />Feuille de visa</Bouton>
+				<Bouton variante="primaire" href="?apercu=planning" scroll={false}><Icone.Imprimer />Planning imprimable</Bouton>
 			</>}
 			contexte={contexte}
 		>

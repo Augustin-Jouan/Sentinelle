@@ -1,6 +1,8 @@
 'use client';
 
 import { Fragment, type CSSProperties, type PointerEvent, type RefObject } from 'react';
+import { Bouton } from '@/composants/briques/Bouton';
+import { CHIFFRES } from '@/composants/briques/typo';
 import { couleurDe } from '@/domaine/couleurs';
 import { colonnes, moisDesColonnes } from '@/domaine/planning';
 import { rangIso, type LotPlanning, type PlanningVue } from '@/domaine/planningVue';
@@ -101,8 +103,8 @@ export function GrillePlanning({
 										<i className="g-puce" style={{ background: couleur.fond }} />
 										<span className="g-nom">{l.designation || 'Lot sans désignation'}</span>
 										<span className="g-sous">
-											{l.entreprise ?? <i className="unset">à attribuer</i>}
-											{l.telephone && <>{' · '}<span className="num">{l.telephone}</span></>}
+											{l.entreprise ?? <i className="text-faint">à attribuer</i>}
+											{l.telephone && <>{' · '}<span className={`${CHIFFRES} text-11`}>{l.telephone}</span></>}
 										</span>
 									</div>
 									<div className="g-piste" data-lot={l.id} style={{ width: largeur }}>
@@ -143,14 +145,17 @@ export function GrillePlanning({
 				) : (
 					<div className="g-vide">
 						{planning.lots.length ? (
-							<>Tous les lots sont masqués. <button type="button" className="btn btn-sm" onClick={onToutAfficher}>Tout afficher</button></>
+							<>Tous les lots sont masqués. <Bouton taille="sm" onClick={onToutAfficher}>Tout afficher</Bouton></>
 						) : "Ce chantier n'a pas encore de lot. Ajoutez-les depuis l'écran Marchés."}
 					</div>
 				)}
 			</div>
-			<div className="g-legende">
+			{/* La légende des couleurs, sous la grille. */}
+			<div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
 				{lotsAffiches.map((l) => (
-					<span key={l.id} className="leg"><i style={{ background: couleurDe(l.couleur).fond }} />{l.designation || '—'}</span>
+					<span key={l.id} className="inline-flex items-center gap-1.75 text-12 text-muted">
+						<i className="size-3 flex-none rounded-xs" style={{ background: couleurDe(l.couleur).fond }} />{l.designation || '—'}
+					</span>
 				))}
 			</div>
 		</>
