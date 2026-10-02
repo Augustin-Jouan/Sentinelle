@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { preparer, seConnecterAdmin } from './ecrans';
 
 /** Chaque brique, ses variantes et ses états, en clair et en sombre. Une brique ou une variante nouvelle y entre, puis npm run visuel:references. */
-const SECTIONS = ['boutons', 'etiquettes', 'champs', 'structure', 'navigation', 'tableaux', 'menus'];
+const SECTIONS = ['boutons', 'etiquettes', 'champs', 'formulaires', 'structure', 'navigation', 'tableaux', 'menus', 'ecran-centre'];
 const OPTIONS = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.01 } as const;
 
 async function ouvrirVitrine(page: Page, theme: 'light' | 'dark') {
@@ -40,6 +40,16 @@ for (const theme of ['light', 'dark'] as const) {
 			await page.getByRole('dialog', { name: 'GROS ŒUVRE' }).getByRole('button', { name: 'Supprimer le lot' }).click();
 			await page.mouse.move(0, 0);
 			await expect(page).toHaveScreenshot(`vitrine-confirmation-${suffixe}.png`, OPTIONS);
+		});
+
+		test(`vitrine ${suffixe} : aperçu et son menu`, async ({ page }) => {
+			await ouvrirVitrine(page, theme);
+			await page.getByRole('button', { name: 'Ouvrir un aperçu' }).click();
+			await page.mouse.move(0, 0);
+			await expect(page).toHaveScreenshot(`vitrine-apercu-${suffixe}.png`, OPTIONS);
+			await page.getByRole('dialog', { name: 'Certificat de paiement' }).getByRole('button', { name: /^Version/ }).click();
+			await page.mouse.move(0, 0);
+			await expect(page).toHaveScreenshot(`vitrine-apercu-menu-${suffixe}.png`, OPTIONS);
 		});
 
 		test(`vitrine ${suffixe} : message`, async ({ page }) => {

@@ -56,3 +56,29 @@ test('une valeur longue se tronque dans le bouton du menu, sans l’élargir', a
 	expect(bouton!.width).toBeLessThanOrEqual(cadre!.width);
 	expect(await valeur.evaluate((v) => v.scrollWidth > v.clientWidth)).toBe(true);
 });
+
+for (const [id, plafond] of [['#v-long-normale', 320], ['#v-long-large', 384]] as const) {
+	test(`une valeur longue se tronque aussi dans un menu ${id.slice(8)}, borné à ${plafond} px`, async ({ page }) => {
+		const menu = page.locator(id);
+		const valeur = menu.getByTestId('dd-valeur');
+		await expect(valeur).toHaveText(/^SOCIÉTÉ NOUVELLE/);
+		const bouton = await menu.getByRole('button').boundingBox();
+		expect(bouton!.width).toBeLessThanOrEqual(plafond);
+		expect(await valeur.evaluate((v) => v.scrollWidth > v.clientWidth)).toBe(true);
+	});
+}
+
+const apercu = (page: Page) => page.getByRole('dialog', { name: 'Certificat de paiement' });
+
+test('Échap referme le menu ouvert dans l’aperçu, pas l’aperçu', async ({ page }) => {
+	await page.getByRole('button', { name: 'Ouvrir un aperçu' }).click();
+	expect(await debordement(page)).toBe('hidden');
+	await apercu(page).getByRole('button', { name: /^Version/ }).click();
+	await expect(page.getByRole('listbox', { name: 'Version' })).toBeVisible();
+	await page.keyboard.press('Escape');
+	await expect(page.getByRole('listbox', { name: 'Version' })).toBeHidden();
+	await expect(apercu(page)).toBeVisible();
+	await page.keyboard.press('Escape');
+	await expect(apercu(page)).toBeHidden();
+	expect(await debordement(page)).not.toBe('hidden');
+});

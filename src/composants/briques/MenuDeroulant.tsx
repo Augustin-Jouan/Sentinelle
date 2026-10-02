@@ -21,9 +21,10 @@ export const MENU = {
 	separateur: 'my-0.75 border-0 border-t border-rule',
 } as const;
 
+/** La racine est bornée : sans plafond, une valeur longue élargirait le bouton au lieu de se tronquer. */
 const LARGEUR = {
-	normale: { racine: 'relative flex-none', bouton: 'min-w-44' },
-	large: { racine: 'relative flex-none', bouton: 'min-w-60' },
+	normale: { racine: 'relative max-w-80 flex-none', bouton: 'min-w-44' },
+	large: { racine: 'relative max-w-96 flex-none', bouton: 'min-w-60' },
 	/** Toute la place de son conteneur (ex-.dd-plein). */
 	pleine: { racine: 'relative min-w-0 flex-1', bouton: 'min-w-0' },
 } as const;

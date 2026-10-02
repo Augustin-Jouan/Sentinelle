@@ -5,11 +5,13 @@ import { toast } from 'sonner';
 import { BarreOutils } from '../BarreOutils';
 import { Bloc } from '../Bloc';
 import { Bouton } from '../Bouton';
+import { CadreApercu, NoteApercu } from '../CadreApercu';
 import { Carte } from '../Carte';
-import { Champ, GrilleChamps, GroupeChamps, Saisie, ZoneTexte } from '../Champ';
+import { Champ, ColonnesFormulaire, Erreur, GrilleChamps, GroupeChamps, PiedFormulaire, Saisie, ZoneTexte } from '../Champ';
 import { ChoixSegmente } from '../ChoixSegmente';
 import { Cle, CleValeur, Valeur } from '../CleValeur';
 import { useConfirmation } from '../Confirmation';
+import { EcranCentre, FormulaireCentre } from '../EcranCentre';
 import { Etiquette } from '../Etiquette';
 import * as Icone from '../icones';
 import { Interrupteur } from '../Interrupteur';
@@ -56,6 +58,8 @@ export function Vitrine() {
 	const [entreprise, setEntreprise] = useState('long');
 	const [vus, setVus] = useState(['rebours']);
 	const [panneau, setPanneau] = useState(false);
+	const [apercu, setApercu] = useState(false);
+	const [version, setVersion] = useState('v2');
 	const demander = useConfirmation();
 	const confirmer = () => void demander({ texte: <>Supprimer le lot <b>02 — GROS ŒUVRE</b> ?</>, libelle: 'Supprimer', dangereux: true });
 
@@ -118,6 +122,27 @@ export function Vitrine() {
 					<Saisie variante="date" type="date" aria-label="Date" defaultValue="2026-03-04" />
 					<Saisie variante="montant-etroit" aria-label="Durée" defaultValue="12" />
 				</Rangee>
+			</Section>
+
+			<Section nom="formulaires" titre="Formulaires">
+				<ColonnesFormulaire>
+					<GroupeChamps titre="Client">
+						<GrilleChamps>
+							<Champ libelle="Nom du client" pour="v-client"><Saisie id="v-client" defaultValue="M. et Mme PERRIER" /></Champ>
+							<Champ libelle="Montant HT" pour="v-encours" aide="Enregistrement en cours…"><Saisie id="v-encours" variante="montant" chiffres aria-busy defaultValue="96 250,00" /></Champ>
+						</GrilleChamps>
+					</GroupeChamps>
+					<GroupeChamps titre="Envoi">
+						<div className="flex flex-col gap-2">
+							<Erreur alerte>Le chantier n’a pas pu être enregistré. Réessayez.</Erreur>
+							<Erreur taille="petite">Cinq chiffres attendus.</Erreur>
+						</div>
+					</GroupeChamps>
+					<PiedFormulaire>
+						<Bouton variante="primaire">Créer le chantier</Bouton>
+						<Bouton variante="fantome">Annuler</Bouton>
+					</PiedFormulaire>
+				</ColonnesFormulaire>
 			</Section>
 
 			<Section nom="structure" titre="Cartes, blocs, valeurs">
@@ -219,6 +244,10 @@ export function Vitrine() {
 						onChoisir={(v) => setVus((avant) => (avant.includes(v) ? avant.filter((x) => x !== v) : [...avant, v]))} />
 					<MenuDeroulant id="v-off" k="Version" valeur="v1" desactive options={[{ v: 'v1', t: 'v1 · 04/03/2026' }]} onChoisir={() => {}} />
 				</BarreOutils>
+				<BarreOutils>
+					<MenuDeroulant id="v-long-normale" k="Version" valeur="long" options={[{ v: 'long', t: LONG }]} onChoisir={() => {}} />
+					<MenuDeroulant id="v-long-large" k="Procès-verbal pour" largeur="large" valeur="long" options={[{ v: 'long', t: LONG }]} onChoisir={() => {}} />
+				</BarreOutils>
 				<div className="flex w-96 max-w-full">
 					<MenuDeroulant id="v-ent" k="Attribuée à" largeur="pleine" recherche="Nom, commune…" valeur={entreprise} options={ENTREPRISES} onChoisir={setEntreprise} />
 				</div>
@@ -227,10 +256,41 @@ export function Vitrine() {
 			<Section nom="surcouches" titre="Surcouches">
 				<Rangee>
 					<Bouton onClick={() => setPanneau(true)}>Ouvrir le panneau</Bouton>
+					<Bouton onClick={() => setApercu(true)}>Ouvrir un aperçu</Bouton>
 					<Bouton variante="danger" onClick={confirmer}>Demander une confirmation</Bouton>
 					<Bouton onClick={() => toast(<>Chantier <b>PERRIER — Louisfert</b> marqué terminé.</>)}>Afficher un message</Bouton>
 				</Rangee>
 			</Section>
+
+			<Section nom="ecran-centre" titre="Écran centré">
+				{/* L'écran prend toute la hauteur de la fenêtre : le cadre n'en montre que le centre. */}
+				<div className="h-160 overflow-hidden rounded-md border border-rule">
+				<EcranCentre titre="Mot de passe" accroche="Choisissez un nouveau mot de passe : douze caractères au moins." pied="Accès réservé aux comptes SOCOREVE.">
+					<FormulaireCentre onSubmit={(e) => e.preventDefault()}>
+						<Champ libelle="Nouveau mot de passe" pour="v-mdp" erreur="Douze caractères au moins.">
+							<Saisie id="v-mdp" type="password" defaultValue="court" erreur="Douze caractères au moins." />
+						</Champ>
+						<Bouton variante="primaire" taille="grand" type="submit">Enregistrer</Bouton>
+					</FormulaireCentre>
+				</EcranCentre>
+				</div>
+			</Section>
+
+			{apercu && (
+				<CadreApercu libelle="Certificat de paiement" disposition="champs" onFermer={() => setApercu(false)}
+					surtitre="Certificat de paiement" titre="Acompte n° 3 — 02 GROS ŒUVRE"
+					aide="Le cumul réalisé se saisit sur la feuille — le bleu ne s’imprime pas."
+					notes={<><NoteApercu>Le cumul réalisé est obligatoire.</NoteApercu><NoteApercu info>Version 2 du 04/03/2026.</NoteApercu></>}
+					actions={<>
+						<MenuDeroulant id="v-apercu-version" k="Version" valeur={version} onChoisir={setVersion}
+							options={[{ v: 'v2', t: 'v2 · 04/03/2026' }, { v: 'v1', t: 'v1 · 12/02/2026' }]} />
+						<Bouton variante="fantome" onClick={() => setApercu(false)}>Fermer</Bouton>
+						<Bouton variante="primaire"><Icone.Telecharger />Générer le PDF</Bouton>
+					</>}
+					champs={<GroupeChamps titre="Acompte"><Champ libelle="Cumul réalisé" pour="v-cumul"><Saisie id="v-cumul" variante="montant" chiffres defaultValue="48 125,00" /></Champ></GroupeChamps>}>
+					<div className="aspect-[210/297] w-96 rounded-xs bg-raise p-6 text-13 text-ink shadow-ombre">Feuille du document</div>
+				</CadreApercu>
+			)}
 
 			<Panneau ouvert={panneau} surtitre="Lot 02" titre="GROS ŒUVRE" onFermer={() => setPanneau(false)}
 				pied={<><Bouton variante="primaire">Générer le marché</Bouton><Bouton variante="danger" onClick={confirmer}>Supprimer le lot</Bouton></>}>
