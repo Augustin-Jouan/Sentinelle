@@ -1,31 +1,49 @@
 'use client';
 
-import { useState, useTransition, type FormEvent } from 'react';
+import { useEffect, useState, useTransition, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { bloquerCompteAction, changerRoleAction, creerCompteAction, modifierTelephoneAction, reinitialiserMotDePasseAction } from '@/actions/comptes';
 import { ChampEnLigne } from './ChampEnLigne';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Bloc } from '@/composants/briques/Bloc';
+import { Bouton } from '@/composants/briques/Bouton';
+import { Champ, Erreur, GrilleChamps, Saisie } from '@/composants/briques/Champ';
+import { ChoixSegmente } from '@/composants/briques/ChoixSegmente';
+import { cx } from '@/composants/briques/cx';
+import * as Icone from '@/composants/briques/icones';
+import { Panneau } from '@/composants/briques/Panneau';
+import { Pastille } from '@/composants/briques/Pastille';
+import { CadreTableau, Tableau } from '@/composants/briques/Tableau';
+import { CHIFFRES } from '@/composants/briques/typo';
 import type { CompteListe } from '@/donnees/comptes';
+
+const OUVRIR_COMPTE = 'sentinelle:nouveau-compte';
+const ROLES = [{ v: 'user', t: 'Utilisateur' }, { v: 'admin', t: 'Administrateur' }] as const;
 
 export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moiId: string }) {
 	const [provisoire, setProvisoire] = useState<{ email: string; motDePasse: string } | null>(null);
 	const [erreurs, setErreurs] = useState<Record<string, string>>({});
 	const [enCours, demarrer] = useTransition();
+	const [creation, setCreation] = useState(false);
+	const [role, setRole] = useState<'user' | 'admin'>('user');
+
+	useEffect(() => {
+		const ouvrir = () => setCreation(true);
+		window.addEventListener(OUVRIR_COMPTE, ouvrir);
+		return () => window.removeEventListener(OUVRIR_COMPTE, ouvrir);
+	}, []);
 
 	function creer(e: FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		const formulaire = e.currentTarget;
 		const f = new FormData(formulaire);
-		const saisie = { nom: String(f.get('nom')), email: String(f.get('email')), role: String(f.get('role')) };
+		const saisie = { nom: String(f.get('nom')), email: String(f.get('email')), role };
 		demarrer(async () => {
 			const r = await creerCompteAction(saisie);
 			if (r.ok) {
 				setErreurs({});
 				formulaire.reset();
+				setRole('user');
+				setCreation(false);
 				setProvisoire({ email: saisie.email.trim().toLowerCase(), motDePasse: r.donnees.motDePasse });
 			} else {
 				setErreurs(r.champs ?? { general: r.erreur });
@@ -50,81 +68,80 @@ export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moi
 	}
 
 	return (
-		<div className="space-y-6">
-			<form onSubmit={creer} className="flex flex-wrap items-end gap-3 rounded-xl border bg-card p-4">
-				<div className="space-y-1">
-					<Label htmlFor="nom">Nom</Label>
-					<Input id="nom" name="nom" required aria-invalid={Boolean(erreurs.nom)} />
-				</div>
-				<div className="space-y-1">
-					<Label htmlFor="email">E-mail</Label>
-					<Input id="email" name="email" type="email" required aria-invalid={Boolean(erreurs.email)} />
-				</div>
-				<div className="space-y-1">
-					<Label htmlFor="role">Rôle</Label>
-					<select id="role" name="role" defaultValue="user" className="h-9 rounded-md border border-input bg-card px-2 text-sm">
-						<option value="user">Utilisateur</option>
-						<option value="admin">Administrateur</option>
-					</select>
-				</div>
-				<Button type="submit" disabled={enCours}>Créer le compte</Button>
-				{Object.values(erreurs).length > 0 && <p className="w-full text-sm text-destructive">{Object.values(erreurs)[0]}</p>}
-			</form>
-
-			<table className="w-full rounded-xl border bg-card text-sm">
-				<thead>
-					<tr className="border-b text-left text-muted-foreground">
-						<th className="p-3">Nom</th><th className="p-3">E-mail</th><th className="p-3">Portable</th><th className="p-3">Rôle</th><th className="p-3">État</th><th className="p-3" />
-					</tr>
-				</thead>
-				<tbody>
-					{comptes.map((c) => (
-						<tr key={c.id} className="border-b last:border-0">
-							<td className="p-3 font-medium">{c.nom}</td>
-							<td className="p-3">{c.email}</td>
-							<td className="p-3">
-								<ChampEnLigne libelle={`Portable de ${c.nom}`} type="tel" placeholder="06 …" valeur={c.telephone}
-									enregistrer={modifierTelephoneAction.bind(null, c.id)} />
-							</td>
-							<td className="p-3">{c.role === 'admin' ? 'Administrateur' : 'Utilisateur'}</td>
-							<td className="p-3">
-								{c.bloque ? <Badge variant="destructive">Bloqué</Badge>
-									: c.doitChangerMotDePasse ? <Badge variant="secondary">Mot de passe provisoire</Badge>
-									: <Badge variant="outline">Actif</Badge>}
-							</td>
-							<td className="space-x-2 p-3 text-right">
-								<Button size="sm" variant="outline" disabled={enCours} onClick={() => reinitialiser(c)}>Réinitialiser le mot de passe</Button>
-								{c.id !== moiId && (
-									<>
-										<Button size="sm" variant="outline" disabled={enCours} onClick={() => agir(() => changerRoleAction(c.id, c.role === 'admin' ? 'user' : 'admin'), 'Rôle modifié.')}>
-											{c.role === 'admin' ? 'Passer utilisateur' : 'Passer administrateur'}
-										</Button>
-										<Button size="sm" variant={c.bloque ? 'outline' : 'destructive'} disabled={enCours} onClick={() => agir(() => bloquerCompteAction(c.id, !c.bloque), c.bloque ? 'Compte débloqué.' : 'Compte bloqué.')}>
-											{c.bloque ? 'Débloquer' : 'Bloquer'}
-										</Button>
-									</>
-								)}
-							</td>
+		<>
+			<CadreTableau>
+				<Tableau variante="plain">
+					<thead>
+						<tr>
+							<th>Nom</th><th>E-mail</th><th>Portable</th><th>Rôle</th><th>État</th><th data-droite />
 						</tr>
-					))}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{comptes.map((c) => (
+							<tr key={c.id}>
+								<td>{c.nom}</td>
+								<td>{c.email}</td>
+								<td>
+									<ChampEnLigne variante="texte" libelle={`Portable de ${c.nom}`} type="tel" placeholder="06 …" valeur={c.telephone}
+										enregistrer={modifierTelephoneAction.bind(null, c.id)} />
+								</td>
+								<td>{c.role === 'admin' ? 'Administrateur' : 'Utilisateur'}</td>
+								<td>
+									{c.bloque ? <Pastille ton="neutre">Bloqué</Pastille>
+										: c.doitChangerMotDePasse ? <Pastille className="ml-1">Mot de passe provisoire</Pastille>
+										: <Pastille>Actif</Pastille>}
+								</td>
+								<td data-droite data-actions>
+									<Bouton taille="sm" desactive={enCours} onClick={() => reinitialiser(c)}>Réinitialiser le mot de passe</Bouton>
+									{c.id !== moiId && (
+										<>
+											<Bouton taille="sm" desactive={enCours} onClick={() => agir(() => changerRoleAction(c.id, c.role === 'admin' ? 'user' : 'admin'), 'Rôle modifié.')}>
+												{c.role === 'admin' ? 'Passer utilisateur' : 'Passer administrateur'}
+											</Bouton>
+											<Bouton taille="sm" variante={c.bloque ? 'normal' : 'danger'} desactive={enCours} onClick={() => agir(() => bloquerCompteAction(c.id, !c.bloque), c.bloque ? 'Compte débloqué.' : 'Compte bloqué.')}>
+												{c.bloque ? 'Débloquer' : 'Bloquer'}
+											</Bouton>
+										</>
+									)}
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</Tableau>
+			</CadreTableau>
 
-			<Dialog open={provisoire !== null} onOpenChange={(ouvert) => { if (ouvert) return; }} disablePointerDismissal>
-				<DialogContent showCloseButton={false}>
-					<DialogHeader>
-						<DialogTitle>Mot de passe provisoire</DialogTitle>
-						<DialogDescription>
-							Transmettez-le à {provisoire?.email}. Il ne sera plus jamais affiché ; il devra être changé à la première connexion.
-						</DialogDescription>
-					</DialogHeader>
-					<p data-testid="mot-de-passe-provisoire" className="rounded-md bg-muted p-3 text-center font-mono text-lg tracking-wider">{provisoire?.motDePasse}</p>
-					<DialogFooter>
-						<Button onClick={() => { void navigator.clipboard.writeText(provisoire?.motDePasse ?? ''); toast.success('Copié.'); }}>Copier</Button>
-						<Button variant="outline" onClick={() => setProvisoire(null)}>Fermer</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-		</div>
+			<Panneau ouvert={creation} surtitre="NOUVEAU COMPTE" titre="Créer un compte" onFermer={() => setCreation(false)}
+				pied={<>
+					<Bouton type="submit" form="f-compte" variante="primaire" desactive={enCours}>Créer le compte</Bouton>
+					<Bouton variante="fantome" onClick={() => setCreation(false)}>Annuler</Bouton>
+				</>}>
+				<form id="f-compte" onSubmit={creer}>
+					<GrilleChamps>
+						<Champ libelle="Nom" pour="nom" erreur={erreurs.nom} pleineLargeur><Saisie id="nom" name="nom" required erreur={erreurs.nom} /></Champ>
+						<Champ libelle="E-mail" pour="email" erreur={erreurs.email} pleineLargeur><Saisie id="email" name="email" type="email" required erreur={erreurs.email} /></Champ>
+						<Champ libelle="Rôle" pleineLargeur><ChoixSegmente libelle="Rôle" options={ROLES} valeur={role} onChoisir={setRole} /></Champ>
+						{erreurs.general && <Erreur alerte>{erreurs.general}</Erreur>}
+					</GrilleChamps>
+				</form>
+			</Panneau>
+
+			<Panneau ouvert={provisoire !== null} surtitre="MOT DE PASSE PROVISOIRE" titre={provisoire?.email ?? ''} libelle="Mot de passe provisoire" onFermer={() => {}} sansFermeture
+				pied={<>
+					<Bouton variante="primaire" onClick={() => { void navigator.clipboard.writeText(provisoire?.motDePasse ?? ''); toast('Copié.'); }}>Copier</Bouton>
+					<Bouton variante="fantome" onClick={() => setProvisoire(null)}>Fermer</Bouton>
+				</>}>
+				<p>Transmettez-le à {provisoire?.email}. Il ne sera plus jamais affiché ; il devra être changé à la première connexion.</p>
+				<Bloc><p data-testid="mot-de-passe-provisoire" className={cx(CHIFFRES, 'text-center text-18 tracking-[0.08em]')}>{provisoire?.motDePasse}</p></Bloc>
+			</Panneau>
+		</>
+	);
+}
+
+/** « Nouveau compte » de la barre de titre : ouvre la fiche de création. */
+export function BoutonNouveauCompte() {
+	return (
+		<Bouton variante="primaire" onClick={() => window.dispatchEvent(new Event(OUVRIR_COMPTE))}>
+			<Icone.Plus />Nouveau compte
+		</Bouton>
 	);
 }

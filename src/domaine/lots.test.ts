@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { lotsVisibles, type LotTriable } from './lots';
+import { lotsVisibles, TRIS_LOTS, type LotTriable } from './lots';
 
 const lot = (o: Partial<LotTriable> & { ordre: number }): LotTriable => ({
 	numero: null, designation: '', entreprise: null, corpsEtat: '', nature: 'GRE_A_GRE', htEngage: '0', ...o,
@@ -31,5 +31,18 @@ describe('lots visibles', () => {
 		const copie = [...lots];
 		lotsVisibles(lots, '', 'montant');
 		expect(lots).toEqual(copie);
+	});
+});
+
+describe('tri « Numéro de lot » (TRIS_LOT.numero de la maquette)', () => {
+	const lot = (numero: string | null, designation: string): LotTriable => ({
+		ordre: 0, numero, designation, entreprise: null, corpsEtat: '', nature: 'GRE_A_GRE', htEngage: '0',
+	});
+	it('numéros dans l\'ordre naturel, puis désignation ; sans numéro en tête', () => {
+		const lots = [lot('10', 'CARRELAGE'), lot('02', 'GROS ŒUVRE'), lot(null, 'ESCALIER'), lot('9', 'PLOMBERIE')];
+		expect(lotsVisibles(lots, '', 'numero').map((l) => l.designation)).toEqual(['ESCALIER', 'GROS ŒUVRE', 'PLOMBERIE', 'CARRELAGE']);
+	});
+	it('les libellés du menu sont ceux de la maquette, dans son ordre', () => {
+		expect(TRIS_LOTS.map((t) => t.t)).toEqual(['Ordre du chantier', 'Numéro de lot', 'Désignation (A → Z)', 'Entreprise (A → Z)', 'Montant décroissant', "À attribuer d'abord"]);
 	});
 });

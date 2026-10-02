@@ -3,9 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition, type FormEvent } from 'react';
 import { changerMotDePasseAction, deconnexionAction } from '@/actions/session';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Bouton } from '@/composants/briques/Bouton';
+import { Champ, Erreur, Saisie } from '@/composants/briques/Champ';
+import { EcranCentre, FormulaireCentre } from '@/composants/briques/EcranCentre';
 
 export function FormulaireMotDePasse() {
 	const router = useRouter();
@@ -27,29 +27,21 @@ export function FormulaireMotDePasse() {
 	}
 
 	const champ = (nom: string, libelle: string, autoComplete: string) => (
-		<div className="space-y-2">
-			<Label htmlFor={nom}>{libelle}</Label>
-			<Input id={nom} name={nom} type="password" autoComplete={autoComplete} required aria-invalid={Boolean(erreurs[nom])} />
-			{erreurs[nom] && <p className="text-sm text-destructive">{erreurs[nom]}</p>}
-		</div>
+		<Champ libelle={libelle} pour={nom} erreur={erreurs[nom]}>
+			<Saisie id={nom} name={nom} type="password" autoComplete={autoComplete} required erreur={erreurs[nom]} />
+		</Champ>
 	);
 
 	return (
-		<div className="w-full max-w-sm space-y-3">
-			<form onSubmit={soumettre} className="space-y-5 rounded-xl border bg-card p-8 shadow-sm">
-				<div>
-					<h1 className="text-2xl font-bold">Choisissez votre mot de passe</h1>
-					<p className="text-sm text-muted-foreground">Le mot de passe provisoire ne sert qu&apos;une fois. 12 caractères au moins.</p>
-				</div>
+		<EcranCentre sigle titre="Sentinelle" accroche={<>Choisissez votre mot de passe. Le mot de passe provisoire ne sert qu&apos;une fois. 12 caractères au moins.</>}
+			pied={<form action={deconnexionAction}><Bouton variante="fantome" taille="sm" type="submit">Se déconnecter</Bouton></form>}>
+			<FormulaireCentre onSubmit={soumettre}>
 				{champ('ancien', 'Mot de passe actuel', 'current-password')}
 				{champ('nouveau', 'Nouveau mot de passe', 'new-password')}
 				{champ('confirmation', 'Confirmer le nouveau mot de passe', 'new-password')}
-				{erreurs.general && <p role="alert" className="text-sm text-destructive">{erreurs.general}</p>}
-				<Button type="submit" className="w-full" disabled={enCours}>Enregistrer</Button>
-			</form>
-			<form action={deconnexionAction} className="text-center">
-				<Button type="submit" variant="ghost" size="sm">Se déconnecter</Button>
-			</form>
-		</div>
+				{erreurs.general && <Erreur alerte>{erreurs.general}</Erreur>}
+				<Bouton variante="primaire" taille="grand" type="submit" enCours={enCours}>Enregistrer</Bouton>
+			</FormulaireCentre>
+		</EcranCentre>
 	);
 }

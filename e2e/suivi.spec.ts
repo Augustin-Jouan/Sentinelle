@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { unzipSync } from 'fflate';
 import { PDFDocument } from 'pdf-lib';
 import { expect, test, type Page } from '@playwright/test';
-import { ADMIN, seConnecter } from './aide';
+import { ADMIN, carteChantier, onglet, seConnecter } from './aide';
 import { telecharger } from './aidePlanning';
 
 test.describe.configure({ mode: 'serial' });
@@ -10,8 +10,9 @@ test.describe.configure({ mode: 'serial' });
 async function ouvrirDocuments(page: Page) {
 	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
 	await page.goto('/chantiers');
-	await page.getByRole('link', { name: 'SUIVI', exact: true }).click();
-	await page.getByRole('link', { name: 'Documents', exact: true }).click();
+	await carteChantier(page, 'SUIVI').click();
+	await expect(page).toHaveURL(/\/marches$/);
+	await onglet(page, 'Documents').click();
 	await expect(page.getByRole('heading', { name: 'Documents du chantier' })).toBeVisible();
 }
 
@@ -23,7 +24,7 @@ test('comptes rendus : brouillon repris, enregistré, suivant, abandon, correcti
 	test.setTimeout(180_000);
 	await ouvrirDocuments(page);
 	await expect(page.getByTestId('resume-documents')).toHaveText('Aucun document produit pour ce chantier.');
-	await expect(carteCr(page).getByTestId('suite-comptes-rendus')).toHaveText('Le premier reprend les lots et les entreprises');
+	await expect(carteCr(page).getByTestId('suite-comptes-rendus')).toHaveText('Le premier reprend lots et entreprises');
 
 	// 1. Nouveau compte rendu : avancement, coordination, convocation ; tout est là après rechargement.
 	await carteCr(page).getByRole('button', { name: 'Nouveau compte rendu' }).click();
@@ -46,8 +47,8 @@ test('comptes rendus : brouillon repris, enregistré, suivant, abandon, correcti
 	await expect(cr).toBeHidden();
 	await expect(page.getByText('Compte rendu n° 01 enregistré.')).toBeVisible();
 	expect(await telecharger(page, () => page.getByRole('button', { name: 'Télécharger le PDF' }).click())).toBe('SUIVI-CompteRendu01-v1.pdf');
-	await expect(carteCr(page).getByRole('link', { name: /^n° 01 · \d{2}\/\d{2}\/\d{4}$/ })).toBeVisible();
-	await expect(page.getByTestId('resume-documents')).toHaveText(/^1 document · dernier le \d{2}\/\d{2}\/\d{4}$/);
+	await expect(carteCr(page).getByRole('link', { name: /^n° 01 · \d{2}\.\d{2}\.\d{4}$/ })).toBeVisible();
+	await expect(page.getByTestId('resume-documents')).toHaveText(/^1 document produit · dernier le \d{2}\.\d{2}\.\d{4}$/);
 
 	// 3. Le suivant : n° 02, coordination et lettre C reprises, avancement vide.
 	await carteCr(page).getByRole('button', { name: 'Nouveau compte rendu' }).click();
@@ -58,11 +59,11 @@ test('comptes rendus : brouillon repris, enregistré, suivant, abandon, correcti
 	await expect(cr.getByRole('button', { name: 'Convocation GROS ŒUVRE : C' })).toBeVisible();
 
 	// 4. Abandonner le brouillon, puis corriger le n° 01 : v2.
-	page.once('dialog', (d) => void d.accept());
 	await cr.getByRole('button', { name: 'Abandonner le brouillon' }).click();
+	await page.getByRole('alertdialog').getByRole('button', { name: 'Abandonner' }).click();
 	await expect(cr).toBeHidden();
 	await expect(carteCr(page).getByRole('button', { name: 'Nouveau compte rendu' })).toBeVisible();
-	await carteCr(page).getByRole('link', { name: 'Corriger le n° 01' }).click();
+	await page.getByRole('link', { name: 'Corriger le n° 01' }).click();
 	cr = dialogueCr(page);
 	await expect(cr).toContainText('Correction du n° 01');
 	await cr.getByRole('textbox', { name: 'Avancement' }).fill('Fondations coulées, dalle faite');
@@ -71,7 +72,7 @@ test('comptes rendus : brouillon repris, enregistré, suivant, abandon, correcti
 	await expect(page.getByText('Version 2 générée.')).toBeVisible();
 
 	// Correction sans changement : pas de v3, la v2 est téléchargée.
-	await carteCr(page).getByRole('link', { name: 'Corriger le n° 01' }).click();
+	await page.getByRole('link', { name: 'Corriger le n° 01' }).click();
 	cr = dialogueCr(page);
 	await expect(cr.getByRole('textbox', { name: 'Avancement' })).toHaveValue('Fondations coulées, dalle faite');
 	expect(await telecharger(page, () => cr.getByRole('button', { name: 'Générer la v3' }).click())).toBe('SUIVI-CompteRendu01-v2.pdf');
@@ -79,7 +80,8 @@ test('comptes rendus : brouillon repris, enregistré, suivant, abandon, correcti
 	await expect(cr).toBeHidden();
 });
 
-const casePeinture = (page: Page) => page.locator('tr[data-lot="11 — PEINTURE"] [data-case="reception"]');
+const lignePeinture = (page: Page) => page.locator('tr[data-lot="11 — PEINTURE"]');
+const casePeinture = (page: Page) => lignePeinture(page).locator('[data-case="reception"]');
 
 // Spec § 10, étapes 5 et 6.
 test('PV de réception : tous les lots, refus puis 12 PV assemblés ; levée des réserves', async ({ page }) => {
@@ -99,10 +101,11 @@ test('PV de réception : tous les lots, refus puis 12 PV assemblés ; levée des
 	await expect(page.getByText("LA DÉCO'TECH : précisez la nature des réserves.")).toBeVisible();
 	pv = page.getByRole('dialog', { name: 'Procès-verbal de réception' });
 	await expect(pv.locator('[data-entreprise]')).toHaveCount(1);
-	await expect(pv.getByLabel('Procès-verbal pour')).toHaveValue(/.+/);
+	await expect(pv.locator('#pv-lot').getByTestId('dd-valeur')).toHaveText(/.+/);
 	await expect(pv.locator('[data-entreprise="LA DÉCO\'TECH"]')).toBeVisible();
 	await pv.getByRole('textbox', { name: 'Nature des réserves' }).fill('Reprise des joints de la cuisine');
-	await pv.getByLabel('Procès-verbal pour').selectOption('tous');
+	await pv.getByRole('button', { name: /^Procès-verbal pour/ }).click();
+	await pv.getByRole('option', { name: 'Tous les lots attribués — une page chacun' }).click();
 	pv = page.getByRole('dialog', { name: 'Procès-verbal de réception' });
 	await expect(pv.locator('[data-entreprise]')).toHaveCount(12);
 	await expect(pv.locator('[data-entreprise="LA DÉCO\'TECH"]').getByRole('textbox', { name: 'Nature des réserves' }))
@@ -118,11 +121,11 @@ test('PV de réception : tous les lots, refus puis 12 PV assemblés ; levée des
 	// 6. Case PEINTURE orangée « Avec réserves », puis levée : bleue « Réserves levées le … ».
 	await expect(casePeinture(page)).toHaveAttribute('data-etat', 'avec-reserves');
 	await expect(casePeinture(page)).toContainText(/Avec réserves · \d{2}\/\d{2}/);
-	await casePeinture(page).getByRole('button', { name: 'Réserves levées…' }).click();
-	await casePeinture(page).getByRole('button', { name: 'Enregistrer la levée' }).click();
+	await lignePeinture(page).getByRole('button', { name: 'Réserves levées…' }).click();
+	await lignePeinture(page).getByRole('button', { name: 'Enregistrer la levée' }).click();
 	await expect(casePeinture(page)).toHaveAttribute('data-etat', 'levee');
 	await expect(casePeinture(page)).toContainText(/Réserves levées le \d{2}\/\d{2}/);
-	await expect(casePeinture(page).getByRole('button', { name: 'Annuler la levée' })).toBeVisible();
+	await expect(lignePeinture(page).getByRole('button', { name: 'Annuler la levée' })).toBeVisible();
 	await expect(page.locator('tr[data-lot="02 — GROS ŒUVRE"] [data-case="reception"]')).toHaveAttribute('data-etat', 'sans-reserves');
 	await expect(page.locator('tr[data-lot="12 — ENDUIT EXTÉRIEUR"] [data-case="reception"]')).toHaveCount(0);
 });

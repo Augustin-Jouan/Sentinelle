@@ -1,0 +1,81 @@
+/* Le vocabulaire Tailwind réduit à l'identité : plus de bg-red-500 ni de text-sm, seulement les jetons de jetons.css. */
+@theme inline {
+	--color-*: initial;
+	--color-paper: var(--paper);
+	--color-surface: var(--surface);
+	--color-raise: var(--raise);
+	--color-ink: var(--ink);
+	--color-ink-2: var(--ink-2);
+	--color-muted: var(--muted);
+	--color-faint: var(--faint);
+	--color-rule: var(--rule);
+	--color-rule-strong: var(--rule-strong);
+	--color-accent: var(--accent);
+	--color-accent-2: var(--accent-2);
+	--color-accent-soft: var(--accent-soft);
+	--color-on-accent: var(--on-accent);
+	--color-focus: var(--focus);
+	--color-danger: var(--danger);
+	--color-danger-soft: var(--danger-soft);
+	--color-alerte: var(--alerte);
+	--color-alerte-soft: var(--alerte-soft);
+	--color-alerte-trait: var(--alerte-trait);
+	--color-idle-soft: var(--idle-soft);
+	--color-band: var(--band);
+	--color-bar-ring: var(--bar-ring);
+	--color-voile: var(--voile);
+
+	/* Les 13 tailles de la maquette, nommées d'après leur valeur en pixels. Sans interligne : il s'hérite, comme dans la maquette. */
+	--text-*: initial;
+	--text-9: 0.5625rem;
+	--text-10: 0.625rem;
+	--text-11: 0.6875rem;
+	--text-12: 0.75rem;
+	--text-13: 0.8125rem;
+	--text-14: 0.875rem;
+	--text-15: 0.9375rem;
+	--text-16: 1rem;
+	--text-17: 1.0625rem;
+	--text-18: 1.125rem;
+	--text-22: 1.375rem;
+	--text-24: 1.5rem;
+	--text-40: 2.5rem;
+
+	--radius-*: initial;
+	--radius-xs: var(--r-xs);
+	--radius-sm: var(--r-sm);
+	--radius-md: var(--r);
+	--radius-lg: var(--r-lg);
+
+	--shadow-*: initial;
+	--shadow-ombre: var(--ombre);
+	--shadow-ombre-h: var(--ombre-h);
+	--shadow-ombre-toast: var(--ombre-toast);
+
+	--font-sans: 'Figtree', system-ui, sans-serif;
+	--font-titre: 'Outfit', 'Figtree', sans-serif;
+	--font-mono: 'Spline Sans Mono', ui-monospace, monospace;
+
+	/* Les petites capitales des clés (« CLIENT », « TOTAL MARCHÉS HT ») */
+	--tracking-capitales: 0.08em;
+
+	/* Le seul point de rupture de la maquette : max-etroit: */
+	--breakpoint-*: initial;
+	--breakpoint-etroit: 60rem;
+
+	/* L'entrée d'un message (ex-@keyframes rise) */
+	--animate-monte: monte 0.2s ease;
+	@keyframes monte {
+		from { opacity: 0; transform: translateY(0.5rem); }
+		to { opacity: 1; transform: none; }
+	}
+}
+
+/* Comme la maquette : pas d'enveloppe @media (hover: hover). Un contrôle désactivé ne réagit pas au survol. */
+@custom-variant hover (&:hover:not(:disabled));
+
+/* Le thème suit l'interrupteur de la barre (data-theme), sinon le système — comme la maquette. */
+@custom-variant dark {
+	&:where([data-theme='dark'], [data-theme='dark'] *) { @slot; }
+	@media (prefers-color-scheme: dark) { &:where(:root:not([data-theme='light']), :root:not([data-theme='light']) *) { @slot; } }
+}

@@ -17,6 +17,7 @@ export async function creerArtisanAction(nom: string): Promise<Resultat<{ id: st
 	return executer({}, async () => {
 		const id = await creerArtisan(nom);
 		rafraichir();
+		revalidatePath('/', 'layout');
 		return { id };
 	});
 }

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { Bouton } from '@/composants/briques/Bouton';
+import { EcranCentre } from '@/composants/briques/EcranCentre';
 
 export default function PageErreur({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
 	useEffect(() => {
@@ -9,12 +10,8 @@ export default function PageErreur({ error, reset }: { error: Error & { digest?:
 	}, [error]);
 
 	return (
-		<main className="grid min-h-screen place-items-center px-4">
-			<div className="w-full max-w-sm space-y-4 text-center">
-				<h1 className="text-2xl font-bold">Une erreur est survenue</h1>
-				<p className="text-sm text-muted-foreground">Réessayez ; si le problème persiste, prévenez l&apos;administrateur.</p>
-				<Button onClick={reset}>Réessayer</Button>
-			</div>
-		</main>
+		<EcranCentre titre="Une erreur est survenue" accroche="Réessayez ; si le problème persiste, prévenez l'administrateur.">
+			<Bouton variante="primaire" taille="grand" onClick={reset}>Réessayer</Bouton>
+		</EcranCentre>
 	);
 }
