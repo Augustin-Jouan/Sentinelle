@@ -6,7 +6,8 @@ import { toast } from 'sonner';
 import {
 	abandonnerBrouillonAction, changerConvocationAction, corrigerCompteRenduAction, enregistrerCompteRenduAction, modifierChampCompteRenduAction,
 } from '@/actions/comptesRendus';
-import { CadreApercu } from '@/composants/briques/CadreApercu';
+import { Bouton } from '@/composants/briques/Bouton';
+import { CadreApercu, NoteApercu } from '@/composants/briques/CadreApercu';
 import { useConfirmation } from '@/composants/briques/Confirmation';
 import * as Icone from '@/composants/briques/icones';
 import { telecharger } from '@/composants/telecharger';
@@ -153,24 +154,24 @@ export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOu
 	return (
 		<CadreApercu libelle={TITRES_TYPES.COMPTE_RENDU} surtitre={entete} titre={reference} disposition="solo" onFermer={() => void fermer()}
 			aide={mode === 'brouillon' ? "Écrivez directement dans les zones bleues — le bleu ne s'imprime pas." : undefined}
-			notes={ouvert.blocage && <p role="note" className="gen-note">{ouvert.blocage}</p>}
+			notes={ouvert.blocage && <NoteApercu>{ouvert.blocage}</NoteApercu>}
 			actions={<>
-				<button type="button" className="btn btn-ghost" onClick={() => void fermer()}>Fermer</button>
+				<Bouton variante="fantome" onClick={() => void fermer()}>Fermer</Bouton>
 				{mode === 'brouillon' && (
 					<>
-						<button type="button" className="btn" onClick={repartir} disabled={enCours} title="Remplacer la coordination par les seuls intitulés des lots">Repartir des lots</button>
-						<button type="button" className="btn" onClick={abandonner} disabled={enCours}>Abandonner le brouillon</button>
-						<button type="button" className="btn btn-primary" onClick={enregistrer} disabled={enCours}>{enCours ? 'Enregistrement…' : `Enregistrer le n° ${n}`}</button>
+						<Bouton onClick={repartir} desactive={enCours} title="Remplacer la coordination par les seuls intitulés des lots">Repartir des lots</Bouton>
+						<Bouton onClick={abandonner} desactive={enCours}>Abandonner le brouillon</Bouton>
+						<Bouton variante="primaire" onClick={enregistrer} enCours={enCours}>{enCours ? 'Enregistrement…' : `Enregistrer le n° ${n}`}</Bouton>
 					</>
 				)}
 				{mode === 'correction' && (
-					<button type="button" className="btn btn-primary" onClick={corriger} disabled={enCours}>{enCours ? 'Génération…' : `Générer la v${(ouvert.derniere?.version ?? 0) + 1}`}</button>
+					<Bouton variante="primaire" onClick={corriger} enCours={enCours}>{enCours ? 'Génération…' : `Générer la v${(ouvert.derniere?.version ?? 0) + 1}`}</Bouton>
 				)}
 				{lecture && ouvert.dernier && (
-					<button type="button" className="btn" onClick={() => router.replace(`${chemin}?corriger-cr=${ouvert.id}`, { scroll: false })}>{`Corriger le n° ${n}`}</button>
+					<Bouton onClick={() => router.replace(`${chemin}?corriger-cr=${ouvert.id}`, { scroll: false })}>{`Corriger le n° ${n}`}</Bouton>
 				)}
 				{lecture && ouvert.derniere && (
-					<a className="btn btn-primary" href={`/api/documents/${ouvert.derniere.documentId}/pdf`}><Icone.Telecharger />Télécharger le PDF</a>
+					<Bouton variante="primaire" natif href={`/api/documents/${ouvert.derniere.documentId}/pdf`}><Icone.Telecharger />Télécharger le PDF</Bouton>
 				)}
 			</>}>
 			<CompteRendu donnees={donnees} mode={lecture ? 'lecture' : 'edition'} edition={lecture ? undefined : edition} />

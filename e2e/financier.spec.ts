@@ -109,7 +109,7 @@ test('avenant, lettre, acomptes antérieurs, certificat et correction', async ({
 	await expect(colonne(0).getByText('modifié', { exact: true })).toHaveCount(0);
 	await expect(colonne(1).locator('[data-case="avenant"]')).toHaveText(/n° 01 · − 300/);
 	const certificats = colonne(2).locator('[data-case="certificat"]');
-	await expect(colonne(2).locator('.dm-plus')).toHaveText('1 avant');
+	await expect(colonne(2).getByText('1 avant')).toBeVisible();
 	await expect(certificats).toHaveCount(2);
 	await expect(certificats.nth(0)).toHaveText('n° 02 · hors appli');
 	await expect(certificats.nth(1)).toContainText('n° 03 · v2');

@@ -36,11 +36,11 @@ test('planning imprimable, feuille de visa, états dans Documents', async ({ pag
 
 	// 3. Documents : les deux séries à jour ; la version 1 s'ouvre sur une seule feuille, mesurée pareil.
 	await allerA('Documents');
-	await expect(cartePlanning.locator('.dm-carte-n')).toHaveText('v1');
+	await expect(cartePlanning.getByTestId('carte-version')).toHaveText('v1');
 	await expect(cartePlanning.getByText('modifié', { exact: true })).toHaveCount(0);
-	await expect(carteVisa.locator('.dm-carte-n')).toHaveText('v1');
+	await expect(carteVisa.getByTestId('carte-version')).toHaveText('v1');
 	await expect(carteVisa.getByText('périmé', { exact: true })).toHaveCount(0);
-	await cartePlanning.locator('.dm-carte-v').click();
+	await cartePlanning.getByTestId('carte-valeur').click();
 	await expect(apercu.locator('#feuille-unique')).toHaveAttribute('data-pas', String(MESURES.pas));
 	await page.keyboard.press('Escape');
 	await expect(apercu).toBeHidden();
@@ -68,7 +68,7 @@ test('planning imprimable, feuille de visa, états dans Documents', async ({ pag
 
 	// 6. Documents : le visa fait signer la v1, la v2 existe : périmé.
 	await allerA('Documents');
-	await expect(cartePlanning.locator('.dm-carte-n')).toHaveText('v2');
+	await expect(cartePlanning.getByTestId('carte-version')).toHaveText('v2');
 	await expect(cartePlanning.getByText('modifié', { exact: true })).toHaveCount(0);
 	await expect(carteVisa.getByText('périmé', { exact: true })).toBeVisible();
 });

@@ -4,7 +4,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { genererReceptionsAction, modifierChampReceptionAction, modifierChampReceptionCommunAction, preparerReceptionsAction } from '@/actions/receptions';
-import { CadreApercu } from '@/composants/briques/CadreApercu';
+import { Bouton } from '@/composants/briques/Bouton';
+import { CadreApercu, NoteApercu } from '@/composants/briques/CadreApercu';
 import * as Icone from '@/composants/briques/icones';
 import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
 import { telecharger } from '@/composants/telecharger';
@@ -127,18 +128,18 @@ export function ApercuReception({ ouvert: initial, reference }: { ouvert: Recept
 		<CadreApercu libelle={TITRES_TYPES.PV_RECEPTION} surtitre={TITRES_TYPES.PV_RECEPTION} disposition="solo" onFermer={fermer}
 			titre={tous ? `${reference} — ${ouvert.pages.length} lots, une page chacun` : reference}
 			aide={ouvert.blocage ? undefined : "Chaque champ bleu s'enregistre aussitôt — le bleu ne s'imprime pas."}
-			notes={ouvert.blocage && <p role="note" className="gen-note">{ouvert.blocage}</p>}
+			notes={ouvert.blocage && <NoteApercu>{ouvert.blocage}</NoteApercu>}
 			actions={<>
 				{ouvert.options.length > 0 && (
 					<MenuDeroulant id="pv-lot" k="Procès-verbal pour" valeur={ouvert.cible} recherche largeur="large"
 						options={[...ouvert.options.map((o) => ({ v: o.lotId, t: o.libelle, meta: o.entreprise })), { sep: true as const }, { v: TOUS_LES_LOTS, t: 'Tous les lots attribués — une page chacun' }]}
 						onChoisir={aller} />
 				)}
-				<button type="button" className="btn btn-ghost" onClick={fermer}>Fermer</button>
+				<Bouton variante="fantome" onClick={fermer}>Fermer</Bouton>
 				{!ouvert.blocage && (
-					<button type="button" className="btn btn-primary" onClick={generer} disabled={enCours}>
+					<Bouton variante="primaire" onClick={generer} enCours={enCours}>
 						<Icone.Telecharger />{enCours ? 'Génération…' : tous ? `Générer les ${ouvert.pages.length} PV` : 'Générer le PDF'}
-					</button>
+					</Bouton>
 				)}
 			</>}>
 			<div className="pv-pages">

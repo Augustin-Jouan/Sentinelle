@@ -1,6 +1,5 @@
 .num
 .eyebrow
-.topbar-actions
 .btn
 .btn:hover
 .btn svg
@@ -20,8 +19,6 @@
 .table-frame
 th.ta-r
 td.ta-r
-.nature-tag
-.nature-tag.st
 tr.empty-row td
 tr.empty-row .btn
 .pill-fini
@@ -48,22 +45,6 @@ tr.empty-row .btn
 .block
 .block-head
 .block-body
-.gen
-.gen.is-on
-html:has(.gen.is-on)
-.gen-preview
-.gen-fields
-.gen-head
-.gen-split
-.fgroup
-.fgroup > .eyebrow
-.frow
-.frow:hover
-.frow dt
-.frow dd
-.frow dd .num
-.src
-.gen-fields textarea
 .g-toolbar
 .g-outils
 .zoom
@@ -147,8 +128,6 @@ tr.ligne-dep td::before
 table.plain.plain-mini tbody tr.est-vise td
 table.plain.plain-mini tbody tr.est-vise td:first-child
 table.plain.plain-mini tbody tr.ligne-dep.est-vise td::before
-.gen-split.solo
-.saisie-aide
 .g-tete-g
 .g-sel-aide
 .g-sel
@@ -173,60 +152,6 @@ table.plain tbody td.cell-actions .btn-sm
 table.plain tbody td.cell-actions
 table.plain tbody td.cell-actions .btn + .btn
 .dash
-.doc-link
-button.doc-link
-.doc-sections
-.dm-cartes
-.dm-carte
-.dm-carte.est-vide
-.dm-carte-tete
-.dm-carte-k
-.dm-carte-n
-.dm-carte-v
-.dm-carte-v:hover
-.dm-carte-v.est-vide
-.dm-carte-s
-.dm-cadre
-table.dm
-table.dm thead th
-table.dm td
-table.dm tbody th
-table.dm tbody tr:last-child td
-table.dm tbody tr:last-child th
-table.dm tbody tr:hover
-table.dm .dm-lot
-table.dm tbody th.dm-lot
-.dm-lot-in
-.dm-lot-n
-.dm-lot-d
-.dm-lot-d .nature-tag
-.dm-lot-e
-tr.dm-inactif .dm-lot-d
-tr.dm-inactif .dm-lot-e
-.dm-note
-.dm-th-action
-.dm-th-action:hover
-.dm-pile
-.dm-case
-.dm-case.est-fait
-.dm-case.est-fait:hover
-.dm-case.est-manque
-.dm-case.est-manque:hover
-.dm-case.est-alerte
-.dm-case.est-alerte:hover
-:root[data-theme='dark'] .dm-case.est-alerte
-:root:not([data-theme='light']) .dm-case.est-alerte
-.dm-ajout
-.dm-ajout:hover
-.dm-plus
-.dm-rien
-.dm-pied
-.dm-legende .dm-case
-.dm-autres-t
-.dm-autre
-.dm-autre:last-child
-.dm-autre span
-.doc-link:hover
 table thead th.ta-r
 table tbody td.ta-r
 .g-bar.est-temp
@@ -234,9 +159,6 @@ table tbody td.ta-r
 .field .erreur
 .erreur
 .pill-modif
-.dm-case.est-hors
-.dm-sous
-.dm-sous .dm-th-action
 .btn:disabled
 .btn[aria-disabled='true']
 .btn:disabled:hover
@@ -244,12 +166,5 @@ table tbody td.ta-r
 a.btn
 .cell-actions a.btn
 .radio-row label[role='radio']:focus-visible
-a.dm-case
-a.dm-ajout
-a.dm-carte-v
-a.dm-th-action
-a.doc-link
-span.dm-ajout[aria-disabled='true']
 .gen-note
 .gen-note.est-info
-.gen-head a.btn

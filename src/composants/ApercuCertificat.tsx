@@ -9,7 +9,8 @@ import {
 	modifierAcompteManuelAction, supprimerAcompteManuelAction,
 } from '@/actions/certificats';
 import type { Resultat } from '@/actions/executer';
-import { CadreApercu } from '@/composants/briques/CadreApercu';
+import { Bouton } from '@/composants/briques/Bouton';
+import { CadreApercu, NoteApercu } from '@/composants/briques/CadreApercu';
 import * as Icone from '@/composants/briques/icones';
 import { telecharger } from '@/composants/telecharger';
 import { batirCertificat, entreeCalcul } from '@/documents/certificat';
@@ -109,17 +110,17 @@ export function ApercuCertificat({ ouvert, sousTitre }: { ouvert: CertificatOuve
 		<CadreApercu libelle={TITRES_TYPES.CERTIFICAT_PAIEMENT} disposition="solo" onFermer={fermer}
 			surtitre={acompteId ? `Correction du certificat n° ${donnees.contenu.numero}` : TITRES_TYPES.CERTIFICAT_PAIEMENT} titre={sousTitre}
 			aide={lecture ? undefined : "Le cumul réalisé, le mois et la date se saisissent sur la feuille — le bleu ne s'imprime pas."}
-			notes={messages.map((m) => <p key={m} role="note" className="gen-note">{m}</p>)}
+			notes={messages.map((m) => <NoteApercu key={m}>{m}</NoteApercu>)}
 			actions={<>
-				<button type="button" className="btn btn-ghost" onClick={fermer}>Fermer</button>
+				<Bouton variante="fantome" onClick={fermer}>Fermer</Bouton>
 				{!lecture && (
-					<button type="button" className="btn btn-primary" onClick={generer} disabled={enCours || messages.length > 0 || !lu.cumul}>
+					<Bouton variante="primaire" onClick={generer} enCours={enCours} desactive={messages.length > 0 || !lu.cumul}>
 						<Icone.Telecharger />{enCours ? 'Génération…' : acompteId ? `Générer la v${(ouvert.derniereVersion ?? 0) + 1}` : 'Générer le PDF'}
-					</button>
+					</Bouton>
 				)}
 			</>}>
 			<CertificatPaiement donnees={donnees} mode={lecture ? 'lecture' : 'edition'} edition={lecture ? undefined : edition} />
-			{alerte && <p role="note" className="gen-note">{alerte}</p>}
+			{alerte && <NoteApercu>{alerte}</NoteApercu>}
 		</CadreApercu>
 	);
 }

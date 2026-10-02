@@ -61,8 +61,6 @@
    collants obligerait à coupler leurs hauteurs, or la barre en change selon
    qu'un chantier est ouvert ou non. */
 
-.topbar-actions { display: flex; gap: 0.5rem; align-items: center; }
-
 /* bandeau chantier */
 
 /* ============================================================
@@ -147,20 +145,6 @@
 }
 th.ta-r, td.ta-r { text-align: right; }
 /* un montant ne se coupe jamais : le « € » ne doit pas tomber à la ligne suivante */
-
-.nature-tag {
-	font-family: 'Outfit', sans-serif;
-	font-size: 0.6875rem;
-	font-weight: 600;
-	letter-spacing: 0.05em;
-	text-transform: uppercase;
-	color: var(--muted);
-	border: 1px solid var(--rule-strong);
-	border-radius: var(--r-xs);
-	padding: 0.0625rem 0.3125rem 0.125rem;
-	white-space: nowrap;
-}
-.nature-tag.st { border-color: var(--accent); color: var(--accent-2); }
 /* marqueur discret posé sur la ligne du lot, à la place de l'ancienne colonne Nature */
 /* le champ et l'étiquette cohabitent dans un conteneur interne :
    la cellule elle-même doit rester une vraie cellule de tableau */
@@ -265,57 +249,9 @@ tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
 /* ============================================================
    GÉNÉRATION — champs + fac-similé
    ============================================================ */
-.gen {
-	position: fixed;
-	inset: 0;
-	z-index: 60;
-	background: var(--paper);
-	display: none;
-	grid-template-rows: auto minmax(0, 1fr);
-}
-.gen.is-on { display: grid; }
 /* Un document ouvert couvre toute la fenêtre : la molette ne doit faire défiler que
    lui. Sans ce verrou, arrivée en bout de feuille ou passée sur l'en-tête, elle
    entraînait la page de derrière. Même chose sous le panneau latéral et la confirmation. */
-html:has(.gen.is-on) { overflow: hidden; }
-.gen-preview, .gen-fields { overscroll-behavior: contain; }
-
-.gen-head {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 1rem;
-	padding: 0.875rem 1.25rem;
-	border-bottom: 1px solid var(--rule);
-	background: var(--surface);
-	flex-wrap: wrap;
-}
-.gen-split { display: grid; grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); min-height: 0; }
-.gen-fields { border-right: 1px solid var(--rule); overflow-y: auto; padding: 1.125rem; display: flex; flex-direction: column; gap: 1.125rem; background: var(--surface); }
-.gen-preview { overflow: auto; padding: 1.75rem; display: flex; justify-content: center; align-items: flex-start; }
-
-.fgroup { display: flex; flex-direction: column; gap: 0.375rem; }
-.fgroup > .eyebrow { padding-bottom: 0.3125rem; border-bottom: 1px solid var(--rule); }
-.frow {
-	display: grid;
-	grid-template-columns: 7.5rem minmax(0, 1fr);
-	gap: 0.75rem;
-	padding: 0.3125rem 0.4375rem;
-	border-radius: var(--r-xs);
-	cursor: default;
-	border: 1px solid transparent;
-}
-.frow:hover { background: var(--accent-soft); border-color: var(--accent); }
-.frow dt { font-size: 0.75rem; color: var(--muted); }
-.frow dd { margin: 0; font-size: 0.8125rem; word-break: break-word; }
-.frow dd .num { font-size: 0.8125rem; }
-.src {
-	display: inline-block;
-	font-family: 'Spline Sans Mono', monospace;
-	font-size: 0.625rem;
-	color: var(--faint);
-	letter-spacing: 0.02em;
-}
 
 /* la feuille A4 */
 
@@ -323,8 +259,6 @@ html:has(.gen.is-on) { overflow: hidden; }
 
 /* ---------- compte rendu de chantier — fac-similé de « COMPTE RENDU DE CHANTIER 1.doc » ---------- */
 /* double classe : « .sheet-doc { width: 68rem } », déclaré plus bas, l'emporterait */
-
-.gen-fields textarea { font-family: inherit; line-height: 1.45; resize: vertical; }
 /* Le compte rendu se rédige : la colonne des champs prend toute la place que la feuille
    laisse, au lieu des 22 rem des marchés où l'on ne fait que relire. */
 
@@ -614,8 +548,6 @@ table.plain.plain-mini tbody tr.ligne-dep.est-vise td::before { color: var(--acc
 /* ---------- écrire directement sur la feuille ----------
    Les zones à remplir sont teintées et soulignées à l'écran ; à l'impression elles
    redeviennent du texte ordinaire. Une zone vide montre son invite, jamais imprimée. */
-.gen-split.solo { grid-template-columns: minmax(0, 1fr); }
-.saisie-aide { margin: 0.125rem 0 0; font-size: 0.75rem; color: var(--muted); }
 
 /* sélection de plusieurs périodes */
 .g-tete-g { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
@@ -671,70 +603,10 @@ table.plain tbody td.cell-actions { white-space: nowrap; }
 table.plain tbody td.cell-actions .btn + .btn { margin-left: 0.375rem; }
 .dash { color: var(--faint); }
 
-.doc-link { color: var(--accent-2); text-decoration: none; font-weight: 500; }
-button.doc-link { background: none; border: 0; padding: 0; cursor: pointer; font: inherit; font-weight: 500; text-align: left; }
-
 /* rubriques de la page Documents */
-.doc-sections { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
 
 /* ---------- page Documents : cartes du chantier + tableau par entreprise ---------- */
-.dm-cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.75rem; }
-.dm-carte { background: var(--raise); border: 1px solid var(--rule); border-radius: var(--r); box-shadow: var(--ombre);
-	padding: 0.875rem 1rem; display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start; }
-.dm-carte.est-vide { background: var(--surface); border-style: dashed; border-color: var(--rule-strong); box-shadow: none; }
-.dm-carte-tete { display: flex; justify-content: space-between; align-self: stretch; }
-.dm-carte-k { font-family: 'Outfit', sans-serif; font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-.dm-carte-n { font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; color: var(--muted); }
-.dm-carte-v { font-family: 'Outfit', sans-serif; font-size: 1.0625rem; font-weight: 600; color: var(--accent-2);
-	background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
-.dm-carte-v:hover { text-decoration: underline; }
-.dm-carte-v.est-vide { color: var(--muted); cursor: default; }
-.dm-carte-s { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.375rem; }
-
-.dm-cadre { background: var(--raise); border: 1px solid var(--rule); border-radius: var(--r); box-shadow: var(--ombre); overflow-x: auto; }
-table.dm { width: 100%; border-collapse: collapse; min-width: 56rem; }
-table.dm thead th { text-align: left; padding: 0.625rem 0.75rem; background: var(--surface); border-bottom: 1px solid var(--rule-strong);
-	font-family: 'Outfit', sans-serif; font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-table.dm td, table.dm tbody th { padding: 0.4375rem 0.75rem; border-bottom: 1px solid var(--rule); vertical-align: middle; }
-table.dm tbody tr:last-child td, table.dm tbody tr:last-child th { border-bottom: 0; }
-table.dm tbody tr:hover { background: var(--surface); }
-table.dm .dm-lot { width: 34%; padding-left: 1rem; }
 /* la grille vit dans un bloc intérieur : posée sur la cellule, elle la sortait du tableau */
-table.dm tbody th.dm-lot { text-align: left; font-weight: 400; }
-.dm-lot-in { display: grid; grid-template-columns: 2rem minmax(0, 1fr); column-gap: 0.25rem; }
-.dm-lot-n { grid-row: 1 / 3; font-family: 'Spline Sans Mono', monospace; font-size: 0.6875rem; color: var(--muted); padding-top: 0.125rem; }
-.dm-lot-d { font-size: 0.875rem; font-weight: 500; }
-.dm-lot-d .nature-tag { font-size: 0.5625rem; margin-left: 0.25rem; vertical-align: 1px; }
-.dm-lot-e { font-size: 0.75rem; color: var(--muted); }
-tr.dm-inactif .dm-lot-d, tr.dm-inactif .dm-lot-e { color: var(--muted); }
-.dm-note { font-size: 0.75rem; font-style: italic; color: var(--muted); }
-.dm-th-action { margin-left: 0.375rem; background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
-	font-family: 'Figtree', sans-serif; font-size: 0.6875rem; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--accent-2); }
-.dm-th-action:hover { text-decoration: underline; }
-.dm-pile { display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; }
-.dm-case { display: inline-flex; align-items: center; padding: 0.1875rem 0.5rem; border-radius: 6px; font: inherit; font-size: 0.75rem;
-	line-height: 1.35; white-space: nowrap; cursor: pointer; border: 1px solid transparent; }
-.dm-case.est-fait { background: var(--accent-soft); color: var(--accent-2); }
-.dm-case.est-fait:hover { border-color: var(--accent); }
-.dm-case.est-manque { background: none; border: 1px dashed var(--rule-strong); color: var(--ink-2); }
-.dm-case.est-manque:hover { border-color: var(--accent); color: var(--accent-2); }
-.dm-case.est-alerte { background: #fbeedd; color: #7a3d00; }
-.dm-case.est-alerte:hover { border-color: #b35c00; }
-:root[data-theme='dark'] .dm-case.est-alerte { background: #3d2e1c; color: #f2c38a; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .dm-case.est-alerte { background: #3d2e1c; color: #f2c38a; } }
-.dm-ajout { width: 1.5rem; height: 1.5rem; padding: 0; border-radius: 6px; border: 1px dashed var(--rule-strong); background: none;
-	color: var(--ink-2); cursor: pointer; font-size: 0.875rem; line-height: 1; }
-.dm-ajout:hover { border-color: var(--accent); color: var(--accent-2); }
-.dm-plus { font-size: 0.6875rem; color: var(--muted); }
-.dm-rien { color: var(--faint); }
-.dm-pied { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: 0.625rem 1rem; background: var(--surface);
-	border-top: 1px solid var(--rule); font-size: 0.75rem; color: var(--muted); }
-.dm-legende .dm-case { cursor: default; padding: 0 0.375rem; font-size: 0.6875rem; }
-.dm-autres-t { padding: 0.625rem 1rem; font-family: 'Outfit', sans-serif; font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.08em;
-	text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--rule); background: var(--surface); }
-.dm-autre { display: flex; justify-content: space-between; padding: 0.5rem 1rem; font-size: 0.8125rem; border-bottom: 1px solid var(--rule); }
-.dm-autre:last-child { border-bottom: 0; }
-.dm-autre span { font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; color: var(--muted); }
 
 /* compte rendu enregistré : on le relit et on le réimprime, on ne le modifie plus */
 
@@ -742,7 +614,6 @@ tr.dm-inactif .dm-lot-d, tr.dm-inactif .dm-lot-e { color: var(--muted); }
 
 /* ---------- procès-verbal de réception — fac-similé de « 3- PV de réception.ods » ---------- */
 /* « .sheet hr » l'emporterait sans le double sélecteur */
-.doc-link:hover { text-decoration: underline; }
 
 /* ============================================================
    CONNEXION
@@ -758,13 +629,6 @@ tr.dm-inactif .dm-lot-d, tr.dm-inactif .dm-lot-e { color: var(--muted); }
 /* ---------- bande de synthèse de l'accueil ----------
    La page était plus vide qu'avant parce qu'elle était plus large. On la remplit
    de ce qu'on veut savoir en arrivant, pas en étirant ce qui existait. */
-
-@media (max-width: 60rem) {
-	/* la barre est déjà horizontale : il n'y a plus de bascule à opérer,
-	   seulement des libellés à laisser tomber pour que tout tienne */
-	.gen-split { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
-	.gen-fields { border-right: 0; border-bottom: 1px solid var(--rule); max-height: 40vh; }
-}
 
 /* Alignement à droite, rappelé en dernier et à forte spécificité : « table.lots thead th »
    et « table.plain thead th » l'emportaient sur .ta-r, si bien que les en-têtes des colonnes
@@ -792,10 +656,7 @@ table thead th.ta-r, table tbody td.ta-r { text-align: right; }
 /* Document modifié depuis sa dernière version, visa périmé : la pastille de la maquette, en accent. */
 .pill-modif { background: var(--accent-soft); color: var(--accent-2); margin-left: 0.25rem; }
 /* Acompte saisi hors de l'application : une case sans lien. */
-.dm-case.est-hors { background: var(--idle-soft); color: var(--muted); cursor: default; }
 /* Action secondaire sous une case (Corriger, Régénérer, Lever les réserves). */
-.dm-sous { display: flex; gap: 0.5rem; margin-top: 0.1875rem; }
-.dm-sous .dm-th-action { margin-left: 0; }
 
 /* Bouton désactivé : la maquette n'en avait pas. */
 .btn:disabled, .btn[aria-disabled='true'] { opacity: 0.5; cursor: not-allowed; }
@@ -820,10 +681,7 @@ a.btn { text-decoration: none; }
 .radio-row label[role='radio']:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* Écran Documents : les cases et actions sont des liens dans l'app (des boutons dans la maquette). */
-a.dm-case, a.dm-ajout, a.dm-carte-v, a.dm-th-action, a.doc-link { text-decoration: none; }
-span.dm-ajout[aria-disabled='true'] { opacity: 0.4; cursor: not-allowed; }
 
 /* Sous le titre d'un aperçu : ce qui empêche de générer (danger) ou une précision sur la version (discret). */
 .gen-note { margin: 0.375rem 0 0; font-size: 0.75rem; color: var(--danger); }
 .gen-note.est-info { color: var(--muted); }
-.gen-head a.btn { text-decoration: none; }
