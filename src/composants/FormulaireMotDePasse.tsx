@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition, type FormEvent } from 'react';
 import { changerMotDePasseAction, deconnexionAction } from '@/actions/session';
-import { Sigle, SigleDefs } from '@/composants/briques/Sigle';
+import { Bouton } from '@/composants/briques/Bouton';
+import { Champ, Erreur, Saisie } from '@/composants/briques/Champ';
+import { EcranCentre, FormulaireCentre } from '@/composants/briques/EcranCentre';
 
 export function FormulaireMotDePasse() {
 	const router = useRouter();
@@ -25,34 +27,21 @@ export function FormulaireMotDePasse() {
 	}
 
 	const champ = (nom: string, libelle: string, autoComplete: string) => (
-		<div className="field">
-			<label htmlFor={nom}>{libelle}</label>
-			<input id={nom} name={nom} type="password" autoComplete={autoComplete} required aria-invalid={Boolean(erreurs[nom])} className={erreurs[nom] ? 'est-erreur' : undefined} />
-			{erreurs[nom] && <span className="erreur">{erreurs[nom]}</span>}
-		</div>
+		<Champ libelle={libelle} pour={nom} erreur={erreurs[nom]}>
+			<Saisie id={nom} name={nom} type="password" autoComplete={autoComplete} required erreur={erreurs[nom]} />
+		</Champ>
 	);
 
 	return (
-		<div className="screen is-on">
-			<SigleDefs />
-			<div className="login">
-				<div className="login-card">
-					<div className="login-brand">
-						<div className="login-mark"><Sigle taille="grande" />Sentinelle</div>
-						<p className="login-tag">Choisissez votre mot de passe. Le mot de passe provisoire ne sert qu&apos;une fois. 12 caractères au moins.</p>
-					</div>
-					<form className="login-form" onSubmit={soumettre}>
-						{champ('ancien', 'Mot de passe actuel', 'current-password')}
-						{champ('nouveau', 'Nouveau mot de passe', 'new-password')}
-						{champ('confirmation', 'Confirmer le nouveau mot de passe', 'new-password')}
-						{erreurs.general && <p role="alert" className="erreur">{erreurs.general}</p>}
-						<button className="btn btn-primary" type="submit" disabled={enCours} style={{ justifyContent: 'center', padding: '0.5625rem' }}>Enregistrer</button>
-					</form>
-					<form action={deconnexionAction} className="login-foot">
-						<button type="submit" className="btn btn-ghost btn-sm">Se déconnecter</button>
-					</form>
-				</div>
-			</div>
-		</div>
+		<EcranCentre sigle titre="Sentinelle" accroche={<>Choisissez votre mot de passe. Le mot de passe provisoire ne sert qu&apos;une fois. 12 caractères au moins.</>}
+			pied={<form action={deconnexionAction}><Bouton variante="fantome" taille="sm" type="submit">Se déconnecter</Bouton></form>}>
+			<FormulaireCentre onSubmit={soumettre}>
+				{champ('ancien', 'Mot de passe actuel', 'current-password')}
+				{champ('nouveau', 'Nouveau mot de passe', 'new-password')}
+				{champ('confirmation', 'Confirmer le nouveau mot de passe', 'new-password')}
+				{erreurs.general && <Erreur alerte>{erreurs.general}</Erreur>}
+				<Bouton variante="primaire" taille="grand" type="submit" enCours={enCours}>Enregistrer</Bouton>
+			</FormulaireCentre>
+		</EcranCentre>
 	);
 }

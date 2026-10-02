@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { authClient } from '@/auth/client';
-import { Sigle, SigleDefs } from '@/composants/briques/Sigle';
+import { Bouton } from '@/composants/briques/Bouton';
+import { Champ, Erreur, Saisie } from '@/composants/briques/Champ';
+import { EcranCentre, FormulaireCentre } from '@/composants/briques/EcranCentre';
 
 export default function PageConnexion() {
 	const router = useRouter();
@@ -33,31 +35,14 @@ export default function PageConnexion() {
 	}
 
 	return (
-		<div className="screen is-on">
-			<SigleDefs />
-			<div className="login">
-				<div className="login-card">
-					<div className="login-brand">
-						<div className="login-mark"><Sigle taille="grande" />Sentinelle</div>
-						<p className="login-tag">Les marchés de vos chantiers, saisis une fois et imprimés autant de fois qu&apos;il le faut.</p>
-					</div>
-					<form className="login-form" onSubmit={soumettre}>
-						<div className="field">
-							<label htmlFor="email">Adresse e-mail</label>
-							<input id="email" name="email" type="email" autoComplete="username" required />
-						</div>
-						<div className="field">
-							<label htmlFor="motDePasse">Mot de passe</label>
-							<input id="motDePasse" name="motDePasse" type="password" autoComplete="current-password" required />
-						</div>
-						{erreur && <p role="alert" className="erreur">{erreur}</p>}
-						<button className="btn btn-primary" type="submit" disabled={envoi} style={{ justifyContent: 'center', padding: '0.5625rem' }}>
-							{envoi ? 'Connexion…' : 'Ouvrir mes chantiers'}
-						</button>
-					</form>
-					<p className="login-foot">Accès réservé aux comptes SOCOREVE.</p>
-				</div>
-			</div>
-		</div>
+		<EcranCentre sigle titre="Sentinelle" accroche={<>Les marchés de vos chantiers, saisis une fois et imprimés autant de fois qu&apos;il le faut.</>}
+			pied="Accès réservé aux comptes SOCOREVE.">
+			<FormulaireCentre onSubmit={soumettre}>
+				<Champ libelle="Adresse e-mail" pour="email"><Saisie id="email" name="email" type="email" autoComplete="username" required /></Champ>
+				<Champ libelle="Mot de passe" pour="motDePasse"><Saisie id="motDePasse" name="motDePasse" type="password" autoComplete="current-password" required /></Champ>
+				{erreur && <Erreur alerte>{erreur}</Erreur>}
+				<Bouton variante="primaire" taille="grand" type="submit" enCours={envoi}>{envoi ? 'Connexion…' : 'Ouvrir mes chantiers'}</Bouton>
+			</FormulaireCentre>
+		</EcranCentre>
 	);
 }

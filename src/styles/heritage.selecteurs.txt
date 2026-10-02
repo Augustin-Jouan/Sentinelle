@@ -351,13 +351,6 @@ tr.dm-inactif .dm-lot-e
 .dm-autre:last-child
 .dm-autre span
 .doc-link:hover
-.login
-.login-card
-.login-brand
-.login-mark
-.login-tag
-.login-form
-.login-foot
 .synthese
 .synth-cell
 .synth-k
