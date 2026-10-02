@@ -38,7 +38,7 @@ export function FormulaireMotDePasse() {
 			<div className="login">
 				<div className="login-card">
 					<div className="login-brand">
-						<div className="login-mark"><Sigle grand />Sentinelle</div>
+						<div className="login-mark"><Sigle taille="grande" />Sentinelle</div>
 						<p className="login-tag">Choisissez votre mot de passe. Le mot de passe provisoire ne sert qu&apos;une fois. 12 caractères au moins.</p>
 					</div>
 					<form className="login-form" onSubmit={soumettre}>

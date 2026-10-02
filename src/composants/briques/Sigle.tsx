@@ -1,9 +1,11 @@
+import { cx } from './cx';
+
 const S = '0,17 15.5,0 70.5,0 86,17 19.8,17 19.8,41.5 86,41.5 86,83 70.5,100 15.5,100 0,83 66.2,83 66.2,58.5 0,58.5';
 
 /** Le sprite du sigle (la plaque gravée, claire et sombre) : une fois par page, dans le layout. */
 export function SigleDefs() {
 	return (
-		<svg className="sigle-defs" width="0" height="0" aria-hidden="true">
+		<svg className="absolute size-0 overflow-hidden" width="0" height="0" aria-hidden="true">
 			<defs>
 				<linearGradient id="wall-l" x1="0" y1="0" x2="1" y2="1">
 					<stop offset="0" stopColor="#8ea9c3" /><stop offset="0.38" stopColor="#b8cadd" /><stop offset="0.7" stopColor="#cfdcea" /><stop offset="1" stopColor="#f2f7fb" />
@@ -28,10 +30,18 @@ export function SigleDefs() {
 	);
 }
 
-export function Sigle({ grand = false }: { grand?: boolean }) {
+/** Le fond de la plaque prend la teinte de son support : elle s'y fond, on ne voit que le S creusé. */
+const TAILLE = {
+	normale: 'size-12 text-surface',
+	/** L'écran de connexion (ex-.sigle-lg). */
+	grande: 'size-18 text-paper',
+} as const;
+
+/** Le sigle, une plaque par thème. « survol » : il suit le survol de son parent (qui porte la classe group). */
+export function Sigle({ taille = 'normale', survol = false }: { taille?: keyof typeof TAILLE; survol?: boolean }) {
 	return (
-		<svg className={grand ? 'sigle sigle-lg' : 'sigle'} viewBox="0 0 160 160" aria-hidden="true">
-			<use className="pl-clair" href="#plaque-clair" /><use className="pl-sombre" href="#plaque-sombre" />
+		<svg className={cx('flex-none', TAILLE[taille], survol && 'group-hover:text-idle-soft')} viewBox="0 0 160 160" aria-hidden="true">
+			<use className="dark:hidden" href="#plaque-clair" /><use className="hidden dark:block" href="#plaque-sombre" />
 		</svg>
 	);
 }
