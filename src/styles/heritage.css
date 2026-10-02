@@ -532,39 +532,8 @@ table.lots tbody tr.is-unassigned td { color: var(--muted); }
 /* le champ et l'étiquette cohabitent dans un conteneur interne :
    la cellule elle-même doit rester une vraie cellule de tableau */
 .lot-wrap { display: flex; align-items: center; }
-.lot-wrap .text-input { flex: 1; min-width: 0; }
-
-.money-input {
-	width: 100%;
-	text-align: right;
-	background: transparent;
-	border: 1px solid transparent;
-	border-radius: var(--r-sm);
-	padding: 0.1875rem calc(0.75rem - 1px);
-	font-family: 'Spline Sans Mono', monospace;
-	font-variant-numeric: tabular-nums;
-	font-size: 0.8125rem;
-	transition: border-color 0.12s, background 0.12s;
-}
-.money-input:hover { border-color: var(--rule-strong); background: var(--surface); }
-.money-input:focus { border-color: var(--accent); background: var(--raise); outline: none; }
 
 /* saisie directe dans le tableau */
-.text-input {
-	width: 100%;
-	background: transparent;
-	border: 1px solid transparent;
-	border-radius: var(--r-sm);
-	padding: 0.1875rem calc(0.75rem - 1px);
-	font-size: 0.8125rem;
-	font-weight: 500;
-	transition: border-color 0.12s, background 0.12s;
-}
-.text-input.mini { width: 100%; font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; font-weight: 400; color: var(--muted); }
-.text-input::placeholder { color: var(--faint); font-weight: 400; font-style: italic; }
-.text-input:hover { border-color: var(--rule-strong); background: var(--surface); }
-.text-input:focus { border-color: var(--accent); background: var(--raise); outline: none; }
-.money-input.mini { font-size: 0.75rem; color: var(--muted); }
 
 /* cellules éditables : c'est le champ qui porte le rembourrage de la cellule,
    pour que le texte saisi s'aligne exactement sur celui des colonnes voisines */
@@ -658,27 +627,6 @@ tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
 .chantier-total small { display: block; font-family: 'Outfit', sans-serif; font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
 
 /* interrupteur « masquer les terminés » */
-.switch { display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.8125rem; user-select: none; }
-.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
-.switch-box {
-	width: 1.875rem; height: 1rem; flex: none;
-	border: 1px solid var(--rule-strong);
-	background: var(--raise);
-	border-radius: 999px;
-	position: relative;
-	transition: background 0.14s, border-color 0.14s;
-}
-.switch-box::after {
-	content: '';
-	position: absolute; top: 0.125rem; left: 0.125rem;
-	width: 0.625rem; height: 0.625rem;
-	background: var(--muted);
-	border-radius: 50%;
-	transition: transform 0.14s, background 0.14s;
-}
-.switch input:checked + .switch-box { background: var(--accent); border-color: var(--accent); }
-.switch input:checked + .switch-box::after { transform: translateX(0.875rem); background: var(--on-accent); }
-.switch input:focus-visible + .switch-box { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 /* chantier terminé */
 .chantier.is-done { opacity: 0.72; }
@@ -1157,25 +1105,9 @@ table.plain.plain-mini tbody td { padding: 0.1875rem 0.25rem; }
 table.plain.plain-mini tbody td:first-child { padding-left: 0.25rem; }
 /* les colonnes de chiffres se serrent sur leur contenu — l'intitulé prend le reste */
 table.plain.plain-mini th.ta-r, table.plain.plain-mini td.ta-r { width: 1%; white-space: nowrap; }
-table.plain.plain-mini .money-input.mini { width: 3.25rem; }
 /* la date de signature et les avenants vivent dans le panneau du lot */
-.champ-kv {
-	width: 9rem; text-align: left;
-	border-color: var(--rule-strong);
-	background: var(--surface);
-	padding: 0.1875rem 0.4375rem;
-}
-.champ-kv.etroit { width: 4rem; }
-.champ-kv:hover { background: var(--raise); }
 .kv dd .unite { font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-left: 0.3125rem; }
 .kv dd .calcule { font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-left: 0.625rem; }
-
-.date-lot {
-	font: inherit; font-size: 0.8125rem;
-	color: var(--ink); background: var(--surface);
-	border: 1px solid var(--rule-strong); border-radius: var(--r-sm);
-	padding: 0.1875rem 0.375rem;
-}
 .hint-inline { display: block; font-size: 0.6875rem; color: var(--faint); margin-top: 0.1875rem; }
 .kv dd.num.moins { color: var(--danger); }
 .av-note {
@@ -1206,7 +1138,6 @@ tr.ligne-dep .dd { max-width: 100%; }
    plus un filet d'accent à gauche qui court sur les deux rangs. */
 table.plain.plain-mini tbody tr.est-vise td { background: var(--accent-soft); }
 table.plain.plain-mini tbody tr.est-vise td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
-table.plain.plain-mini tbody tr.ligne-per.est-vise .text-input { font-weight: 600; }
 table.plain.plain-mini tbody tr.ligne-dep.est-vise td::before { color: var(--accent); }
 
 /* la pastille qui suit le curseur pendant un glisser — on lit les semaines sans lâcher */
@@ -1239,20 +1170,6 @@ table.plain.plain-mini tbody tr.ligne-dep.est-vise td::before { color: var(--acc
    ARTISANS + DOCUMENTS
    ============================================================ */
 .toolbar { display: flex; gap: 0.625rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
-.search {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	background: var(--raise);
-	border: 1px solid var(--rule-strong);
-	border-radius: var(--r-xs);
-	padding: 0.3125rem 0.625rem;
-	min-width: 18rem;
-	flex: 1;
-	max-width: 26rem;
-}
-.search input { border: 0; background: none; outline: none; width: 100%; }
-.search svg { width: 0.875rem; height: 0.875rem; stroke: var(--muted); fill: none; stroke-width: 1.6; flex: none; }
 
 table.plain { width: 100%; border-collapse: collapse; min-width: 46rem; }
 table.plain thead th {
@@ -1466,7 +1383,7 @@ table thead th.ta-r, table tbody td.ta-r { text-align: right; }
 .g-bar.est-temp { pointer-events: none; }
 
 /* Saisie refusée par le serveur : le champ garde le texte et se voit en erreur (la maquette remettait l'ancienne valeur). */
-.text-input.est-erreur, .money-input.est-erreur, .field input.est-erreur { border-color: var(--danger); background: var(--danger-soft); }
+.field input.est-erreur { border-color: var(--danger); background: var(--danger-soft); }
 .field .erreur { font-size: 0.6875rem; color: var(--danger); }
 
 /* Message d'erreur d'un formulaire (connexion, mot de passe, création) : la maquette n'échouait jamais. */
@@ -1477,10 +1394,8 @@ table thead th.ta-r, table tbody td.ta-r { text-align: right; }
 
 /* Tailwind (preflight) met le padding des input à 0 ; Chrome en laisse 1px sur type=search.
    Sans ça, la barre de recherche Artisans (seul item haut du toolbar) est trop basse de 2px. */
-.search input { padding-block: 1px; }
 
 /* Pendant l'enregistrement d'une saisie. */
-.est-en-cours { opacity: 0.7; }
 
 /* Document modifié depuis sa dernière version, visa périmé : la pastille de la maquette, en accent. */
 .pill-modif { background: var(--accent-soft); color: var(--accent-2); margin-left: 0.25rem; }
@@ -1514,7 +1429,6 @@ a.nav-marque, a.nav-ic, a.nav-b, a.nav-o { text-decoration: none; }
 a.chantier-new { text-decoration: none; color: inherit; }
 
 /* Le TTC du panneau est en gras (style en ligne dans la maquette, que ChampEnLigne ne porte pas). */
-.champ-kv.est-gras { font-weight: 600; }
 /* Les liens-boutons du pied du panneau et des lignes d'avenant. */
 .panel-foot a.btn, .cell-actions a.btn { text-decoration: none; }
 /* Nature du marché : des libellés sans bouton radio, comme la maquette ; focus visible au clavier. */

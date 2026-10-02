@@ -3,6 +3,8 @@
 import { useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import type { Resultat } from '@/actions/executer';
+import { classesSaisie, type VarianteSaisie } from '@/composants/briques/Champ';
+import { cx } from '@/composants/briques/cx';
 
 type Props = {
 	valeur: string;
@@ -10,20 +12,23 @@ type Props = {
 	libelle: string;
 	type?: 'text' | 'date' | 'email' | 'tel';
 	multiligne?: boolean;
+	/** Placement seulement. */
 	className?: string;
 	placeholder?: string;
-	variante?: 'texte' | 'texte-mini' | 'montant' | 'montant-mini' | 'champ';
+	variante?: VarianteSaisie;
+	/** Graisse 600 : le TTC du panneau, l'intitulé de la période visée. */
+	gras?: boolean;
+	/** Chiffres alignés : un code postal. */
+	chiffres?: boolean;
 	id?: string;
 };
-
-const CLASSES = { texte: 'text-input', 'texte-mini': 'text-input mini', montant: 'money-input', 'montant-mini': 'money-input mini', champ: '' } as const;
 
 /**
  * Champ enregistré quand on le quitte, sans bouton. En cas d'échec il passe en rouge
  * et garde la saisie. Il se recale sur la valeur du serveur quand celle-ci change
  * (TTC reformaté, modification d'un collègue).
  */
-export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', multiligne, className, placeholder, variante = 'texte', id }: Props) {
+export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', multiligne, className, placeholder, variante = 'texte', gras, chiffres, id }: Props) {
 	const [texte, setTexte] = useState(valeur);
 	const [valeurRecue, setValeurRecue] = useState(valeur);
 	const [enErreur, setEnErreur] = useState(false);
@@ -53,15 +58,15 @@ export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', mult
 		});
 	}
 
-	const classes = [CLASSES[variante], enErreur && 'est-erreur', enCours && 'est-en-cours', className].filter(Boolean).join(' ');
 	const communs = {
 		id,
 		'aria-label': libelle,
 		'aria-invalid': enErreur,
+		'aria-busy': enCours || undefined,
 		placeholder,
 		value: texte,
 		onBlur: quitter,
-		className: classes,
+		className: cx(classesSaisie(variante, { gras, chiffres }), className),
 	};
 	return multiligne ? (
 		<textarea {...communs} rows={3} onChange={(e) => setTexte(e.target.value)} />

@@ -150,16 +150,6 @@ table.lots tbody tr.is-unassigned td
 .nature-tag.st
 .cell-lot .nature-tag
 .lot-wrap
-.lot-wrap .text-input
-.money-input
-.money-input:hover
-.money-input:focus
-.text-input
-.text-input.mini
-.text-input::placeholder
-.text-input:hover
-.text-input:focus
-.money-input.mini
 table.lots tbody td.is-editable
 tr.empty-row td
 tr.empty-row .btn
@@ -185,13 +175,6 @@ tr.empty-row .btn
 .chantier-new .plus
 .chantier-new .chantier-ref
 .chantier-total small
-.switch
-.switch input
-.switch-box
-.switch-box::after
-.switch input:checked + .switch-box
-.switch input:checked + .switch-box::after
-.switch input:focus-visible + .switch-box
 .chantier.is-done
 .chantier.is-done .chantier-ref
 .pill-fini
@@ -331,13 +314,8 @@ table.plain.plain-mini tbody td
 table.plain.plain-mini tbody td:first-child
 table.plain.plain-mini th.ta-r
 table.plain.plain-mini td.ta-r
-table.plain.plain-mini .money-input.mini
-.champ-kv
-.champ-kv.etroit
-.champ-kv:hover
 .kv dd .unite
 .kv dd .calcule
-.date-lot
 .hint-inline
 .kv dd.num.moins
 .av-note
@@ -349,7 +327,6 @@ tr.ligne-dep td::before
 tr.ligne-dep .dd
 table.plain.plain-mini tbody tr.est-vise td
 table.plain.plain-mini tbody tr.est-vise td:first-child
-table.plain.plain-mini tbody tr.ligne-per.est-vise .text-input
 table.plain.plain-mini tbody tr.ligne-dep.est-vise td::before
 .gen-split.solo
 .saisie-aide
@@ -360,9 +337,6 @@ table.plain.plain-mini tbody tr.ligne-dep.est-vise td::before
 .g-lasso
 .g-chip
 .toolbar
-.search
-.search input
-.search svg
 table.plain
 table.plain thead th
 table.plain tbody td
@@ -454,12 +428,9 @@ tr.dm-inactif .dm-lot-e
 table thead th.ta-r
 table tbody td.ta-r
 .g-bar.est-temp
-.text-input.est-erreur
-.money-input.est-erreur
 .field input.est-erreur
 .field .erreur
 .erreur
-.est-en-cours
 .pill-modif
 .dm-case.est-hors
 .dm-sous
@@ -479,7 +450,6 @@ a.nav-ic
 a.nav-b
 a.nav-o
 a.chantier-new
-.champ-kv.est-gras
 .panel-foot a.btn
 .cell-actions a.btn
 .radio-row label[role='radio']:focus-visible

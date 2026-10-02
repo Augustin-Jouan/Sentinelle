@@ -118,20 +118,20 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 				<div className="block-body">
 					<dl className="kv">
 						<dt><label htmlFor="pl-ht">{avecAvenants ? 'Montant initial HT' : 'Montant HT'}</label></dt>
-						<dd><ChampEnLigne id="pl-ht" variante="montant" className="champ-kv" libelle="Montant HT du marché" valeur={formatMontantSaisie(lot.htInitial)} enregistrer={champ('montantHt')} /></dd>
+						<dd><ChampEnLigne id="pl-ht" variante="kv" libelle="Montant HT du marché" valeur={formatMontantSaisie(lot.htInitial)} enregistrer={champ('montantHt')} /></dd>
 						{avecAvenants && (
 							<><dt>Avenants</dt><dd className={somme.isNegative() ? 'num moins' : 'num'} data-testid="somme-avenants">{somme.isNegative() ? '−' : '+'} {formatEuros(somme.abs())}</dd></>
 						)}
 						<dt><label htmlFor="pl-tva">T.V.A.</label></dt>
-						<dd><ChampEnLigne id="pl-tva" variante="montant" className="champ-kv etroit" libelle="Taux de T.V.A." valeur={formatTauxPoint(lot.tauxTva)} enregistrer={champ('tauxTva')} /><span className="unite">%</span></dd>
+						<dd><ChampEnLigne id="pl-tva" variante="kv-etroit" libelle="Taux de T.V.A." valeur={formatTauxPoint(lot.tauxTva)} enregistrer={champ('tauxTva')} /><span className="unite">%</span></dd>
 						<dt><label htmlFor="pl-ttc">{avecAvenants ? 'Montant actuel TTC' : 'Montant TTC'}</label></dt>
 						<dd>
-							<ChampEnLigne id="pl-ttc" variante="montant" className="champ-kv est-gras" libelle="Montant TTC du marché" valeur={formatMontantSaisie(lot.ttcEngage)} enregistrer={champ('montantTtc')} />
+							<ChampEnLigne id="pl-ttc" variante="kv" gras libelle="Montant TTC du marché" valeur={formatMontantSaisie(lot.ttcEngage)} enregistrer={champ('montantTtc')} />
 							{avecAvenants && <span className="hint-inline">avenants compris : le montant initial HT est recalculé</span>}
 						</dd>
 						<dt><label htmlFor="pl-rg">Retenue de garantie</label></dt>
 						<dd>
-							<ChampEnLigne id="pl-rg" variante="montant" className="champ-kv etroit" libelle="Taux de retenue de garantie" valeur={formatTauxPoint(lot.retenueGarantie)} enregistrer={champ('retenueGarantie')} />
+							<ChampEnLigne id="pl-rg" variante="kv-etroit" libelle="Taux de retenue de garantie" valeur={formatTauxPoint(lot.retenueGarantie)} enregistrer={champ('retenueGarantie')} />
 							<span className="unite">%</span>
 							<span className="calcule">{formatEuros(htEngage(lot.htInitial, lot.sommeAvenants).times(lot.retenueGarantie).div(100))}</span>
 						</dd>
@@ -139,7 +139,7 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 						<dd>{lot.exemplaires} — {lot.nature === 'SOUS_TRAITANCE' ? 'entreprise, SOCOREVE' : "entreprise, SOCOREVE, maître d'ouvrage"}</dd>
 						<dt>Signé le</dt>
 						<dd>
-							<ChampEnLigne variante="champ" className="date-lot" type="date" libelle="Date de signature de ce marché" valeur={lot.dateSignature} enregistrer={champ('dateSignature')} />
+							<ChampEnLigne variante="date" type="date" libelle="Date de signature de ce marché" valeur={lot.dateSignature} enregistrer={champ('dateSignature')} />
 							{!lot.dateSignature && <span className="hint-inline">à défaut, {vue.dateSignatureChantier ? dateFr(vue.dateSignatureChantier) : 'non fixée'} — la date du chantier</span>}
 						</dd>
 					</dl>
@@ -168,7 +168,7 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 												<td className="num" style={{ color: 'var(--muted)' }}>{n}</td>
 												<td><ChampEnLigne variante="texte-mini" libelle={`Devis de l'avenant n° ${n}`} placeholder="n° devis" valeur={a.devis} enregistrer={modifierAvenantAction.bind(null, a.id, 'devis')} /></td>
 												<td className="ta-r is-editable"><ChampEnLigne variante="montant" libelle={`Montant HT de l'avenant n° ${n}`} valeur={formatMontantSaisie(a.montantHt)} enregistrer={modifierAvenantAction.bind(null, a.id, 'montantHt')} /></td>
-												<td><ChampEnLigne variante="champ" className="date-lot" type="date" libelle={`Date de l'avenant n° ${n}`} valeur={a.date} enregistrer={modifierAvenantAction.bind(null, a.id, 'date')} /></td>
+												<td><ChampEnLigne variante="date" type="date" libelle={`Date de l'avenant n° ${n}`} valeur={a.date} enregistrer={modifierAvenantAction.bind(null, a.id, 'date')} /></td>
 												<td className="ta-r cell-actions nowrap">
 													<Link className="btn btn-sm btn-ico" href={`?avenant=${a.id}`} scroll={false} onClick={onFermer}
 														title={`Ouvrir l'avenant n° ${n}`} aria-label={`Ouvrir la lettre de l'avenant n° ${n}`}><Icone.Doc /></Link>

@@ -5,6 +5,7 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import type { Resultat } from '@/actions/executer';
 import { annulerLeveeAction, leverReservesAction } from '@/actions/receptions';
+import { classesSaisie } from '@/composants/briques/Champ';
 import type { EtatReception } from '@/domaine/reception';
 
 /** Aujourd'hui à Châteaubriant, AAAA-MM-JJ (le format suédois est l'ISO). */
@@ -39,7 +40,7 @@ export function ActionsLevee({ lotId, etat }: { lotId: string; etat: EtatRecepti
 			const date = String(new FormData(e.currentTarget).get('date') ?? '');
 			envoyer(() => leverReservesAction(lotId, date));
 		}}>
-			<input type="date" name="date" aria-label="Date de levée des réserves" defaultValue={aujourdhui()} className="date-lot" />
+			<input type="date" name="date" aria-label="Date de levée des réserves" defaultValue={aujourdhui()} className={classesSaisie('date')} />
 			<button type="submit" className="dm-th-action" disabled={enCours}>Enregistrer la levée</button>
 		</form>
 	);
