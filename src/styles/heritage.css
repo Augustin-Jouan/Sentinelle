@@ -66,19 +66,9 @@
    la lumière d'en haut à gauche. Deux versions, une par thème : le clair sur son
    fond bleu pâle, le sombre sur son ardoise. Le sprite porte les deux, la feuille
    n'en montre qu'une — les couleurs sont figées, elles ne suivent pas `color`. */
-.sigle-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 /* Le fond de la plaque est le seul de ses aplats à ne pas être figé : il prend
    `color`, donc la teinte de son support. La plaque se fond dans la barre — on ne
    voit plus un carré posé dessus, seulement le S creusé. Au survol elle suit. */
-.sigle { flex: none; width: 3rem; height: 3rem; color: var(--surface); }
-.nav-marque:hover .sigle { color: var(--idle-soft); }
-.pl-sombre { display: none; }
-@media (prefers-color-scheme: dark) {
-	:root:not([data-theme='light']) .pl-clair { display: none; }
-	:root:not([data-theme='light']) .pl-sombre { display: block; }
-}
-:root[data-theme='dark'] .pl-clair { display: none; }
-:root[data-theme='dark'] .pl-sombre { display: block; }
 .nav-marque { padding-top: 0.125rem; padding-bottom: 0.125rem; }
 .nav-marque:hover { background: var(--idle-soft); }
 
@@ -1302,7 +1292,6 @@ tr.dm-inactif .dm-lot-d, tr.dm-inactif .dm-lot-e { color: var(--muted); }
 	align-items: center;
 	gap: 0.75rem;
 }
-.sigle-lg { width: 4.5rem; height: 4.5rem; color: var(--paper); }
 .login-tag { color: var(--muted); font-size: 0.875rem; max-width: 22rem; }
 .login-form { display: flex; flex-direction: column; gap: 0.75rem; border-top: 1px solid var(--rule); padding-top: 1.25rem; }
 .login-foot { font-family: 'Spline Sans Mono', monospace; font-size: 0.6875rem; color: var(--faint); }

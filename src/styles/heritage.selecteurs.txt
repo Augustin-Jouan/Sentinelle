@@ -7,14 +7,6 @@
 .nav
 .nav-haut
 .nav-marque
-.sigle-defs
-.sigle
-.nav-marque:hover .sigle
-.pl-sombre
-:root:not([data-theme='light']) .pl-clair
-:root:not([data-theme='light']) .pl-sombre
-:root[data-theme='dark'] .pl-clair
-:root[data-theme='dark'] .pl-sombre
 .nav-marque:hover
 .nav-fin
 .nav-b
@@ -412,7 +404,6 @@ tr.dm-inactif .dm-lot-e
 .login-card
 .login-brand
 .login-mark
-.sigle-lg
 .login-tag
 .login-form
 .login-foot

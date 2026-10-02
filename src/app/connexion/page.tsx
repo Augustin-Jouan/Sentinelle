@@ -38,7 +38,7 @@ export default function PageConnexion() {
 			<div className="login">
 				<div className="login-card">
 					<div className="login-brand">
-						<div className="login-mark"><Sigle grand />Sentinelle</div>
+						<div className="login-mark"><Sigle taille="grande" />Sentinelle</div>
 						<p className="login-tag">Les marchés de vos chantiers, saisis une fois et imprimés autant de fois qu&apos;il le faut.</p>
 					</div>
 					<form className="login-form" onSubmit={soumettre}>

@@ -87,7 +87,7 @@ export const ECRANS: Ecran[] = [
 		await poserMasqueCompte(page);
 	} },
 	// Chargé d'affaire : un menu de comptes dans l'app, un champ texte dans la maquette (écart 4). Le même cadre est masqué des deux côtés.
-	{ nom: 'nouveau', masques: ['.field:has(#f-ca)'], aller: async (page) => { await page.locator('.topbar-actions .btn-primary', { hasText: 'Nouveau chantier' }).click(); } },
+	{ nom: 'nouveau', masques: ['.field:has(#f-ca)'], aller: async (page) => { await page.getByText('Nouveau chantier', { exact: true }).first().click(); } },
 	{ nom: 'marches', aller: ouvrirPerrier },
 	{ nom: 'panneau-lot', aller: async (page) => { await ouvrirPerrier(page); await page.locator('table.lots tbody tr', { hasText: 'CONSTRUCTIONS REBOURS' }).locator('.cell-ent').click(); } },
 	{ nom: 'planning', masques: ['.g-auj', '.g-sems .auj'], aller: async (page) => {

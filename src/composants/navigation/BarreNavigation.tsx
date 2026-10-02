@@ -30,7 +30,7 @@ export function BarreNavigation({ utilisateur, navigation, children }: { utilisa
 			<div className="main">
 				<header className="nav">
 					<div className="nav-haut">
-						<Link className="nav-marque" href="/chantiers" title="Sentinelle — revenir à l'accueil" aria-label="Sentinelle — revenir à l'accueil"><Sigle /></Link>
+						<Link className="nav-marque group" href="/chantiers" title="Sentinelle — revenir à l'accueil" aria-label="Sentinelle — revenir à l'accueil"><Sigle survol /></Link>
 						<Link className={accueil ? 'nav-ic is-on' : 'nav-ic'} href="/chantiers" title="Tous les chantiers" aria-label="Tous les chantiers"><Icone.Maison /></Link>
 						<SelecteurChantier chantiers={navigation.chantiers} courant={surChantier ? courant : null} />
 						<div className="nav-fin">
