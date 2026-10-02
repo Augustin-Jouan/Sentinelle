@@ -1,5 +1,5 @@
 import { exigerPage } from '@/auth/session';
-import { Ecran } from '@/composants/maquette/Ecran';
+import { Ecran } from '@/composants/briques/Ecran';
 import { BoutonAjouterEntreprise, ReferentielArtisans } from '@/composants/ReferentielArtisans';
 import { listerArtisans } from '@/donnees/artisans';
 

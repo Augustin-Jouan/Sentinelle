@@ -9,8 +9,8 @@ import {
 	modifierAcompteManuelAction, supprimerAcompteManuelAction,
 } from '@/actions/certificats';
 import type { Resultat } from '@/actions/executer';
-import { CadreApercu } from '@/composants/maquette/CadreApercu';
-import * as Icone from '@/composants/maquette/icones';
+import { CadreApercu } from '@/composants/briques/CadreApercu';
+import * as Icone from '@/composants/briques/icones';
 import { telecharger } from '@/composants/telecharger';
 import { batirCertificat, entreeCalcul } from '@/documents/certificat';
 import { CertificatPaiement, type EditionCertificat } from '@/documents/gabarits/CertificatPaiement';

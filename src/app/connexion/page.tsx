@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { authClient } from '@/auth/client';
-import { Sigle, SigleDefs } from '@/composants/maquette/Sigle';
+import { Sigle, SigleDefs } from '@/composants/briques/Sigle';
 
 export default function PageConnexion() {
 	const router = useRouter();

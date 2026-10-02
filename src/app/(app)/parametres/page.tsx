@@ -1,7 +1,7 @@
 import { modifierParametreAction } from '@/actions/parametres';
 import { exigerPage } from '@/auth/session';
 import { ChampEnLigne } from '@/composants/ChampEnLigne';
-import { Ecran } from '@/composants/maquette/Ecran';
+import { Ecran } from '@/composants/briques/Ecran';
 import { lireParametres, type ChampParametres } from '@/donnees/parametres';
 
 const CHAMPS: { champ: ChampParametres; libelle: string; aide?: string }[] = [

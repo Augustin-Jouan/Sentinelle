@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import type { UtilisateurConnecte } from '@/auth/session';
-import * as Icone from '@/composants/maquette/icones';
-import { Sigle, SigleDefs } from '@/composants/maquette/Sigle';
-import { basculerTheme } from '@/composants/maquette/theme';
+import * as Icone from '@/composants/briques/icones';
+import { Sigle, SigleDefs } from '@/composants/briques/Sigle';
+import { basculerTheme } from '@/composants/briques/theme';
 import type { VueNavigation } from '@/donnees/navigation';
 import { MenuCompte } from './MenuCompte';
 import { SelecteurChantier } from './SelecteurChantier';

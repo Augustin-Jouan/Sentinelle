@@ -1,5 +1,7 @@
-/* Les icônes de la maquette (docs/maquette/sentinelle-marches.html), tracé pour tracé. Le trait vient du CSS (.btn svg, .nav-b svg…). */
-const svg = (d: React.ReactNode) => function Icone() { return <svg viewBox="0 0 16 16" aria-hidden="true">{d}</svg>; };
+/* Les icônes de la maquette (docs/maquette/sentinelle-marches.html), tracé pour tracé. Trait de 1,6 en couleur courante ; un contexte peut le régler ([&_svg]:stroke-[1.5]). */
+const svg = (d: React.ReactNode) => function Icone() {
+	return <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true">{d}</svg>;
+};
 
 export const Maison = svg(<path d="M2 13V6l6-4 6 4v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1Z" />);                                   // l. 2134
 export const Artisans = svg(<><circle cx="6" cy="5.5" r="2.5" /><path d="M1.5 14c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" /><path d="M11 3.2a2.5 2.5 0 0 1 0 4.6" /></>); // l. 2149

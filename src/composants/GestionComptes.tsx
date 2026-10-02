@@ -4,8 +4,8 @@ import { useEffect, useState, useTransition, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { bloquerCompteAction, changerRoleAction, creerCompteAction, modifierTelephoneAction, reinitialiserMotDePasseAction } from '@/actions/comptes';
 import { ChampEnLigne } from './ChampEnLigne';
-import * as Icone from '@/composants/maquette/icones';
-import { Panneau } from '@/composants/maquette/Panneau';
+import * as Icone from '@/composants/briques/icones';
+import { Panneau } from '@/composants/briques/Panneau';
 import type { CompteListe } from '@/donnees/comptes';
 
 const OUVRIR_COMPTE = 'sentinelle:nouveau-compte';

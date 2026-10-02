@@ -3,9 +3,9 @@
 import { useEffect } from 'react';
 import type { Resultat } from '@/actions/executer';
 import { ChampEnLigne } from '@/composants/ChampEnLigne';
-import * as Icone from '@/composants/maquette/icones';
-import { MenuDeroulant } from '@/composants/maquette/MenuDeroulant';
-import { Panneau } from '@/composants/maquette/Panneau';
+import * as Icone from '@/composants/briques/icones';
+import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
+import { Panneau } from '@/composants/briques/Panneau';
 import { COULEURS } from '@/domaine/couleurs';
 import { rangIso, type LotPlanning, type PeriodeVue, type PlanningVue } from '@/domaine/planningVue';
 import { semaineDuRang } from '@/domaine/semaines';

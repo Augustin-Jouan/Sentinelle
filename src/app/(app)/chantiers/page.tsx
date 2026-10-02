@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { exigerPage } from '@/auth/session';
 import { AccueilChantiers } from '@/composants/accueil/AccueilChantiers';
-import { Ecran } from '@/composants/maquette/Ecran';
-import * as Icone from '@/composants/maquette/icones';
+import { Ecran } from '@/composants/briques/Ecran';
+import * as Icone from '@/composants/briques/icones';
 import { lireAccueil } from '@/donnees/accueil';
 
 export default async function PageChantiers() {

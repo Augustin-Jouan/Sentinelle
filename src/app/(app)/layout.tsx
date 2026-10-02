@@ -1,5 +1,5 @@
 import { exigerPage } from '@/auth/session';
-import { ConfirmationFournisseur } from '@/composants/maquette/Confirmation';
+import { ConfirmationFournisseur } from '@/composants/briques/Confirmation';
 import { BarreNavigation } from '@/composants/navigation/BarreNavigation';
 import { lireNavigation } from '@/donnees/navigation';
 

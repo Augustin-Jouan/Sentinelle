@@ -5,10 +5,10 @@ import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { changerActiviteArtisanAction, creerArtisanAction, modifierChampArtisanAction } from '@/actions/artisans';
 import { enregistrerArtisan, idArtisanOuverte, type FicheArtisan as Fiche } from '@/composants/ficheArtisan';
-import { useConfirmation } from '@/composants/maquette/Confirmation';
-import * as Icone from '@/composants/maquette/icones';
-import { Panneau } from '@/composants/maquette/Panneau';
-import { Recherche } from '@/composants/maquette/Recherche';
+import { useConfirmation } from '@/composants/briques/Confirmation';
+import * as Icone from '@/composants/briques/icones';
+import { Panneau } from '@/composants/briques/Panneau';
+import { Recherche } from '@/composants/briques/Recherche';
 import type { ArtisanFiche, ChampArtisan } from '@/donnees/artisans';
 import { normaliser } from '@/domaine/recherche';
 

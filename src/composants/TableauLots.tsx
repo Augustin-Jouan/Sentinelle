@@ -3,10 +3,10 @@
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { ajouterLotAction, modifierChampLotAction } from '@/actions/lots';
-import * as Icone from '@/composants/maquette/icones';
-import { MenuDeroulant } from '@/composants/maquette/MenuDeroulant';
-import { usePreference } from '@/composants/maquette/preference';
-import { Recherche } from '@/composants/maquette/Recherche';
+import * as Icone from '@/composants/briques/icones';
+import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
+import { usePreference } from '@/composants/briques/preference';
+import { Recherche } from '@/composants/briques/Recherche';
 import type { VueMarches } from '@/donnees/marches';
 import { lotsVisibles, TRIS_LOTS, type TriLots } from '@/domaine/lots';
 import { formatMontantSaisie, formatTauxPoint } from '@/domaine/montants';
