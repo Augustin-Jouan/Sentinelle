@@ -64,31 +64,6 @@
 .topbar-actions { display: flex; gap: 0.5rem; align-items: center; }
 
 /* bandeau chantier */
-.context {
-	display: flex;
-	gap: 0;
-	border-top: 1px solid var(--rule);
-	background: var(--surface);
-	overflow-x: auto;
-}
-.context-cell {
-	padding: 0.625rem 1.5rem 0.6875rem;
-	border-right: 1px solid var(--rule);
-	min-width: 0;
-	flex: none;
-}
-.context-cell:last-child { border-right: 0; }
-.context-k {
-	font-family: 'Outfit', sans-serif;
-	font-size: 0.625rem;
-	font-weight: 600;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--faint);
-	display: block;
-	margin-bottom: 0.0625rem;
-}
-.context-v { font-size: 0.8125rem; white-space: nowrap; }
 
 /* ============================================================
    BOUTONS
@@ -170,52 +145,8 @@
 	background: var(--raise);
 	overflow-x: auto;
 }
-
-table.lots {
-	width: 100%;
-	border-collapse: collapse;
-	min-width: 52rem;
-}
-
-table.lots thead th {
-	/* le cadre du tableau défile pour son compte (overflow-x sur .table-frame) :
-	   l'en-tête se colle à lui, pas à la fenêtre — surtout pas de décalage ici */
-	position: sticky;
-	top: 0;
-	z-index: 5;
-	background: var(--surface);
-	border-bottom: 1px solid var(--rule-strong);
-	padding: 0.5rem 0.75rem;
-	text-align: left;
-	font-family: 'Outfit', sans-serif;
-	font-size: 0.6875rem;
-	font-weight: 600;
-	letter-spacing: 0.07em;
-	text-transform: uppercase;
-	color: var(--muted);
-	white-space: nowrap;
-}
 th.ta-r, td.ta-r { text-align: right; }
-
-table.lots tbody td {
-	padding: 0.4375rem 0.75rem;
-	border-bottom: 1px solid var(--rule);
-	vertical-align: middle;
-}
 /* un montant ne se coupe jamais : le « € » ne doit pas tomber à la ligne suivante */
-table.lots tbody td.num { white-space: nowrap; }
-table.lots tbody tr { cursor: pointer; }
-table.lots tbody tr:hover { background: var(--surface); }
-table.lots tbody tr.is-open { background: var(--accent-soft); }
-table.lots tbody tr.is-unassigned td { color: var(--muted); }
-
-.cell-num { font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; color: var(--muted); width: 4.5rem; }
-.cell-lot { font-weight: 500; white-space: nowrap; min-width: 16rem; }
-.cell-ht { width: 10.5rem; }
-.cell-tva { width: 6.5rem; }
-.cell-ent { white-space: nowrap; }
-.cell-ent small { display: block; font-size: 0.6875rem; color: var(--muted); }
-.cell-ent .unset { color: var(--faint); font-style: italic; }
 
 .nature-tag {
 	font-family: 'Outfit', sans-serif;
@@ -231,16 +162,13 @@ table.lots tbody tr.is-unassigned td { color: var(--muted); }
 }
 .nature-tag.st { border-color: var(--accent); color: var(--accent-2); }
 /* marqueur discret posé sur la ligne du lot, à la place de l'ancienne colonne Nature */
-.cell-lot .nature-tag { font-size: 0.625rem; flex: none; margin-right: 0.75rem; }
 /* le champ et l'étiquette cohabitent dans un conteneur interne :
    la cellule elle-même doit rester une vraie cellule de tableau */
-.lot-wrap { display: flex; align-items: center; }
 
 /* saisie directe dans le tableau */
 
 /* cellules éditables : c'est le champ qui porte le rembourrage de la cellule,
    pour que le texte saisi s'aligne exactement sur celui des colonnes voisines */
-table.lots tbody td.is-editable { padding-left: 0; padding-right: 0; }
 
 tr.empty-row td {
 	padding: 1.75rem 0.75rem;
@@ -251,43 +179,6 @@ tr.empty-row td {
 tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
 
 /* barre de totaux */
-.totals {
-	position: sticky;
-	bottom: 0;
-	z-index: 15;
-	display: flex;
-	align-items: stretch;
-	background: var(--surface);
-	border: 1px solid var(--rule-strong);
-	border-radius: var(--r);
-	box-shadow: var(--ombre);
-	margin-top: 0.75rem;
-	overflow: hidden;   /* la cellule sombre doit suivre l'arrondi */
-}
-.total-cell {
-	padding: 0.625rem 1.125rem 0.6875rem;
-	border-right: 1px solid var(--rule);
-	flex: none;
-}
-.total-cell:last-child { border-right: 0; margin-left: auto; background: var(--ink); color: var(--paper); }
-.total-cell:last-child .total-k { color: var(--faint); }
-.total-k {
-	font-family: 'Outfit', sans-serif;
-	font-size: 0.625rem;
-	font-weight: 600;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--faint);
-	display: block;
-}
-.total-v {
-	font-family: 'Spline Sans Mono', monospace;
-	font-variant-numeric: tabular-nums;
-	font-size: 0.9375rem;
-	font-weight: 500;
-	white-space: nowrap;
-}
-.total-v.grand { font-size: 1.125rem; font-weight: 600; }
 
 /* ============================================================
    CHANTIERS
@@ -358,10 +249,6 @@ tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
 /* Les blocs gardent leur hauteur naturelle : sans cela le flex les comprime, et
    depuis qu'ils sont arrondis leur overflow:hidden coupe le contenu en silence
    au lieu de le laisser déborder. C'est le panneau qui doit défiler, pas eux. */
-
-.kv { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 0.375rem 0.875rem; }
-.kv dt { font-size: 0.75rem; color: var(--muted); }
-.kv dd { margin: 0; font-size: 0.8125rem; }
 
 .block { border: 1px solid var(--rule); border-radius: var(--r); background: var(--raise); overflow: hidden; }
 .block-head {
@@ -700,17 +587,7 @@ table.plain.plain-mini tbody td:first-child { padding-left: 0.25rem; }
 /* les colonnes de chiffres se serrent sur leur contenu — l'intitulé prend le reste */
 table.plain.plain-mini th.ta-r, table.plain.plain-mini td.ta-r { width: 1%; white-space: nowrap; }
 /* la date de signature et les avenants vivent dans le panneau du lot */
-.kv dd .unite { font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-left: 0.3125rem; }
-.kv dd .calcule { font-family: 'Spline Sans Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-left: 0.625rem; }
-.hint-inline { display: block; font-size: 0.6875rem; color: var(--faint); margin-top: 0.1875rem; }
-.kv dd.num.moins { color: var(--danger); }
-.av-note {
-	margin: 0; padding: 0.625rem 0.875rem 0.75rem;
-	font-size: 0.6875rem; color: var(--muted); line-height: 1.45;
-	border-top: 1px solid var(--rule);
-}
 /* marqueur porté par la ligne du lot, comme celui de la sous-traitance */
-.nature-tag.av { border-color: var(--rule-strong); color: var(--muted); }
 
 .vide-mini { margin: 0; padding: 1.25rem 0.875rem; text-align: center; font-style: italic; color: var(--muted); font-size: 0.8125rem; }
 
@@ -926,8 +803,6 @@ table thead th.ta-r, table tbody td.ta-r { text-align: right; }
 .btn-primary:disabled:hover { background: var(--accent); border-color: var(--accent); }
 
 /* Bandeau du chantier cliquable : il ouvre l'en-tête du chantier (écart 3). */
-button.context { width: 100%; margin: 0; padding: 0; border: 0; border-top: 1px solid var(--rule); border-radius: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
-button.context:hover { background: var(--idle-soft); }
 
 /* Lien d'une barre d'aperçu (« Télécharger le PDF » est un <a>). */
 a.btn { text-decoration: none; }
