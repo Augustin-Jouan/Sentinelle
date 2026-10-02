@@ -4,11 +4,20 @@ import { useEffect, useState, useTransition, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { bloquerCompteAction, changerRoleAction, creerCompteAction, modifierTelephoneAction, reinitialiserMotDePasseAction } from '@/actions/comptes';
 import { ChampEnLigne } from './ChampEnLigne';
+import { Bloc } from '@/composants/briques/Bloc';
+import { Bouton } from '@/composants/briques/Bouton';
+import { Champ, Erreur, GrilleChamps, Saisie } from '@/composants/briques/Champ';
+import { ChoixSegmente } from '@/composants/briques/ChoixSegmente';
+import { cx } from '@/composants/briques/cx';
 import * as Icone from '@/composants/briques/icones';
 import { Panneau } from '@/composants/briques/Panneau';
+import { Pastille } from '@/composants/briques/Pastille';
+import { CadreTableau, Tableau } from '@/composants/briques/Tableau';
+import { CHIFFRES } from '@/composants/briques/typo';
 import type { CompteListe } from '@/donnees/comptes';
 
 const OUVRIR_COMPTE = 'sentinelle:nouveau-compte';
+const ROLES = [{ v: 'user', t: 'Utilisateur' }, { v: 'admin', t: 'Administrateur' }] as const;
 
 export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moiId: string }) {
 	const [provisoire, setProvisoire] = useState<{ email: string; motDePasse: string } | null>(null);
@@ -27,7 +36,7 @@ export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moi
 		e.preventDefault();
 		const formulaire = e.currentTarget;
 		const f = new FormData(formulaire);
-		const saisie = { nom: String(f.get('nom')), email: String(f.get('email')), role: String(f.get('role')) };
+		const saisie = { nom: String(f.get('nom')), email: String(f.get('email')), role };
 		demarrer(async () => {
 			const r = await creerCompteAction(saisie);
 			if (r.ok) {
@@ -60,11 +69,11 @@ export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moi
 
 	return (
 		<>
-			<div className="table-frame">
-				<table className="plain">
+			<CadreTableau>
+				<Tableau variante="plain">
 					<thead>
 						<tr>
-							<th>Nom</th><th>E-mail</th><th>Portable</th><th>Rôle</th><th>État</th><th className="ta-r" />
+							<th>Nom</th><th>E-mail</th><th>Portable</th><th>Rôle</th><th>État</th><th data-droite />
 						</tr>
 					</thead>
 					<tbody>
@@ -78,56 +87,51 @@ export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moi
 								</td>
 								<td>{c.role === 'admin' ? 'Administrateur' : 'Utilisateur'}</td>
 								<td>
-									{c.bloque ? <span className="pill pill-fini">Bloqué</span>
-										: c.doitChangerMotDePasse ? <span className="pill pill-modif">Mot de passe provisoire</span>
-										: <span className="pill pill-actif">Actif</span>}
+									{c.bloque ? <Pastille ton="neutre">Bloqué</Pastille>
+										: c.doitChangerMotDePasse ? <Pastille className="ml-1">Mot de passe provisoire</Pastille>
+										: <Pastille>Actif</Pastille>}
 								</td>
-								<td className="ta-r nowrap cell-actions">
-									<button type="button" className="btn btn-sm" disabled={enCours} onClick={() => reinitialiser(c)}>Réinitialiser le mot de passe</button>
+								<td data-droite data-actions>
+									<Bouton taille="sm" desactive={enCours} onClick={() => reinitialiser(c)}>Réinitialiser le mot de passe</Bouton>
 									{c.id !== moiId && (
 										<>
-											<button type="button" className="btn btn-sm" disabled={enCours} onClick={() => agir(() => changerRoleAction(c.id, c.role === 'admin' ? 'user' : 'admin'), 'Rôle modifié.')}>
+											<Bouton taille="sm" desactive={enCours} onClick={() => agir(() => changerRoleAction(c.id, c.role === 'admin' ? 'user' : 'admin'), 'Rôle modifié.')}>
 												{c.role === 'admin' ? 'Passer utilisateur' : 'Passer administrateur'}
-											</button>
-											<button type="button" className={c.bloque ? 'btn btn-sm' : 'btn btn-sm btn-danger'} disabled={enCours} onClick={() => agir(() => bloquerCompteAction(c.id, !c.bloque), c.bloque ? 'Compte débloqué.' : 'Compte bloqué.')}>
+											</Bouton>
+											<Bouton taille="sm" variante={c.bloque ? 'normal' : 'danger'} desactive={enCours} onClick={() => agir(() => bloquerCompteAction(c.id, !c.bloque), c.bloque ? 'Compte débloqué.' : 'Compte bloqué.')}>
 												{c.bloque ? 'Débloquer' : 'Bloquer'}
-											</button>
+											</Bouton>
 										</>
 									)}
 								</td>
 							</tr>
 						))}
 					</tbody>
-				</table>
-			</div>
+				</Tableau>
+			</CadreTableau>
 
 			<Panneau ouvert={creation} surtitre="NOUVEAU COMPTE" titre="Créer un compte" onFermer={() => setCreation(false)}
 				pied={<>
-					<button type="submit" form="f-compte" className="btn btn-primary" disabled={enCours}>Créer le compte</button>
-					<button type="button" className="btn btn-ghost" onClick={() => setCreation(false)}>Annuler</button>
+					<Bouton type="submit" form="f-compte" variante="primaire" desactive={enCours}>Créer le compte</Bouton>
+					<Bouton variante="fantome" onClick={() => setCreation(false)}>Annuler</Bouton>
 				</>}>
-				<form id="f-compte" onSubmit={creer} className="grid-2">
-					<div className="field span"><label htmlFor="nom">Nom</label><input id="nom" name="nom" required className={erreurs.nom ? 'est-erreur' : undefined} />{erreurs.nom && <span className="erreur">{erreurs.nom}</span>}</div>
-					<div className="field span"><label htmlFor="email">E-mail</label><input id="email" name="email" type="email" required className={erreurs.email ? 'est-erreur' : undefined} />{erreurs.email && <span className="erreur">{erreurs.email}</span>}</div>
-					<div className="field span">
-						<label>Rôle</label>
-						<div className="radio-row" role="radiogroup" aria-label="Rôle">
-							{(['user', 'admin'] as const).map((r) => (
-								<label key={r} className={role === r ? 'is-on' : undefined}><input type="radio" name="role" value={r} checked={role === r} onChange={() => setRole(r)} /> {r === 'admin' ? 'Administrateur' : 'Utilisateur'}</label>
-							))}
-						</div>
-					</div>
-					{erreurs.general && <p role="alert" className="erreur">{erreurs.general}</p>}
+				<form id="f-compte" onSubmit={creer}>
+					<GrilleChamps>
+						<Champ libelle="Nom" pour="nom" erreur={erreurs.nom} pleineLargeur><Saisie id="nom" name="nom" required erreur={erreurs.nom} /></Champ>
+						<Champ libelle="E-mail" pour="email" erreur={erreurs.email} pleineLargeur><Saisie id="email" name="email" type="email" required erreur={erreurs.email} /></Champ>
+						<Champ libelle="Rôle" pleineLargeur><ChoixSegmente libelle="Rôle" options={ROLES} valeur={role} onChoisir={setRole} /></Champ>
+						{erreurs.general && <Erreur alerte>{erreurs.general}</Erreur>}
+					</GrilleChamps>
 				</form>
 			</Panneau>
 
 			<Panneau ouvert={provisoire !== null} surtitre="MOT DE PASSE PROVISOIRE" titre={provisoire?.email ?? ''} libelle="Mot de passe provisoire" onFermer={() => {}} sansFermeture
 				pied={<>
-					<button type="button" className="btn btn-primary" onClick={() => { void navigator.clipboard.writeText(provisoire?.motDePasse ?? ''); toast('Copié.'); }}>Copier</button>
-					<button type="button" className="btn btn-ghost" onClick={() => setProvisoire(null)}>Fermer</button>
+					<Bouton variante="primaire" onClick={() => { void navigator.clipboard.writeText(provisoire?.motDePasse ?? ''); toast('Copié.'); }}>Copier</Bouton>
+					<Bouton variante="fantome" onClick={() => setProvisoire(null)}>Fermer</Bouton>
 				</>}>
-				<p className="hint" style={{ margin: 0 }}>Transmettez-le à {provisoire?.email}. Il ne sera plus jamais affiché ; il devra être changé à la première connexion.</p>
-				<div className="block"><div className="block-body num" data-testid="mot-de-passe-provisoire" style={{ fontSize: '1.125rem', letterSpacing: '0.08em', textAlign: 'center' }}>{provisoire?.motDePasse}</div></div>
+				<p>Transmettez-le à {provisoire?.email}. Il ne sera plus jamais affiché ; il devra être changé à la première connexion.</p>
+				<Bloc><p data-testid="mot-de-passe-provisoire" className={cx(CHIFFRES, 'text-center text-18 tracking-[0.08em]')}>{provisoire?.motDePasse}</p></Bloc>
 			</Panneau>
 		</>
 	);
@@ -136,8 +140,8 @@ export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moi
 /** « Nouveau compte » de la barre de titre : ouvre la fiche de création. */
 export function BoutonNouveauCompte() {
 	return (
-		<button type="button" className="btn btn-primary" onClick={() => window.dispatchEvent(new Event(OUVRIR_COMPTE))}>
+		<Bouton variante="primaire" onClick={() => window.dispatchEvent(new Event(OUVRIR_COMPTE))}>
 			<Icone.Plus />Nouveau compte
-		</button>
+		</Bouton>
 	);
 }

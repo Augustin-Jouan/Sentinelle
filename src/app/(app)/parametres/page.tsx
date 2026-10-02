@@ -1,6 +1,7 @@
 import { modifierParametreAction } from '@/actions/parametres';
 import { exigerPage } from '@/auth/session';
 import { ChampEnLigne } from '@/composants/ChampEnLigne';
+import { Champ, ColonnesFormulaire, GrilleChamps, GroupeChamps } from '@/composants/briques/Champ';
 import { Ecran } from '@/composants/briques/Ecran';
 import { lireParametres, type ChampParametres } from '@/donnees/parametres';
 
@@ -25,21 +26,18 @@ export default async function PageParametres() {
 	const p = await lireParametres();
 	return (
 		<Ecran titre="Paramètres de l'entreprise">
-			<div className="form-wrap">
-				<div className="fieldset">
-					<span className="eyebrow">En-tête des documents</span>
-					<p className="hint" style={{ margin: 0 }}>Imprimé sur les marchés, le récapitulatif, les certificats de paiement, les comptes rendus et les PV de réception. Chaque champ s&apos;enregistre quand on le quitte.</p>
-					<div className="grid-2">
+			<ColonnesFormulaire>
+				<GroupeChamps titre="En-tête des documents">
+					<p>Imprimé sur les marchés, le récapitulatif, les certificats de paiement, les comptes rendus et les PV de réception. Chaque champ s&apos;enregistre quand on le quitte.</p>
+					<GrilleChamps>
 						{CHAMPS.map(({ champ, libelle, aide }) => (
-							<div key={champ} className="field">
-								<label htmlFor={`p-${champ}`}>{libelle}</label>
+							<Champ key={champ} libelle={libelle} pour={`p-${champ}`} aide={aide}>
 								<ChampEnLigne id={`p-${champ}`} variante="champ" libelle={libelle} valeur={p[champ] ?? ''} enregistrer={modifierParametreAction.bind(null, champ)} />
-								{aide && <span className="hint">{aide}</span>}
-							</div>
+							</Champ>
 						))}
-					</div>
-				</div>
-			</div>
+					</GrilleChamps>
+				</GroupeChamps>
+			</ColonnesFormulaire>
 		</Ecran>
 	);
 }
