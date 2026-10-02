@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { ADMIN, seConnecter } from './aide';
+import { ADMIN, carteChantier, seConnecter } from './aide';
 import { telecharger } from './aidePlanning';
 
 /** Les espaces de formatEuros : fine insécable entre les milliers, insécable avant « € ». */
@@ -20,7 +20,7 @@ test('avenant, lettre, acomptes antérieurs, certificat et correction', async ({
 	test.setTimeout(180_000);
 	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
 	await page.goto('/chantiers');
-	await page.locator('.chantier', { hasText: 'FINANCIER' }).click();
+	await carteChantier(page, 'FINANCIER').click();
 	await expect(page).toHaveURL(/\/marches$/);
 	const ttc = lignePeinture(page).getByLabel('Montant TTC');
 	await expect(ttc).toHaveValue(saisie('11 340,00'));

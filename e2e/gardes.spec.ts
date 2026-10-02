@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { config } from 'dotenv';
 import pg from 'pg';
-import { ADMIN, seConnecter } from './aide';
+import { ADMIN, carteChantier, seConnecter } from './aide';
 
 config({ path: '.env.test' });
 
@@ -28,7 +28,7 @@ const SECRETS = ['M. et Mme PERRIER', 'CONSTRUCTIONS REBOURS', 'FINANCIER'];
 test('sans session valide, aucune page ne livre de données, même avec un cookie inventé', async ({ page, playwright }) => {
 	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
 	await page.goto('/chantiers');
-	await page.locator('.chantier', { hasText: 'FINANCIER' }).click();
+	await carteChantier(page, 'FINANCIER').click();
 	await expect(page).toHaveURL(/\/chantiers\/[^/]+\/marches$/);
 	const chantier = new URL(page.url()).pathname.replace(/\/marches$/, '');
 	const chantierId = chantier.split('/').pop()!;

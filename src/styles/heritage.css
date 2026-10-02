@@ -152,9 +152,6 @@
 .btn-ico svg { width: 0.875rem; height: 0.875rem; }
 
 /* Dans une carte cliquable, un bouton fantôme passe pour du texte : on lui rend un contour. */
-.chantier-actions .btn { background: var(--surface); border-color: var(--rule-strong); color: var(--ink-2); }
-.chantier-actions .btn:hover { background: var(--idle-soft); border-color: var(--muted); color: var(--ink); }
-.chantier-actions .btn svg { opacity: 0.7; }
 
 /* ============================================================
    PASTILLES D'ÉTAT
@@ -314,61 +311,13 @@ tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
 /* ============================================================
    CHANTIERS
    ============================================================ */
-.chantier-grid {
-	display: grid;
-	/* 24 rem et non 20 : à 1392 px, 20 rem donnait 4 colonnes de 348 px où les noms
-	   de chantier passaient à la ligne. 24 rem en rend 3, larges de 464 px. */
-	grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
-	/* vraie gouttière et cartes bordées, au lieu d'un filet de 1 px obtenu par le fond
-	   de la grille : les cellules vides d'une ligne incomplète laissaient voir un aplat gris */
-	gap: 1rem;
-}
-.chantier {
-	background: var(--raise);
-	border: 1px solid var(--rule);
-	border-radius: var(--r);
-	box-shadow: var(--ombre);
-	padding: 1.25rem 1.375rem 1.125rem;
-	text-align: left;
-	cursor: pointer;
-	display: flex;
-	flex-direction: column;
-	gap: 0.75rem;
-	transition: box-shadow 0.16s, border-color 0.16s, transform 0.16s;
-}
 /* elle se soulève : c'est ce qui la distingue d'un cadre dessiné */
-.chantier:hover { border-color: var(--accent); box-shadow: var(--ombre-h); transform: translateY(-2px); }
-.chantier:active { transform: translateY(0); }
-.chantier-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
-.chantier-ref { font-family: 'Outfit', sans-serif; font-size: 1.0625rem; font-weight: 600; }
-.chantier-meta { font-size: 0.75rem; color: var(--muted); line-height: 1.45; }
-.chantier-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; margin-top: auto; }
-.chantier-total { font-family: 'Spline Sans Mono', monospace; font-variant-numeric: tabular-nums; font-size: 1rem; }
-.chantier-lots { font-family: 'Spline Sans Mono', monospace; font-size: 0.6875rem; color: var(--muted); }
-.chantier-sig { font-family: 'Spline Sans Mono', monospace; font-size: 0.6875rem; color: var(--faint); }
-.chantier-new { align-items: flex-start; justify-content: center; gap: 0.375rem; background: var(--surface); border-style: dashed; }
-.chantier-new .plus { font-family: 'Outfit', sans-serif; font-size: 1.5rem; line-height: 1; color: var(--accent); }
-.chantier-new .chantier-ref { color: var(--accent-2); }
-.chantier-total small { display: block; font-family: 'Outfit', sans-serif; font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
 
 /* interrupteur « masquer les terminés » */
 
 /* chantier terminé */
-.chantier.is-done { opacity: 0.72; }
-.chantier.is-done .chantier-ref { text-decoration: line-through; text-decoration-thickness: 1px; }
 .pill-fini { background: var(--idle-soft); color: var(--muted); }
 .pill-fini::before { background: none; border: 1px solid currentColor; border-radius: 50%; }
-.chantier-actions { display: flex; align-items: center; gap: 0.375rem; flex: none; }
-.chantier-grid .empty-list {
-	grid-column: 1 / -1;
-	background: var(--raise);
-	border: 1px solid var(--rule);
-	border-radius: var(--r-sm);
-	padding: 2rem 1.25rem;
-	text-align: center;
-	color: var(--muted);
-	font-style: italic;
-}
 
 /* ============================================================
    FORMULAIRE
@@ -952,34 +901,6 @@ tr.dm-inactif .dm-lot-d, tr.dm-inactif .dm-lot-e { color: var(--muted); }
 /* ---------- bande de synthèse de l'accueil ----------
    La page était plus vide qu'avant parce qu'elle était plus large. On la remplit
    de ce qu'on veut savoir en arrivant, pas en étirant ce qui existait. */
-.synthese {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-	background: var(--rule);
-	gap: 1px;
-	border: 1px solid var(--rule);
-	border-radius: var(--r);
-	box-shadow: var(--ombre);
-	overflow: hidden;   /* les cellules doivent suivre l'arrondi du cadre */
-	margin-bottom: 1.25rem;
-}
-.synth-cell { background: var(--raise); padding: 0.875rem 1.125rem 0.9375rem; }
-.synth-k {
-	display: block;
-	font-family: 'Outfit', sans-serif;
-	font-size: 0.625rem; font-weight: 600;
-	letter-spacing: 0.08em; text-transform: uppercase;
-	color: var(--faint);
-	margin-bottom: 0.1875rem;
-}
-.synth-v {
-	font-family: 'Spline Sans Mono', monospace;
-	font-variant-numeric: tabular-nums;
-	font-size: 1.375rem;
-	line-height: 1.1;
-}
-.synth-sous { display: block; font-size: 0.75rem; color: var(--muted); margin-top: 0.1875rem; }
-.synth-cell.alerte .synth-v { color: var(--danger); }
 
 @media (max-width: 60rem) {
 	/* la barre est déjà horizontale : il n'y a plus de bascule à opérer,
@@ -1036,7 +957,6 @@ a.btn { text-decoration: none; }
 /* Barre de navigation : l'app navigue par liens là où la maquette avait des boutons. */
 
 /* La carte « Nouveau chantier » est un lien dans l'app (un bouton dans la maquette). */
-a.chantier-new { text-decoration: none; color: inherit; }
 
 /* Le TTC du panneau est en gras (style en ligne dans la maquette, que ChampEnLigne ne porte pas). */
 /* Les liens-boutons du pied du panneau et des lignes d'avenant. */

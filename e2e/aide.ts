@@ -20,3 +20,6 @@ export const onglet = (page: Page, nom: string) =>
 
 /** Ouvre le menu du compte (le bouton rond des initiales). */
 export const ouvrirMenuCompte = (page: Page) => page.getByRole('button', { name: 'Mon compte' }).click();
+
+/** La carte d'un chantier sur l'accueil, par sa référence. */
+export const carteChantier = (page: Page, reference: string) => page.getByTestId('carte-chantier').filter({ hasText: reference });

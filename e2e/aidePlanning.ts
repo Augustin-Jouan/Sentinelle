@@ -1,5 +1,5 @@
 import { expect, type Page } from '@playwright/test';
-import { ADMIN, onglet, seConnecter } from './aide';
+import { ADMIN, carteChantier, onglet, seConnecter } from './aide';
 
 /** Densité Normale : 46 px par semaine. */
 export const W = 46;
@@ -7,7 +7,7 @@ export const W = 46;
 export async function ouvrirPlanning(page: Page, reference: string) {
 	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
 	await page.goto('/chantiers');
-	await page.locator('.chantier', { hasText: reference }).click();
+	await carteChantier(page, reference).click();
 	await onglet(page, 'Planning').click();
 	await expect(page).toHaveURL(/\/planning$/);
 	await expect(page.locator('.g-bar').first()).toBeVisible();

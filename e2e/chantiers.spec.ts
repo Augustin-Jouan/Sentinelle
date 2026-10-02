@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { ADMIN, seConnecter } from './aide';
+import { ADMIN, carteChantier, seConnecter } from './aide';
 
 test('crée un chantier et l\'ouvre', async ({ page }) => {
 	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
@@ -13,7 +13,7 @@ test('crée un chantier et l\'ouvre', async ({ page }) => {
 	await expect(page.getByRole('heading', { name: 'Marchés & récapitulatif' })).toBeVisible();
 
 	await page.goto('/chantiers');
-	await expect(page.locator('.chantier-ref', { hasText: 'DURAND — Erbray' })).toBeVisible();
+	await expect(carteChantier(page, 'DURAND — Erbray')).toBeVisible();
 });
 
 test('la référence en double est refusée', async ({ page }) => {
