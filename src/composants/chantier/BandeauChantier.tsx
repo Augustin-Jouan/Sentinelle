@@ -56,7 +56,7 @@ export function BandeauChantier({ chantier: c, chargesAffaire }: { chantier: EnT
 					{CHAMPS.map((f) => (
 						<div key={f.champ} className={f.span ? 'field span' : 'field'}>
 							<label htmlFor={`e-${f.champ}`}>{f.libelle}</label>
-							<ChampEnLigne id={`e-${f.champ}`} variante="champ" className={f.num ? 'num' : undefined} libelle={f.libelle} type={f.type}
+							<ChampEnLigne id={`e-${f.champ}`} variante="champ" chiffres={f.num} libelle={f.libelle} type={f.type}
 								valeur={c[f.champ] as string} enregistrer={modifierChampChantierAction.bind(null, c.id, f.champ)} />
 						</div>
 					))}

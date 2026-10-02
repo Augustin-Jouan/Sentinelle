@@ -88,7 +88,7 @@ export function FormulaireChantier({ chargesAffaire, moi }: Props) {
 							{champ('f-cp', 'cp', 'Code postal', { placeholder: '44110', num: true })}
 							{champ('f-com', 'commune', 'Commune', { placeholder: 'LOUISFERT' })}
 							<div className="field span">
-								<Interrupteur id="f-meme" coche={surPlace} onChange={setSurPlace}>Le client habite déjà à cette adresse</Interrupteur>
+								<Interrupteur id="f-meme" variante="discrete" coche={surPlace} onChange={setSurPlace}>Le client habite déjà à cette adresse</Interrupteur>
 								<span className="hint">Cas d&apos;une rénovation ou d&apos;une extension&nbsp;: son adresse actuelle est recopiée du chantier.</span>
 							</div>
 						</div>
@@ -122,7 +122,7 @@ export function FormulaireChantier({ chargesAffaire, moi }: Props) {
 					<div className="fieldset">
 						<span className="eyebrow">Lots</span>
 						<div className="field">
-							<Interrupteur id="f-lots-base" coche={lotsDeBase} onChange={setLotsDeBase}>Partir des 13 lots de base</Interrupteur>
+							<Interrupteur id="f-lots-base" variante="discrete" coche={lotsDeBase} onChange={setLotsDeBase}>Partir des 13 lots de base</Interrupteur>
 							<span className="hint">Terrassement, gros œuvre, charpente… jusqu&apos;à l&apos;escalier en sous-traitance, sans entreprise ni montant. Il suffit ensuite de supprimer ceux qui ne servent pas.</span>
 						</div>
 					</div>

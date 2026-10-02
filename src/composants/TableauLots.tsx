@@ -78,7 +78,7 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 									</td>
 									<td className="cell-lot is-editable" onClick={arreter}>
 										<div className="lot-wrap">
-											<ChampEnLigne libelle="Désignation du lot" placeholder="Désignation du lot" valeur={l.designation} enregistrer={champ(l.id, 'designation')} />
+											<ChampEnLigne className="min-w-0 flex-1" libelle="Désignation du lot" placeholder="Désignation du lot" valeur={l.designation} enregistrer={champ(l.id, 'designation')} />
 											{l.nature === 'SOUS_TRAITANCE' && <span className="nature-tag st">Sous-traitance</span>}
 											{nbAv > 0 && <span className="nature-tag av" title={`${nbAv} avenant(s) — le montant affiché les comprend`}>{nbAv} avenant{nbAv > 1 ? 's' : ''}</span>}
 										</div>
