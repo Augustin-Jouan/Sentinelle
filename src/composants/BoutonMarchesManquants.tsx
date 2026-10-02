@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { genererMarchesManquantsAction } from '@/actions/documents';
+import { Bouton } from '@/composants/briques/Bouton';
 
 export function BoutonMarchesManquants({ chantierId, forme = 'barre', texte }: { chantierId: string; forme?: 'barre' | 'entete'; texte?: string }) {
 	const [enCours, demarrer] = useTransition();
@@ -22,7 +23,7 @@ export function BoutonMarchesManquants({ chantierId, forme = 'barre', texte }: {
 		router.refresh();
 	});
 	return forme === 'barre' ? (
-		<button type="button" className="btn btn-primary" disabled={enCours} onClick={clic}>{enCours ? 'Génération…' : 'Générer les marchés manquants'}</button>
+		<Bouton variante="primaire" enCours={enCours} onClick={clic}>{enCours ? 'Génération…' : 'Générer les marchés manquants'}</Bouton>
 	) : (
 		<button type="button" className="dm-th-action" disabled={enCours} onClick={clic}>{enCours ? 'Génération…' : texte}</button>
 	);

@@ -4,6 +4,7 @@ import { ApercuCertificat } from '@/composants/ApercuCertificat';
 import { ApercuDocument } from '@/composants/ApercuDocument';
 import { BoutonMarchesManquants } from '@/composants/BoutonMarchesManquants';
 import { BandeauChantier } from '@/composants/chantier/BandeauChantier';
+import { Bouton } from '@/composants/briques/Bouton';
 import { Ecran } from '@/composants/briques/Ecran';
 import * as Icone from '@/composants/briques/icones';
 import { BoutonAjouterLot, TableauLots } from '@/composants/TableauLots';
@@ -77,7 +78,7 @@ export default async function PageMarches({ params, searchParams }: Props) {
 			titre="Marchés & récapitulatif"
 			actions={<>
 				<BoutonAjouterLot chantierId={id} />
-				<a className="btn" href={`/api/chantiers/${id}/recap-xlsx`}><Icone.Telecharger />Exporter le récap</a>
+				<Bouton natif href={`/api/chantiers/${id}/recap-xlsx`}><Icone.Telecharger />Exporter le récap</Bouton>
 				<BoutonMarchesManquants chantierId={id} forme="barre" />
 			</>}
 			contexte={<BandeauChantier chantier={chantier} chargesAffaire={chargesAffaire} />}

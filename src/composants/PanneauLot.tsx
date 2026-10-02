@@ -1,15 +1,22 @@
 'use client';
 
 import Decimal from 'decimal.js';
-import Link from 'next/link';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { ajouterAvenantAction, modifierAvenantAction, supprimerAvenantAction } from '@/actions/avenants';
 import { attribuerArtisanAction, changerNatureAction, modifierChampLotAction, supprimerLotAction } from '@/actions/lots';
+import { Bloc } from '@/composants/briques/Bloc';
+import { Bouton } from '@/composants/briques/Bouton';
+import { ChoixSegmente } from '@/composants/briques/ChoixSegmente';
+import { Cle, CleValeur, Valeur } from '@/composants/briques/CleValeur';
 import { useConfirmation } from '@/composants/briques/Confirmation';
+import { cx } from '@/composants/briques/cx';
 import * as Icone from '@/composants/briques/icones';
 import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
 import { Panneau } from '@/composants/briques/Panneau';
+import { Tableau } from '@/composants/briques/Tableau';
+import { CHIFFRES } from '@/composants/briques/typo';
+import { Vide } from '@/composants/briques/Vide';
 import type { LotVue, VueMarches } from '@/donnees/marches';
 import { confirmationSuppression, numeroAvenantTexte } from '@/domaine/avenants';
 import { CERTIFICAT_IMPOSSIBLE } from '@/domaine/certificats';
@@ -19,9 +26,13 @@ import { LIBELLES_MANQUES } from '@/domaine/regles';
 import { ChampEnLigne } from './ChampEnLigne';
 
 type Avenant = LotVue['avenants'][number];
-const NATURES = [['GRE_A_GRE', 'Gré à gré'], ['SOUS_TRAITANCE', 'Sous-traitance']] as const;
+const NATURES = [{ v: 'GRE_A_GRE', t: 'Gré à gré' }, { v: 'SOUS_TRAITANCE', t: 'Sous-traitance' }] as const;
+/** Le symbole ou le calcul qui suit un champ de la grille (ex-.unite, .calcule). */
+const UNITE = 'ml-1.25 font-mono text-12 text-muted';
+const CALCULE = 'ml-2.5 font-mono text-12 text-muted';
+/** Une précision sous un champ (ex-.hint-inline). */
+const Precision = ({ children }: { children: React.ReactNode }) => <div className="mt-0.75 text-11 text-faint">{children}</div>;
 const dateFr = (iso: string) => iso.split('-').reverse().join('.');
-const note = { margin: 0, fontSize: '0.75rem', color: 'var(--muted)' } as const;
 
 export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarches; onFermer: () => void }) {
 	const [enCours, demarrer] = useTransition();
@@ -58,135 +69,116 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 	const pied = (
 		<>
 			{lot.manques.length === 0 ? (
-				<Link className="btn btn-primary" href={`?apercu=${lot.id}`} scroll={false} onClick={onFermer}><Icone.Doc />Ouvrir le marché</Link>
+				<Bouton variante="primaire" href={`?apercu=${lot.id}`} scroll={false} onClick={onFermer}><Icone.Doc />Ouvrir le marché</Bouton>
 			) : (
-				<button type="button" className="btn" onClick={() => toast(lot.artisanId
+				<Bouton onClick={() => toast(lot.artisanId
 					? `Pour générer le marché : ${lot.manques.map((m) => LIBELLES_MANQUES[m]).join(', ')}.`
-					: "Attribuez d'abord une entreprise.")}>Ouvrir le marché</button>
+					: "Attribuez d'abord une entreprise.")}>Ouvrir le marché</Bouton>
 			)}
 			{lot.artisanId && (lot.certificat.possible
-				? <Link className="btn" href={`?certificat=${lot.id}`} scroll={false} onClick={onFermer}>Certificat de paiement</Link>
-				: <button type="button" className="btn" onClick={() => toast(CERTIFICAT_IMPOSSIBLE)}>Certificat de paiement</button>)}
+				? <Bouton href={`?certificat=${lot.id}`} scroll={false} onClick={onFermer}>Certificat de paiement</Bouton>
+				: <Bouton onClick={() => toast(CERTIFICAT_IMPOSSIBLE)}>Certificat de paiement</Bouton>)}
 			{lot.certificat.dernier && (
-				<Link className="btn" href={`?corriger=${lot.certificat.dernier.id}`} scroll={false} onClick={onFermer}>
+				<Bouton href={`?corriger=${lot.certificat.dernier.id}`} scroll={false} onClick={onFermer}>
 					{`Corriger le certificat n° ${String(lot.certificat.dernier.numero).padStart(2, '0')}`}
-				</Link>
+				</Bouton>
 			)}
-			{lot.artisanId && <Link className="btn" href={`/chantiers/${vue.chantierId}/documents?pv=${lot.id}`} onClick={onFermer}>PV de réception</Link>}
-			<button type="button" className="btn btn-ghost" disabled={enCours} onClick={supprimerLot}>Supprimer le lot</button>
+			{lot.artisanId && <Bouton href={`/chantiers/${vue.chantierId}/documents?pv=${lot.id}`} onClick={onFermer}>PV de réception</Bouton>}
+			<Bouton variante="fantome" desactive={enCours} onClick={supprimerLot}>Supprimer le lot</Bouton>
 		</>
 	);
 
 	return (
 		<Panneau ouvert surtitre={lot.numero ? `LOT ${lot.numero}` : 'LOT NON NUMÉROTÉ'} titre={lot.designation || 'Désignation à saisir'}
 			libelle={lot.designation || undefined} onFermer={onFermer} pied={pied}>
-			<div className="radio-row" role="radiogroup" aria-label="Nature du marché">
-				{NATURES.map(([n, t]) => (
-					<label key={n} role="radio" aria-checked={lot.nature === n} tabIndex={0} className={lot.nature === n ? 'is-on' : undefined}
-						onClick={() => lot.nature !== n && agir(() => changerNatureAction(lot.id, n))}
-						onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && lot.nature !== n) { e.preventDefault(); agir(() => changerNatureAction(lot.id, n)); } }}>
-						{t}
-					</label>
-				))}
-			</div>
-			<p style={{ margin: '-0.5rem 0 0', fontSize: '0.75rem', color: 'var(--muted)' }}>Détermine le gabarit imprimé pour ce lot.</p>
+			<ChoixSegmente libelle="Nature du marché" options={NATURES} valeur={lot.nature} onChoisir={(n) => agir(() => changerNatureAction(lot.id, n))} />
+			<p className="-mt-2 text-12 text-muted">Détermine le gabarit imprimé pour ce lot.</p>
 
-			<div className="block">
-				<div className="block-head">
-					<span className="eyebrow">Entreprise</span>
-					{artisan && <Link className="btn btn-ghost btn-sm" href={`/artisans?fiche=${artisan.id}`}>Voir la fiche</Link>}
-				</div>
-				<div className="block-body" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-					<MenuDeroulant id="dd-ent" k="Attribuée à" valeur={lot.artisanId ?? ''} recherche="Nom, commune…" largeur="pleine" desactive={enCours}
-						options={options} onChoisir={(v) => agir(() => attribuerArtisanAction(lot.id, v || null))} />
-					{artisan && (
-						<>
-							<dl className="kv">
-								<dt>Adresse</dt><dd>{artisan.adresse || '—'}</dd>
-								<dt>Commune</dt><dd>{artisan.cp} {artisan.commune || '—'}</dd>
-								<dt>Interlocuteur</dt><dd>{artisan.interlocuteur || <span className="dash">non renseigné</span>}</dd>
-								<dt>Téléphone</dt><dd className="num">{artisan.telephone || <span className="dash">—</span>}</dd>
-							</dl>
-							<p style={note}>Ces lignes sont lues dans le référentiel au moment de l&apos;impression. Elles ne sont pas recopiées dans le marché.</p>
-						</>
+			<Bloc titre="Entreprise" corps="colonne"
+				action={artisan && <Bouton variante="fantome" taille="sm" href={`/artisans?fiche=${artisan.id}`}>Voir la fiche</Bouton>}>
+				<MenuDeroulant id="dd-ent" k="Attribuée à" valeur={lot.artisanId ?? ''} recherche="Nom, commune…" largeur="pleine" desactive={enCours}
+					options={options} onChoisir={(v) => agir(() => attribuerArtisanAction(lot.id, v || null))} />
+				{artisan && (
+					<>
+						<CleValeur>
+							<Cle>Adresse</Cle><Valeur>{artisan.adresse || '—'}</Valeur>
+							<Cle>Commune</Cle><Valeur>{artisan.cp} {artisan.commune || '—'}</Valeur>
+							<Cle>Interlocuteur</Cle><Valeur>{artisan.interlocuteur || <span className="text-faint">non renseigné</span>}</Valeur>
+							<Cle>Téléphone</Cle><Valeur chiffres>{artisan.telephone || <span className="text-faint">—</span>}</Valeur>
+						</CleValeur>
+						<p className="text-12 text-muted">Ces lignes sont lues dans le référentiel au moment de l&apos;impression. Elles ne sont pas recopiées dans le marché.</p>
+					</>
+				)}
+			</Bloc>
+
+			<Bloc titre="Marché">
+				<CleValeur>
+					<Cle><label htmlFor="pl-ht">{avecAvenants ? 'Montant initial HT' : 'Montant HT'}</label></Cle>
+					<Valeur><ChampEnLigne id="pl-ht" variante="kv" libelle="Montant HT du marché" valeur={formatMontantSaisie(lot.htInitial)} enregistrer={champ('montantHt')} /></Valeur>
+					{avecAvenants && (
+						<><Cle>Avenants</Cle><Valeur chiffres moins={somme.isNegative()} data-testid="somme-avenants">{somme.isNegative() ? '−' : '+'} {formatEuros(somme.abs())}</Valeur></>
 					)}
-				</div>
-			</div>
+					<Cle><label htmlFor="pl-tva">T.V.A.</label></Cle>
+					<Valeur><ChampEnLigne id="pl-tva" variante="kv-etroit" libelle="Taux de T.V.A." valeur={formatTauxPoint(lot.tauxTva)} enregistrer={champ('tauxTva')} /><span className={UNITE}>%</span></Valeur>
+					<Cle><label htmlFor="pl-ttc">{avecAvenants ? 'Montant actuel TTC' : 'Montant TTC'}</label></Cle>
+					<Valeur>
+						<ChampEnLigne id="pl-ttc" variante="kv" gras libelle="Montant TTC du marché" valeur={formatMontantSaisie(lot.ttcEngage)} enregistrer={champ('montantTtc')} />
+						{avecAvenants && <Precision>avenants compris : le montant initial HT est recalculé</Precision>}
+					</Valeur>
+					<Cle><label htmlFor="pl-rg">Retenue de garantie</label></Cle>
+					<Valeur>
+						<ChampEnLigne id="pl-rg" variante="kv-etroit" libelle="Taux de retenue de garantie" valeur={formatTauxPoint(lot.retenueGarantie)} enregistrer={champ('retenueGarantie')} />
+						<span className={UNITE}>%</span>
+						<span className={CALCULE}>{formatEuros(htEngage(lot.htInitial, lot.sommeAvenants).times(lot.retenueGarantie).div(100))}</span>
+					</Valeur>
+					<Cle>Exemplaires</Cle>
+					<Valeur>{lot.exemplaires} — {lot.nature === 'SOUS_TRAITANCE' ? 'entreprise, SOCOREVE' : "entreprise, SOCOREVE, maître d'ouvrage"}</Valeur>
+					<Cle>Signé le</Cle>
+					<Valeur>
+						<ChampEnLigne variante="date" type="date" libelle="Date de signature de ce marché" valeur={lot.dateSignature} enregistrer={champ('dateSignature')} />
+						{!lot.dateSignature && <Precision>à défaut, {vue.dateSignatureChantier ? dateFr(vue.dateSignatureChantier) : 'non fixée'} — la date du chantier</Precision>}
+					</Valeur>
+				</CleValeur>
+			</Bloc>
 
-			<div className="block">
-				<div className="block-head"><span className="eyebrow">Marché</span></div>
-				<div className="block-body">
-					<dl className="kv">
-						<dt><label htmlFor="pl-ht">{avecAvenants ? 'Montant initial HT' : 'Montant HT'}</label></dt>
-						<dd><ChampEnLigne id="pl-ht" variante="kv" libelle="Montant HT du marché" valeur={formatMontantSaisie(lot.htInitial)} enregistrer={champ('montantHt')} /></dd>
-						{avecAvenants && (
-							<><dt>Avenants</dt><dd className={somme.isNegative() ? 'num moins' : 'num'} data-testid="somme-avenants">{somme.isNegative() ? '−' : '+'} {formatEuros(somme.abs())}</dd></>
-						)}
-						<dt><label htmlFor="pl-tva">T.V.A.</label></dt>
-						<dd><ChampEnLigne id="pl-tva" variante="kv-etroit" libelle="Taux de T.V.A." valeur={formatTauxPoint(lot.tauxTva)} enregistrer={champ('tauxTva')} /><span className="unite">%</span></dd>
-						<dt><label htmlFor="pl-ttc">{avecAvenants ? 'Montant actuel TTC' : 'Montant TTC'}</label></dt>
-						<dd>
-							<ChampEnLigne id="pl-ttc" variante="kv" gras libelle="Montant TTC du marché" valeur={formatMontantSaisie(lot.ttcEngage)} enregistrer={champ('montantTtc')} />
-							{avecAvenants && <span className="hint-inline">avenants compris : le montant initial HT est recalculé</span>}
-						</dd>
-						<dt><label htmlFor="pl-rg">Retenue de garantie</label></dt>
-						<dd>
-							<ChampEnLigne id="pl-rg" variante="kv-etroit" libelle="Taux de retenue de garantie" valeur={formatTauxPoint(lot.retenueGarantie)} enregistrer={champ('retenueGarantie')} />
-							<span className="unite">%</span>
-							<span className="calcule">{formatEuros(htEngage(lot.htInitial, lot.sommeAvenants).times(lot.retenueGarantie).div(100))}</span>
-						</dd>
-						<dt>Exemplaires</dt>
-						<dd>{lot.exemplaires} — {lot.nature === 'SOUS_TRAITANCE' ? 'entreprise, SOCOREVE' : "entreprise, SOCOREVE, maître d'ouvrage"}</dd>
-						<dt>Signé le</dt>
-						<dd>
-							<ChampEnLigne variante="date" type="date" libelle="Date de signature de ce marché" valeur={lot.dateSignature} enregistrer={champ('dateSignature')} />
-							{!lot.dateSignature && <span className="hint-inline">à défaut, {vue.dateSignatureChantier ? dateFr(vue.dateSignatureChantier) : 'non fixée'} — la date du chantier</span>}
-						</dd>
-					</dl>
-				</div>
-			</div>
-
-			<div className="block">
-				<div className="block-head">
-					<span className="eyebrow">Avenants</span>
-					<button type="button" className="btn btn-sm" disabled={enCours} aria-label="Ajouter un avenant" onClick={() => demarrer(async () => {
-						const r = await ajouterAvenantAction(lot.id);
-						if (r.ok) toast(r.donnees.message);
-						else toast.error(r.erreur);
-					})}>Ajouter</button>
-				</div>
-				<div className="block-body" style={{ padding: 0 }}>
-					{avecAvenants ? (
-						<>
-							<table className="plain plain-mini">
-								<thead><tr><th>N°</th><th>Devis</th><th className="ta-r">Montant HT</th><th>Date</th><th /></tr></thead>
-								<tbody>
-									{lot.avenants.map((a) => {
-										const n = numeroAvenantTexte(a.numero);
-										return (
-											<tr key={a.id} data-avenant={n}>
-												<td className="num" style={{ color: 'var(--muted)' }}>{n}</td>
-												<td><ChampEnLigne variante="texte-mini" libelle={`Devis de l'avenant n° ${n}`} placeholder="n° devis" valeur={a.devis} enregistrer={modifierAvenantAction.bind(null, a.id, 'devis')} /></td>
-												<td className="ta-r is-editable"><ChampEnLigne variante="montant" libelle={`Montant HT de l'avenant n° ${n}`} valeur={formatMontantSaisie(a.montantHt)} enregistrer={modifierAvenantAction.bind(null, a.id, 'montantHt')} /></td>
-												<td><ChampEnLigne variante="date" type="date" libelle={`Date de l'avenant n° ${n}`} valeur={a.date} enregistrer={modifierAvenantAction.bind(null, a.id, 'date')} /></td>
-												<td className="ta-r cell-actions nowrap">
-													<Link className="btn btn-sm btn-ico" href={`?avenant=${a.id}`} scroll={false} onClick={onFermer}
-														title={`Ouvrir l'avenant n° ${n}`} aria-label={`Ouvrir la lettre de l'avenant n° ${n}`}><Icone.Doc /></Link>
-													<button type="button" className="btn btn-sm btn-danger btn-ico" disabled={enCours} onClick={() => supprimerAvenant(a)}
-														title="Supprimer cet avenant" aria-label={`Supprimer l'avenant n° ${n}`}><Icone.Corbeille /></button>
-												</td>
-											</tr>
-										);
-									})}
-								</tbody>
-							</table>
-							<p className="av-note">Un montant négatif est une moins-value. Le marché imprimé garde son montant d&apos;origine&nbsp;; c&apos;est l&apos;avenant qui porte la différence.</p>
-						</>
-					) : (
-						<p className="vide-mini">Aucun avenant. Le marché vaut son montant d&apos;origine.</p>
-					)}
-				</div>
-			</div>
+			<Bloc titre="Avenants" corps="nu"
+				action={<Bouton taille="sm" desactive={enCours} aria-label="Ajouter un avenant" onClick={() => demarrer(async () => {
+					const r = await ajouterAvenantAction(lot.id);
+					if (r.ok) toast(r.donnees.message);
+					else toast.error(r.erreur);
+				})}>Ajouter</Bouton>}>
+				{avecAvenants ? (
+					<>
+						<Tableau variante="mini">
+							<thead><tr><th>N°</th><th>Devis</th><th data-droite>Montant HT</th><th>Date</th><th /></tr></thead>
+							<tbody>
+								{lot.avenants.map((a) => {
+									const n = numeroAvenantTexte(a.numero);
+									return (
+										<tr key={a.id} data-avenant={n}>
+											<td className={cx(CHIFFRES, 'text-muted')}>{n}</td>
+											<td><ChampEnLigne variante="texte-mini" libelle={`Devis de l'avenant n° ${n}`} placeholder="n° devis" valeur={a.devis} enregistrer={modifierAvenantAction.bind(null, a.id, 'devis')} /></td>
+											<td data-droite><ChampEnLigne variante="montant" libelle={`Montant HT de l'avenant n° ${n}`} valeur={formatMontantSaisie(a.montantHt)} enregistrer={modifierAvenantAction.bind(null, a.id, 'montantHt')} /></td>
+											<td><ChampEnLigne variante="date" type="date" libelle={`Date de l'avenant n° ${n}`} valeur={a.date} enregistrer={modifierAvenantAction.bind(null, a.id, 'date')} /></td>
+											<td data-droite data-actions>
+												<Bouton taille="sm" seulIcone href={`?avenant=${a.id}`} scroll={false} onClick={onFermer}
+													title={`Ouvrir l'avenant n° ${n}`} aria-label={`Ouvrir la lettre de l'avenant n° ${n}`}><Icone.Doc /></Bouton>
+												<Bouton taille="sm" variante="danger" seulIcone desactive={enCours} onClick={() => supprimerAvenant(a)}
+													title="Supprimer cet avenant" aria-label={`Supprimer l'avenant n° ${n}`}><Icone.Corbeille /></Bouton>
+											</td>
+										</tr>
+									);
+								})}
+							</tbody>
+						</Tableau>
+						<p className="border-t border-rule px-3.5 pt-2.5 pb-3 text-11 leading-[1.45] text-muted">
+							Un montant négatif est une moins-value. Le marché imprimé garde son montant d&apos;origine&nbsp;; c&apos;est l&apos;avenant qui porte la différence.
+						</p>
+					</>
+				) : (
+					<Vide variante="mini">Aucun avenant. Le marché vaut son montant d&apos;origine.</Vide>
+				)}
+			</Bloc>
 		</Panneau>
 	);
 }

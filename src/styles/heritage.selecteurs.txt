@@ -1,11 +1,6 @@
 .num
 .eyebrow
 .topbar-actions
-.context
-.context-cell
-.context-cell:last-child
-.context-k
-.context-v
 .btn
 .btn:hover
 .btn svg
@@ -23,37 +18,12 @@
 .pill::before
 .pill-actif
 .table-frame
-table.lots
-table.lots thead th
 th.ta-r
 td.ta-r
-table.lots tbody td
-table.lots tbody td.num
-table.lots tbody tr
-table.lots tbody tr:hover
-table.lots tbody tr.is-open
-table.lots tbody tr.is-unassigned td
-.cell-num
-.cell-lot
-.cell-ht
-.cell-tva
-.cell-ent
-.cell-ent small
-.cell-ent .unset
 .nature-tag
 .nature-tag.st
-.cell-lot .nature-tag
-.lot-wrap
-table.lots tbody td.is-editable
 tr.empty-row td
 tr.empty-row .btn
-.totals
-.total-cell
-.total-cell:last-child
-.total-cell:last-child .total-k
-.total-k
-.total-v
-.total-v.grand
 .pill-fini
 .pill-fini::before
 .form-wrap
@@ -75,9 +45,6 @@ tr.empty-row .btn
 .radio-row label
 .radio-row input
 .radio-row label.is-on
-.kv
-.kv dt
-.kv dd
 .block
 .block-head
 .block-body
@@ -173,12 +140,6 @@ table.plain.plain-mini tbody td
 table.plain.plain-mini tbody td:first-child
 table.plain.plain-mini th.ta-r
 table.plain.plain-mini td.ta-r
-.kv dd .unite
-.kv dd .calcule
-.hint-inline
-.kv dd.num.moins
-.av-note
-.nature-tag.av
 .vide-mini
 table.plain.plain-mini tbody tr.ligne-per td
 table.plain.plain-mini tbody tr.ligne-dep td
@@ -280,8 +241,6 @@ table tbody td.ta-r
 .btn[aria-disabled='true']
 .btn:disabled:hover
 .btn-primary:disabled:hover
-button.context
-button.context:hover
 a.btn
 .cell-actions a.btn
 .radio-row label[role='radio']:focus-visible
