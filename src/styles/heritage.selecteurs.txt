@@ -17,8 +17,6 @@
 .table-frame
 th.ta-r
 td.ta-r
-tr.empty-row td
-tr.empty-row .btn
 .pill-fini
 .pill-fini::before
 .form-wrap
@@ -42,16 +40,11 @@ tr.empty-row .btn
 .radio-row label.is-on
 .block
 .block-body
-.toolbar
 table.plain
 table.plain thead th
 table.plain tbody td
 table.plain tbody tr:hover
-.ent-name
 table.plain tbody tr[onclick]
-table.plain tbody tr.is-archived td
-table.plain tbody tr.is-archived .ent-name
-table.plain tbody tr.is-archived .pill
 td.nowrap
 table.plain tbody td .btn-sm
 table.plain tbody tr:hover .btn-sm
@@ -59,7 +52,6 @@ table.plain tbody tr:focus-within .btn-sm
 table.plain tbody td.cell-actions .btn-sm
 table.plain tbody td.cell-actions
 table.plain tbody td.cell-actions .btn + .btn
-.dash
 table thead th.ta-r
 table tbody td.ta-r
 .field input.est-erreur

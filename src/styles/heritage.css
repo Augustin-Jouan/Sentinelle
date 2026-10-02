@@ -152,14 +152,6 @@ th.ta-r, td.ta-r { text-align: right; }
 /* cellules éditables : c'est le champ qui porte le rembourrage de la cellule,
    pour que le texte saisi s'aligne exactement sur celui des colonnes voisines */
 
-tr.empty-row td {
-	padding: 1.75rem 0.75rem;
-	text-align: center;
-	color: var(--muted);
-	font-style: italic;
-}
-tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
-
 /* barre de totaux */
 
 /* ============================================================
@@ -301,7 +293,6 @@ tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
 /* ============================================================
    ARTISANS + DOCUMENTS
    ============================================================ */
-.toolbar { display: flex; gap: 0.625rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
 
 table.plain { width: 100%; border-collapse: collapse; min-width: 46rem; }
 table.plain thead th {
@@ -319,11 +310,7 @@ table.plain thead th {
 }
 table.plain tbody td { padding: 0.4375rem 0.75rem; border-bottom: 1px solid var(--rule); }
 table.plain tbody tr:hover { background: var(--surface); }
-.ent-name { font-weight: 500; }
 table.plain tbody tr[onclick] { cursor: pointer; }
-table.plain tbody tr.is-archived td { color: var(--muted); }
-table.plain tbody tr.is-archived .ent-name { text-decoration: line-through; text-decoration-thickness: 1px; }
-table.plain tbody tr.is-archived .pill { text-decoration: none; margin-left: 0.375rem; vertical-align: 1px; }
 td.nowrap { white-space: nowrap; }
 table.plain tbody td .btn-sm { visibility: hidden; }
 table.plain tbody tr:hover .btn-sm, table.plain tbody tr:focus-within .btn-sm { visibility: visible; }
@@ -331,7 +318,6 @@ table.plain tbody tr:hover .btn-sm, table.plain tbody tr:focus-within .btn-sm { 
 table.plain tbody td.cell-actions .btn-sm { visibility: visible; }
 table.plain tbody td.cell-actions { white-space: nowrap; }
 table.plain tbody td.cell-actions .btn + .btn { margin-left: 0.375rem; }
-.dash { color: var(--faint); }
 
 /* rubriques de la page Documents */
 

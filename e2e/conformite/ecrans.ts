@@ -65,6 +65,10 @@ const onglet = (nom: string) => async (page: Page, cible: Cible) => {
 		page.locator('header').getByRole('link', { name: new RegExp(`^${nom}`) })).click();
 };
 
+const allerAuxArtisans = async (page: Page, cible: Cible) => {
+	await selon(cible, page.locator('.nav-b', { hasText: 'Artisans' }), page.getByRole('link', { name: /^Artisans/ })).click();
+};
+
 /** Le Gantt au début du chantier ; la semaine en cours bouge avec la date, elle est masquée. */
 const allerAuPlanning = async (page: Page, cible: Cible) => {
 	await onglet('Planning')(page, cible);
@@ -130,8 +134,10 @@ export const ECRANS: Ecran[] = [
 		await page.getByRole('button', { name: 'Fermetures' }).click();
 	} },
 	{ nom: 'documents', aller: onglet('Documents') },
-	{ nom: 'artisans', aller: async (page, cible) => {
-		await selon(cible, page.locator('.nav-b', { hasText: 'Artisans' }), page.getByRole('link', { name: /^Artisans/ })).click();
+	{ nom: 'artisans', aller: allerAuxArtisans },
+	{ nom: 'fiche-artisan', aller: async (page, cible) => {
+		await allerAuxArtisans(page, cible);
+		await page.getByRole('row').filter({ hasText: 'AM COUVERTURE' }).getByRole('cell').first().click();
 	} },
 ];
 
