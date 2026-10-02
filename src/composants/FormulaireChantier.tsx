@@ -110,7 +110,7 @@ export function FormulaireChantier({ chargesAffaire, moi }: Props) {
 							{champ('f-sig', 'dateSignaturePrevue', 'Signature des marchés prévue le', { type: 'date' })}
 							<div className="field">
 								<label htmlFor="f-ca">Chargé d&apos;affaire</label>
-								<MenuDeroulant id="f-ca" k="Compte" classe="dd-plein" valeur={chargeAffaireId} onChoisir={setChargeAffaireId}
+								<MenuDeroulant id="f-ca" k="Compte" largeur="pleine" valeur={chargeAffaireId} onChoisir={setChargeAffaireId}
 									options={chargesAffaire.map((c) => ({ v: c.id, t: c.nom }))} />
 								<span className="hint">Chez vous, pas chez le client.</span>
 								{erreurs.chargeAffaireId && <span className="erreur">{erreurs.chargeAffaireId}</span>}

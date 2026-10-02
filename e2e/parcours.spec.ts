@@ -36,7 +36,7 @@ test('du chantier au récapitulatif, en passant par trois versions de marché', 
 	await page.getByRole('button', { name: 'Attribuée à' }).click();
 	await page.getByPlaceholder('Nom, commune…').fill('rebours');
 	await page.keyboard.press('Enter');
-	await expect(page.locator('#dd-ent .dd-v')).toHaveText('CONSTRUCTIONS REBOURS');
+	await expect(page.locator('#dd-ent').getByTestId('dd-valeur')).toHaveText('CONSTRUCTIONS REBOURS');
 
 	// 4. ouvrir le marché, écrire la clause sur la feuille, générer la v1
 	await page.getByRole('link', { name: 'Ouvrir le marché' }).click();

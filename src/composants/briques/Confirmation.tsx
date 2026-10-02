@@ -1,13 +1,15 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { Bouton } from './Bouton';
+import { cx } from './cx';
 
 type Demande = { texte: React.ReactNode; libelle: string; dangereux?: boolean };
 type EnCours = Demande & { resoudre: (oui: boolean) => void };
 
 const Contexte = createContext<((d: Demande) => Promise<boolean>) | null>(null);
 
-/** La fenêtre de confirmation de la maquette (.ask). Annuler, Échap ou un clic hors de la carte : non. */
+/** La fenêtre de confirmation (ex-.ask). Annuler, Échap ou un clic hors de la carte : non. */
 export function ConfirmationFournisseur({ children }: { children: React.ReactNode }) {
 	const [enCours, setEnCours] = useState<EnCours | null>(null);
 	const oui = useRef<HTMLButtonElement>(null);
@@ -32,19 +34,21 @@ export function ConfirmationFournisseur({ children }: { children: React.ReactNod
 		return () => window.removeEventListener('keydown', touche, true);
 	});
 
+	const ouverte = enCours ? '' : undefined;
 	return (
 		<Contexte.Provider value={demander}>
 			{children}
 			{/* data-bloque-clavier, seulement ouverte : le planning ignore ses raccourcis tant qu'un tel élément existe (useClavier). */}
-			<div className={enCours ? 'ask is-on' : 'ask'} role="dialog" aria-modal="true" aria-labelledby="ask-txt"
-				data-bloque-clavier={enCours ? '' : undefined}
-				onClick={(e) => { if (e.target === e.currentTarget) repondre(false); }}>
+			<div role="alertdialog" aria-modal="true" aria-labelledby="confirmation-texte"
+				data-surcouche="confirmation" data-ouvert={ouverte} data-verrou-defilement={ouverte} data-bloque-clavier={ouverte}
+				onClick={(e) => { if (e.target === e.currentTarget) repondre(false); }}
+				className={cx('fixed inset-0 z-80 items-center justify-center bg-voile/50 p-6', enCours ? 'flex' : 'hidden')}>
 				{enCours && (
-					<div className="ask-card">
-						<p className="ask-txt" id="ask-txt">{enCours.texte}</p>
-						<div className="ask-actions">
-							<button type="button" className="btn" onClick={() => repondre(false)}>Annuler</button>
-							<button ref={oui} type="button" className={enCours.dangereux ? 'btn btn-danger' : 'btn btn-primary'} onClick={() => repondre(true)}>{enCours.libelle}</button>
+					<div className="w-[min(27rem,100%)] rounded-md border border-rule-strong bg-raise px-5.5 pt-5 pb-4.5 shadow-ombre-h">
+						<p className="mb-4.5 text-14 leading-normal" id="confirmation-texte">{enCours.texte}</p>
+						<div className="flex justify-end gap-2">
+							<Bouton onClick={() => repondre(false)}>Annuler</Bouton>
+							<Bouton ref={oui} variante={enCours.dangereux ? 'danger' : 'primaire'} onClick={() => repondre(true)}>{enCours.libelle}</Bouton>
 						</div>
 					</div>
 				)}

@@ -6,6 +6,7 @@ import { ChampEnLigne } from '@/composants/ChampEnLigne';
 import * as Icone from '@/composants/briques/icones';
 import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
 import { Panneau } from '@/composants/briques/Panneau';
+import { PANNEAU_OUVERT } from '@/composants/briques/surcouches';
 import { COULEURS } from '@/domaine/couleurs';
 import { rangIso, type LotPlanning, type PeriodeVue, type PlanningVue } from '@/domaine/planningVue';
 import { semaineDuRang } from '@/domaine/semaines';
@@ -25,7 +26,7 @@ type Props = {
 };
 
 export function PanneauLotPlanning({ lot, planning, principale, onFermer, onCouleur, onModifier, onLier, onSupprimer, onAjouter }: Props) {
-	useEffect(() => { document.querySelector('.panel.is-on tr[data-vise]')?.scrollIntoView({ block: 'nearest' }); }, [lot?.id, principale]);
+	useEffect(() => { document.querySelector(`${PANNEAU_OUVERT} tr[data-vise]`)?.scrollIntoView({ block: 'nearest' }); }, [lot?.id, principale]);
 	return (
 		<Panneau ouvert={lot !== null} surtitre={lot?.numero ? `LOT ${lot.numero}` : 'LOT'} titre={lot?.designation || 'Désignation à saisir'}
 			libelle={lot?.designation || undefined} onFermer={onFermer} pied={<button type="button" className="btn btn-ghost" onClick={onFermer}>Fermer</button>}>
@@ -89,7 +90,7 @@ function LignePeriode({ periode: x, vise, options, onModifier, onLier, onSupprim
 			</tr>
 			<tr className={vise ? 'ligne-dep est-vise' : 'ligne-dep'}>
 				<td colSpan={5}>
-					<MenuDeroulant id={`dd-dep-${x.id}`} k="Commence après" classe="dd-large" valeur={x.dependDeId ?? ''}
+					<MenuDeroulant id={`dd-dep-${x.id}`} k="Commence après" largeur="large" className="max-w-full" valeur={x.dependDeId ?? ''}
 						options={[
 							{ v: '', t: '— rien, date libre —' },
 							// optionsDep() de la maquette : un séparateur et le nom du lot, puis ses périodes (« Fondations » · « S16 2026 »).

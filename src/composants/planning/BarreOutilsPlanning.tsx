@@ -46,7 +46,7 @@ export function BarreOutilsPlanning(p: Props) {
 				</span>
 			</div>
 			<div className="g-outils">
-				<MenuDeroulant id="lots-vus" k="Lots affichés" multi classe="dd-large"
+				<MenuDeroulant id="lots-vus" k="Lots affichés" multi largeur="large" className="self-stretch"
 					valeurs={p.lots.filter((l) => !p.masques.includes(l.id)).map((l) => l.id)}
 					libelle={caches ? `${vus} lot${vus > 1 ? 's' : ''} sur ${p.lots.length}` : 'Tous les lots'}
 					options={[

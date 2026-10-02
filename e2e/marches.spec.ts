@@ -25,7 +25,7 @@ test('attribue une entreprise par recherche et saisit un TTC', async ({ page }) 
 	await page.getByRole('button', { name: 'Attribuée à' }).click();
 	await page.getByPlaceholder('Nom, commune…').fill('rebours martigne');
 	await page.keyboard.press('Enter');
-	await expect(page.locator('#dd-ent .dd-v')).toHaveText('CONSTRUCTIONS REBOURS');
+	await expect(page.locator('#dd-ent').getByTestId('dd-valeur')).toHaveText('CONSTRUCTIONS REBOURS');
 	await page.keyboard.press('Escape');
 	await expect(ligne).toContainText('MARTIGNÉ-FERCHAUD');
 });
@@ -38,7 +38,7 @@ test('attribuer une entreprise au clavier : recherche, Entrée choisit le premie
 	await panneau.getByRole('button', { name: /Attribuée à/ }).click();
 	await page.getByRole('searchbox', { name: 'Rechercher dans Attribuée à' }).fill('rebours');
 	await page.keyboard.press('Enter');
-	await expect(panneau.locator('#dd-ent .dd-v')).toHaveText('CONSTRUCTIONS REBOURS');
+	await expect(panneau.locator('#dd-ent').getByTestId('dd-valeur')).toHaveText('CONSTRUCTIONS REBOURS');
 	await panneau.getByRole('button', { name: /Attribuée à/ }).click();
 	await page.keyboard.press('Escape');
 	await expect(page.getByRole('listbox', { name: 'Attribuée à' })).toBeHidden();
@@ -53,9 +53,9 @@ test('supprimer un avenant puis annuler par Échap : rien ne change', async ({ p
 	await panneau.getByRole('button', { name: 'Ajouter un avenant' }).click();
 	await expect(panneau.locator('tr[data-avenant="01"]')).toBeVisible();
 	await panneau.getByRole('button', { name: "Supprimer l'avenant n° 01" }).click();
-	await expect(page.locator('.ask.is-on')).toBeVisible();
+	await expect(page.getByRole('alertdialog')).toBeVisible();
 	await page.keyboard.press('Escape');
-	await expect(page.locator('.ask.is-on')).toBeHidden();
+	await expect(page.getByRole('alertdialog')).toBeHidden();
 	await expect(panneau).toBeVisible();   // Échap annule la confirmation, pas le panneau
 	await expect(panneau.locator('tr[data-avenant="01"]')).toBeVisible();
 });

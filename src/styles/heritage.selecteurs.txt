@@ -29,56 +29,23 @@
 .nav-o .count
 .nav-o.is-on .count
 .picker
-.dd
 .picker-btn
-.dd-btn
-.dd.dd-large .dd-btn
-.dd.dd-plein
-.dd.dd-plein .dd-btn
 .picker-btn:hover
-.dd-btn:hover
 .picker-k
-.dd-k
 .picker-v
-.dd-v
 .picker-caret
-.dd-caret
 .picker.is-open .picker-caret
-.dd.is-open .dd-caret
 .picker-menu
-.dd-menu
 .picker.is-open .picker-menu
-.dd.is-open .dd-menu
 .picker-item
-.dd-item
 .picker-item:hover
-.dd-item:hover
 .picker-item.is-current
-.dd-item.is-current
 .picker-item-name
-.dd-item-name
 .picker-item-meta
-.dd-item-meta
 .picker-item.is-done .picker-item-name
 .picker-head
-.dd-head
 .picker-sep
-.dd-sep
 .picker-item.picker-new
-.dd-item.dd-coche
-.dd-item.dd-coche::before
-.dd-item.dd-coche.is-current::before
-.dd-item.dd-coche.is-current::after
-.dd.est-flottant .dd-menu
-.dd-item:focus-visible
-.dd-item[hidden]
-.dd-sep[hidden]
-.dd-head[hidden]
-.dd-recherche
-.dd-recherche input
-.dd-recherche input:focus
-.dd-aucun
-.toolbar .dd
 .compte
 .avatar
 .avatar:hover
@@ -193,19 +160,6 @@ tr.empty-row .btn
 .radio-row input
 .radio-row label.is-on
 .form-actions
-.ask
-.ask.is-on
-.ask-card
-.ask-txt
-.ask-actions
-.scrim
-.scrim.is-on
-.panel
-.panel.is-on
-.panel-head
-.panel-body
-.panel-body > *
-.panel-foot
 .kv
 .kv dt
 .kv dd
@@ -215,8 +169,6 @@ tr.empty-row .btn
 .gen
 .gen.is-on
 html:has(.gen.is-on)
-html:has(.panel.is-on)
-html:has(.ask.is-on)
 .gen-preview
 .gen-fields
 .gen-head
@@ -316,7 +268,6 @@ table.plain.plain-mini td.ta-r
 table.plain.plain-mini tbody tr.ligne-per td
 table.plain.plain-mini tbody tr.ligne-dep td
 tr.ligne-dep td::before
-tr.ligne-dep .dd
 table.plain.plain-mini tbody tr.est-vise td
 table.plain.plain-mini tbody tr.est-vise td:first-child
 table.plain.plain-mini tbody tr.ligne-dep.est-vise td::before
@@ -407,8 +358,6 @@ tr.dm-inactif .dm-lot-e
 .login-tag
 .login-form
 .login-foot
-.toast
-.toast b
 .synthese
 .synth-cell
 .synth-k
@@ -441,7 +390,6 @@ a.nav-ic
 a.nav-b
 a.nav-o
 a.chantier-new
-.panel-foot a.btn
 .cell-actions a.btn
 .radio-row label[role='radio']:focus-visible
 a.dm-case

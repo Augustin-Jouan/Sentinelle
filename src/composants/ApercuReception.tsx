@@ -130,7 +130,7 @@ export function ApercuReception({ ouvert: initial, reference }: { ouvert: Recept
 			notes={ouvert.blocage && <p role="note" className="gen-note">{ouvert.blocage}</p>}
 			actions={<>
 				{ouvert.options.length > 0 && (
-					<MenuDeroulant id="pv-lot" k="Procès-verbal pour" valeur={ouvert.cible} recherche classe="dd-large"
+					<MenuDeroulant id="pv-lot" k="Procès-verbal pour" valeur={ouvert.cible} recherche largeur="large"
 						options={[...ouvert.options.map((o) => ({ v: o.lotId, t: o.libelle, meta: o.entreprise })), { sep: true as const }, { v: TOUS_LES_LOTS, t: 'Tous les lots attribués — une page chacun' }]}
 						onChoisir={aller} />
 				)}

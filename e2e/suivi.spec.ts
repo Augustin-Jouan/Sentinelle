@@ -60,7 +60,7 @@ test('comptes rendus : brouillon repris, enregistré, suivant, abandon, correcti
 
 	// 4. Abandonner le brouillon, puis corriger le n° 01 : v2.
 	await cr.getByRole('button', { name: 'Abandonner le brouillon' }).click();
-	await page.locator('.ask.is-on').getByRole('button', { name: 'Abandonner' }).click();
+	await page.getByRole('alertdialog').getByRole('button', { name: 'Abandonner' }).click();
 	await expect(cr).toBeHidden();
 	await expect(carteCr(page).getByRole('button', { name: 'Nouveau compte rendu' })).toBeVisible();
 	await page.getByRole('link', { name: 'Corriger le n° 01' }).click();
@@ -101,10 +101,10 @@ test('PV de réception : tous les lots, refus puis 12 PV assemblés ; levée des
 	await expect(page.getByText("LA DÉCO'TECH : précisez la nature des réserves.")).toBeVisible();
 	pv = page.getByRole('dialog', { name: 'Procès-verbal de réception' });
 	await expect(pv.locator('[data-entreprise]')).toHaveCount(1);
-	await expect(pv.locator('#pv-lot .dd-v')).toHaveText(/.+/);
+	await expect(pv.locator('#pv-lot').getByTestId('dd-valeur')).toHaveText(/.+/);
 	await expect(pv.locator('[data-entreprise="LA DÉCO\'TECH"]')).toBeVisible();
 	await pv.getByRole('textbox', { name: 'Nature des réserves' }).fill('Reprise des joints de la cuisine');
-	await pv.locator('#pv-lot .dd-btn').click();
+	await pv.getByRole('button', { name: /^Procès-verbal pour/ }).click();
 	await pv.getByRole('option', { name: 'Tous les lots attribués — une page chacun' }).click();
 	pv = page.getByRole('dialog', { name: 'Procès-verbal de réception' });
 	await expect(pv.locator('[data-entreprise]')).toHaveCount(12);

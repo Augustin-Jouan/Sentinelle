@@ -27,7 +27,7 @@ export function AccueilChantiers({ cartes }: { cartes: Carte[] }) {
 			<Synthese s={synthese(cartes)} />
 			<div className="toolbar">
 				<Recherche placeholder="Rechercher un chantier, un client, une commune…" libelle="Rechercher un chantier" valeur={requete} onChange={setRequete} />
-				<MenuDeroulant id="ch-sort" k="Trier par" valeur={tri} options={TRIS_CHANTIERS} onChoisir={(v) => { if (estTri(v)) setTri(v); }} />
+				<MenuDeroulant id="ch-sort" k="Trier par" className="self-stretch" valeur={tri} options={TRIS_CHANTIERS} onChoisir={(v) => { if (estTri(v)) setTri(v); }} />
 				<Interrupteur coche={masquer} onChange={setMasquer}>Masquer les terminés</Interrupteur>
 				<span className="eyebrow">{q ? `${visibles.length} résultat${visibles.length > 1 ? 's' : ''} sur ${cartes.length}` : ''}</span>
 			</div>
