@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { ADMIN, seConnecter } from './aide';
+import { ADMIN, ouvrirMenuCompte, seConnecter } from './aide';
 
 test('un visiteur sans session est renvoyé vers la connexion', async ({ page }) => {
 	await page.goto('/chantiers');
@@ -17,7 +17,7 @@ test('un mauvais mot de passe est refusé', async ({ page }) => {
 test('l\'admin se connecte puis se déconnecte', async ({ page }) => {
 	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
 	await expect(page.getByRole('heading', { name: 'Mes chantiers' })).toBeVisible();
-	await page.locator('.avatar').click();
+	await ouvrirMenuCompte(page);
 	await expect(page.getByRole('menuitem', { name: 'Comptes' })).toBeVisible();
 	await page.getByRole('menuitem', { name: 'Se déconnecter' }).click();
 	await expect(page).toHaveURL(/\/connexion$/);

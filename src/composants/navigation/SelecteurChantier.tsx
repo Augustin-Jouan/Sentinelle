@@ -2,9 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { cx } from '@/composants/briques/cx';
+import { MENU } from '@/composants/briques/MenuDeroulant';
 import type { ChantierNavigation } from '@/donnees/navigation';
 
-/** Le sélecteur nomme ce qu'on regarde : le chantier sur ses trois écrans, « Tous les chantiers » partout ailleurs. */
+/** Le sélecteur nomme ce qu'on regarde : le chantier sur ses trois écrans, « Tous les chantiers » partout ailleurs (ex-.picker). */
 export function SelecteurChantier({ chantiers, courant }: { chantiers: ChantierNavigation[]; courant: ChantierNavigation | null }) {
 	const router = useRouter();
 	const [ouvert, setOuvert] = useState(false);
@@ -29,10 +31,10 @@ export function SelecteurChantier({ chantiers, courant }: { chantiers: ChantierN
 		const estCourant = courant?.id === x.id;
 		return (
 			<button key={x.id} type="button" role="option" aria-selected={estCourant}
-				className={['picker-item', estCourant && 'is-current', x.termine && 'is-done'].filter(Boolean).join(' ')}
-				onClick={() => aller(`/chantiers/${x.id}/marches`)}>
-				<span className="picker-item-name">{x.reference}</span>
-				<span className="picker-item-meta">{x.lots ? `${x.lots} lot${x.lots > 1 ? 's' : ''}` : '—'}</span>
+				className={cx(MENU.item, estCourant ? MENU.itemCourant : MENU.itemAutre)} onClick={() => aller(`/chantiers/${x.id}/marches`)}>
+				{/* Un chantier terminé est barré. */}
+				<span className={cx(MENU.nom, x.termine && 'text-muted line-through')}>{x.reference}</span>
+				<span className={MENU.meta}>{x.lots ? `${x.lots} lot${x.lots > 1 ? 's' : ''}` : '—'}</span>
 			</button>
 		);
 	};
@@ -40,25 +42,26 @@ export function SelecteurChantier({ chantiers, courant }: { chantiers: ChantierN
 	const finis = chantiers.filter((x) => x.termine);
 
 	return (
-		<div ref={racine} className={ouvert ? 'picker is-open' : 'picker'}>
-			<button type="button" className="picker-btn" aria-haspopup="listbox" aria-expanded={ouvert}
+		<div ref={racine} className="relative flex-none">
+			<button type="button" className={cx(MENU.bouton, 'min-w-60 max-etroit:min-w-0')} aria-haspopup="listbox" aria-expanded={ouvert}
 				title={courant ? `Chantier ouvert : ${nom}` : 'Tous les chantiers — en ouvrir un'}
 				onClick={(e) => { e.stopPropagation(); setOuvert((o) => !o); }}>
-				<span className="picker-k">{courant ? 'Chantier ouvert' : 'Affichage'}</span>
-				<span className="picker-v">{nom}</span>
-				<svg className="picker-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+				<span className={MENU.cle}>{courant ? 'Chantier ouvert' : 'Affichage'}</span>
+				<span className={MENU.valeur}>{nom}</span>
+				<svg className={cx(MENU.fleche, ouvert && 'rotate-180')} viewBox="0 0 16 16" fill="none" strokeWidth={1.6} aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
 			</button>
-			<div className="picker-menu" role="listbox" aria-label="Choisir un chantier">
-				<button type="button" role="option" aria-selected={!courant} className={courant ? 'picker-item' : 'picker-item is-current'} onClick={() => aller('/chantiers')}>
-					<span className="picker-item-name">Tous les chantiers</span>
-					<span className="picker-item-meta">{chantiers.length}</span>
+			<div role="listbox" aria-label="Choisir un chantier"
+				className={cx(MENU.liste, 'absolute top-[calc(100%+0.375rem)] left-0 z-30 w-80 min-w-full max-etroit:w-[min(20rem,calc(100vw-1.75rem))]', !ouvert && 'hidden')}>
+				<button type="button" role="option" aria-selected={!courant} className={cx(MENU.item, courant ? MENU.itemAutre : MENU.itemCourant)} onClick={() => aller('/chantiers')}>
+					<span className={MENU.nom}>Tous les chantiers</span>
+					<span className={MENU.meta}>{chantiers.length}</span>
 				</button>
-				<hr className="picker-sep" />
-				{actifs.length ? actifs.map(ligne) : <div className="picker-head">Aucun chantier en cours</div>}
-				{finis.length > 0 && <><hr className="picker-sep" /><div className="picker-head">Terminés</div>{finis.map(ligne)}</>}
-				<hr className="picker-sep" />
-				<button type="button" className="picker-item picker-new" onClick={() => aller('/chantiers/nouveau')}>
-					<span className="picker-item-name">+ Nouveau chantier</span>
+				<hr className={MENU.separateur} />
+				{actifs.length ? actifs.map(ligne) : <div className={MENU.tete}>Aucun chantier en cours</div>}
+				{finis.length > 0 && <><hr className={MENU.separateur} /><div className={MENU.tete}>Terminés</div>{finis.map(ligne)}</>}
+				<hr className={MENU.separateur} />
+				<button type="button" className={cx(MENU.item, 'font-medium text-accent-2 hover:bg-idle-soft')} onClick={() => aller('/chantiers/nouveau')}>
+					<span className={MENU.nom}>+ Nouveau chantier</span>
 				</button>
 			</div>
 		</div>

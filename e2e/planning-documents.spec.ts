@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { onglet } from './aide';
 import { barre, ligne, ouvrirPlanning, telecharger } from './aidePlanning';
 
 /** Mesures du planning PERRIER dans le Chromium du PDF (Task 7) : l'aperçu doit trouver les mêmes. */
@@ -12,7 +13,7 @@ test('planning imprimable, feuille de visa, états dans Documents', async ({ pag
 	const visa = page.getByRole('dialog', { name: 'Feuille de visa du planning' });
 	const cartePlanning = page.locator('[data-serie="planning"]');
 	const carteVisa = page.locator('[data-serie="visa"]');
-	const onglet = (nom: string) => page.locator('.nav-o', { hasText: nom }).click();
+	const allerA = (nom: string) => onglet(page, nom).click();
 
 	// 1. Planning imprimable : l'aperçu mesure comme le PDF ; la génération crée la v1.
 	await page.getByRole('link', { name: 'Planning imprimable' }).click();
@@ -34,7 +35,7 @@ test('planning imprimable, feuille de visa, états dans Documents', async ({ pag
 	await expect(visa).toBeHidden();
 
 	// 3. Documents : les deux séries à jour ; la version 1 s'ouvre sur une seule feuille, mesurée pareil.
-	await onglet('Documents');
+	await allerA('Documents');
 	await expect(cartePlanning.locator('.dm-carte-n')).toHaveText('v1');
 	await expect(cartePlanning.getByText('modifié', { exact: true })).toHaveCount(0);
 	await expect(carteVisa.locator('.dm-carte-n')).toHaveText('v1');
@@ -45,14 +46,14 @@ test('planning imprimable, feuille de visa, états dans Documents', async ({ pag
 	await expect(apercu).toBeHidden();
 
 	// 4. Une période change : le planning est « modifié » ; le visa reste sur la dernière version générée.
-	await onglet('Planning');
+	await allerA('Planning');
 	await ligne(page, 'PEINTURE').locator('.g-fixe').click();
 	const duree = page.getByRole('dialog', { name: 'PEINTURE' }).getByRole('textbox', { name: 'Durée' });
 	await duree.fill('4');
 	await duree.press('Enter');
 	await expect(barre(page, 'Peintures')).toHaveAttribute('title', /4 semaines$/);
 	await page.keyboard.press('Escape');
-	await onglet('Documents');
+	await allerA('Documents');
 	await expect(cartePlanning.getByText('modifié', { exact: true })).toBeVisible();
 	await expect(carteVisa.getByText('périmé', { exact: true })).toHaveCount(0);
 
@@ -66,7 +67,7 @@ test('planning imprimable, feuille de visa, états dans Documents', async ({ pag
 	await apercu.getByRole('button', { name: 'Fermer' }).click();
 
 	// 6. Documents : le visa fait signer la v1, la v2 existe : périmé.
-	await onglet('Documents');
+	await allerA('Documents');
 	await expect(cartePlanning.locator('.dm-carte-n')).toHaveText('v2');
 	await expect(cartePlanning.getByText('modifié', { exact: true })).toHaveCount(0);
 	await expect(carteVisa.getByText('périmé', { exact: true })).toBeVisible();
