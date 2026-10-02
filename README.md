@@ -1,5 +1,10 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Interface
+
+Le style vit dans les jetons, le thème Tailwind et les briques : lire [docs/interface.md](docs/interface.md)
+avant de toucher à un écran. La maquette (`docs/maquette/`) n'est plus qu'une référence.
+
 ## Getting Started
 
 First, run the development server:

@@ -33,7 +33,7 @@ const ENTREPRISES = [
 	{ v: 'long', t: LONG, meta: 'Châteaubriant' },
 ];
 
-/** Une section : son surtitre, puis ses exemples ; data-testid sert aux captures (e2e/conformite/vitrine.spec.ts). */
+/** Une section : son surtitre, puis ses exemples ; data-testid sert aux captures (e2e/visuel/vitrine.spec.ts). */
 function Section({ nom, titre, children }: { nom: string; titre: string; children: React.ReactNode }) {
 	return (
 		<section data-testid={`vitrine-${nom}`} className="flex flex-col gap-4 bg-paper py-2">

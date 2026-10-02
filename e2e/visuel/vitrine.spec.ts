@@ -1,18 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
-import { preparer, seConnecterSur, type Cible } from './ecrans';
+import { preparer, seConnecterAdmin } from './ecrans';
 
-/**
- * La vitrine n'existe que dans l'app : ses références se capturent sur l'app
- * (CONFORMITE_CIBLE=app … --update-snapshots -g vitrine), puis se relisent à l'œil.
- */
-const CIBLE = (process.env.CONFORMITE_CIBLE ?? 'app') as Cible;
+/** Chaque brique, ses variantes et ses états, en clair et en sombre. Une brique ou une variante nouvelle y entre, puis npm run visuel:references. */
 const SECTIONS = ['boutons', 'etiquettes', 'champs', 'structure', 'navigation', 'tableaux', 'menus'];
 const OPTIONS = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.01 } as const;
 
 async function ouvrirVitrine(page: Page, theme: 'light' | 'dark') {
-	await preparer(page, 'app');
+	await preparer(page);
 	await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
-	await seConnecterSur(page, 'app');
+	await seConnecterAdmin(page);
 	await page.goto('/vitrine');
 	await expect(page.getByRole('heading', { name: 'Vitrine' })).toBeVisible();
 	await page.evaluate(() => document.fonts.ready);
@@ -22,8 +18,6 @@ for (const theme of ['light', 'dark'] as const) {
 	const suffixe = theme === 'light' ? 'clair' : 'sombre';
 
 	test.describe(`vitrine (${suffixe})`, () => {
-		test.skip(CIBLE !== 'app', 'la vitrine n’existe pas dans la maquette');
-
 		test(`vitrine ${suffixe} : sections`, async ({ page }) => {
 			await ouvrirVitrine(page, theme);
 			for (const section of SECTIONS) {
