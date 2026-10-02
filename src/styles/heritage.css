@@ -22,8 +22,6 @@
 /* ============================================================
    ÉCRANS
    ============================================================ */
-.screen { display: none; }
-.screen.is-on { display: block; }
 
 /* ---------- barre de navigation ----------
    Deux étages : au-dessus du filet ce qui vaut partout, en dessous ce qui
@@ -62,21 +60,6 @@
 /* Le bandeau de titre défile : seule la barre reste collée. Empiler deux éléments
    collants obligerait à coupler leurs hauteurs, or la barre en change selon
    qu'un chantier est ouvert ou non. */
-.topbar {
-	background: var(--paper);
-	border-bottom: 1px solid var(--rule);
-}
-
-.topbar-row {
-	display: flex;
-	align-items: flex-end;
-	justify-content: space-between;
-	gap: 1.5rem;
-	padding: 1rem 1.5rem 0.875rem;
-	flex-wrap: wrap;
-}
-
-.page-title { font-size: 1.375rem; }
 
 .topbar-actions { display: flex; gap: 0.5rem; align-items: center; }
 
@@ -106,8 +89,6 @@
 	margin-bottom: 0.0625rem;
 }
 .context-v { font-size: 0.8125rem; white-space: nowrap; }
-
-.body-pad { padding: 1.5rem; }
 
 /* ============================================================
    BOUTONS
@@ -367,7 +348,6 @@ tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
 .radio-row label.is-on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-2); font-weight: 500; }
 /* les actions traversent les colonnes et se posent sous le formulaire,
    au lieu de couler au pied de la dernière */
-.form-actions { display: flex; gap: 0.625rem; align-items: center; column-span: all; padding-top: 0.25rem; }
 
 /* ============================================================
    PANNEAU LATÉRAL

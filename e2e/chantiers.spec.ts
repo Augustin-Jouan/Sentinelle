@@ -25,5 +25,18 @@ test('la référence en double est refusée', async ({ page }) => {
 		await page.getByRole('button', { name: 'Créer le chantier' }).first().click();
 		if (essai === 1) await expect(page).toHaveURL(/\/marches$/);
 	}
-	await expect(page.locator('.erreur', { hasText: 'Cette référence existe déjà.' })).toBeVisible();
+	await expect(page.getByRole('textbox', { name: 'Référence dossier' })).toHaveAccessibleDescription('Cette référence existe déjà.');
+});
+
+test('choisit la mission au clavier', async ({ page }) => {
+	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
+	await page.goto('/chantiers/nouveau');
+	const mission = page.getByRole('radiogroup', { name: 'Type de mission' });
+	await expect(mission.getByRole('radio', { name: 'Complète' })).toBeChecked();
+	await mission.getByRole('radio', { name: 'Complète' }).focus();
+	await page.keyboard.press('Tab');
+	await expect(mission.getByRole('radio', { name: 'Partielle' })).toBeFocused();
+	await page.keyboard.press('Space');
+	await expect(mission.getByRole('radio', { name: 'Partielle' })).toBeChecked();
+	await expect(mission.getByRole('radio', { name: 'Complète' })).not.toBeChecked();
 });

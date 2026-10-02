@@ -1,17 +1,11 @@
 .num
 .eyebrow
-.screen
-.screen.is-on
-.topbar
-.topbar-row
-.page-title
 .topbar-actions
 .context
 .context-cell
 .context-cell:last-child
 .context-k
 .context-v
-.body-pad
 .btn
 .btn:hover
 .btn svg
@@ -81,7 +75,6 @@ tr.empty-row .btn
 .radio-row label
 .radio-row input
 .radio-row label.is-on
-.form-actions
 .kv
 .kv dt
 .kv dd
