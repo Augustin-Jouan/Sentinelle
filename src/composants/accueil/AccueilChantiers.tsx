@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useState, useSyncExternalStore } from 'react';
-import { Interrupteur } from '@/composants/maquette/Interrupteur';
-import { MenuDeroulant } from '@/composants/maquette/MenuDeroulant';
-import { usePreference } from '@/composants/maquette/preference';
-import { Recherche } from '@/composants/maquette/Recherche';
+import { Interrupteur } from '@/composants/briques/Interrupteur';
+import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
+import { usePreference } from '@/composants/briques/preference';
+import { Recherche } from '@/composants/briques/Recherche';
 import { lireChantierOuvert } from '@/composants/navigation/chantierOuvert';
 import { chantiersVisibles, synthese, TRIS_CHANTIERS, type CarteChantier as Carte, type TriChantiers } from '@/domaine/accueil';
 import { CarteChantier } from './CarteChantier';

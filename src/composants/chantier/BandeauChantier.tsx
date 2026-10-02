@@ -4,8 +4,8 @@ import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { marquerTermineAction, modifierChampChantierAction } from '@/actions/chantiers';
 import { ChampEnLigne } from '@/composants/ChampEnLigne';
-import { MenuDeroulant } from '@/composants/maquette/MenuDeroulant';
-import { Panneau } from '@/composants/maquette/Panneau';
+import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
+import { Panneau } from '@/composants/briques/Panneau';
 import type { ChampChantier, EnTeteChantierVue } from '@/donnees/chantiers';
 
 const CHAMPS: { champ: ChampChantier; libelle: string; type?: 'date'; span?: boolean; num?: boolean }[] = [

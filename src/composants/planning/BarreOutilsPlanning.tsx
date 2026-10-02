@@ -1,7 +1,7 @@
 'use client';
 
-import * as Icone from '@/composants/maquette/icones';
-import { MenuDeroulant } from '@/composants/maquette/MenuDeroulant';
+import * as Icone from '@/composants/briques/icones';
+import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
 import type { LotPlanning } from '@/domaine/planningVue';
 import { DENSITES, LIBELLES_DENSITES, texteSelection, type Densite } from './geometrie';
 import type { Outil } from './preferences';

@@ -9,9 +9,9 @@ import {
 	ajouterFermetureAction, changerCouleurLotAction, creerPeriodeAction, deplacerPeriodesAction, lierPeriodeAction,
 	modifierFermetureAction, modifierPeriodeAction, supprimerFermetureAction, supprimerPeriodesAction,
 } from '@/actions/planning';
-import { useConfirmation } from '@/composants/maquette/Confirmation';
-import { Ecran } from '@/composants/maquette/Ecran';
-import * as Icone from '@/composants/maquette/icones';
+import { useConfirmation } from '@/composants/briques/Confirmation';
+import { Ecran } from '@/composants/briques/Ecran';
+import * as Icone from '@/composants/briques/icones';
 import * as regles from '@/domaine/planning';
 import { appliquerPeriodes, etendueDuPlanning, isoRang, periodesDuPlanning, rangIso, type PlanningVue, type ReponsePlanning } from '@/domaine/planningVue';
 import type { ChampFermeture, ChampPeriode } from '@/donnees/planning';

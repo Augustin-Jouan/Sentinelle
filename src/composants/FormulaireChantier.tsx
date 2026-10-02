@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { creerChantierAction } from '@/actions/chantiers';
-import { Interrupteur } from '@/composants/maquette/Interrupteur';
-import { MenuDeroulant } from '@/composants/maquette/MenuDeroulant';
+import { Interrupteur } from '@/composants/briques/Interrupteur';
+import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
 
 type Props = { chargesAffaire: { id: string; nom: string }[]; moi: { id: string; nom: string } };
 type Saisie = { maitreOuvrage: string; adresseClient: string; natureTravaux: string; adresse: string; cp: string; commune: string; dateSignaturePrevue: string; reference: string };

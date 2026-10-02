@@ -5,8 +5,8 @@ import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { marquerTermineAction, supprimerChantierAction } from '@/actions/chantiers';
 import { sansOuvrirLaCarte } from '@/composants/accueil/carteActions';
-import * as Icone from '@/composants/maquette/icones';
-import { useConfirmation } from '@/composants/maquette/Confirmation';
+import * as Icone from '@/composants/briques/icones';
+import { useConfirmation } from '@/composants/briques/Confirmation';
 import { pertesSuppression, SUPPRESSION_IMPOSSIBLE, type CarteChantier as Carte } from '@/domaine/accueil';
 import { formatEuros } from '@/domaine/montants';
 

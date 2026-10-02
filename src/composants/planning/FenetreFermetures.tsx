@@ -2,8 +2,8 @@
 
 import type { Resultat } from '@/actions/executer';
 import { ChampEnLigne } from '@/composants/ChampEnLigne';
-import * as Icone from '@/composants/maquette/icones';
-import { Panneau } from '@/composants/maquette/Panneau';
+import * as Icone from '@/composants/briques/icones';
+import { Panneau } from '@/composants/briques/Panneau';
 import { rangIso, type FermetureVue } from '@/domaine/planningVue';
 import { semaineDuRang } from '@/domaine/semaines';
 import type { ChampFermeture } from '@/donnees/planning';

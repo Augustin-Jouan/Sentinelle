@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { MenuDeroulant } from '@/composants/maquette/MenuDeroulant';
+import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
 import type { VersionResume } from '@/documents/etats';
 import { dateDuJourTexte } from '@/domaine/regles';
 

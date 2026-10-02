@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { SCRIPT_THEME } from '@/composants/maquette/theme';
-import { Toasts } from '@/composants/maquette/Toasts';
+import { SCRIPT_THEME } from '@/composants/briques/theme';
+import { Toasts } from '@/composants/briques/Toasts';
 import './globals.css';
 
 export const metadata: Metadata = {

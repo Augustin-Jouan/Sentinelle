@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition, type FormEvent } from 'react';
 import { changerMotDePasseAction, deconnexionAction } from '@/actions/session';
-import { Sigle, SigleDefs } from '@/composants/maquette/Sigle';
+import { Sigle, SigleDefs } from '@/composants/briques/Sigle';
 
 export function FormulaireMotDePasse() {
 	const router = useRouter();

@@ -1,6 +1,6 @@
 import { exigerPage } from '@/auth/session';
 import { BoutonNouveauCompte, GestionComptes } from '@/composants/GestionComptes';
-import { Ecran } from '@/composants/maquette/Ecran';
+import { Ecran } from '@/composants/briques/Ecran';
 import { listerComptes } from '@/donnees/comptes';
 
 export default async function PageComptes() {

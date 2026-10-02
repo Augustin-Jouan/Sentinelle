@@ -6,9 +6,9 @@ import { toast } from 'sonner';
 import {
 	abandonnerBrouillonAction, changerConvocationAction, corrigerCompteRenduAction, enregistrerCompteRenduAction, modifierChampCompteRenduAction,
 } from '@/actions/comptesRendus';
-import { CadreApercu } from '@/composants/maquette/CadreApercu';
-import { useConfirmation } from '@/composants/maquette/Confirmation';
-import * as Icone from '@/composants/maquette/icones';
+import { CadreApercu } from '@/composants/briques/CadreApercu';
+import { useConfirmation } from '@/composants/briques/Confirmation';
+import * as Icone from '@/composants/briques/icones';
 import { telecharger } from '@/composants/telecharger';
 import { batirCompteRendu, type SaisiesCompteRendu } from '@/documents/compteRendu';
 import { CompteRendu, type EditionCompteRendu } from '@/documents/gabarits/CompteRendu';
