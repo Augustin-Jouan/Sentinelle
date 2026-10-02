@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { CSS_DOCUMENTS } from '@/documents/styles';
+import { AU_DESSUS_DE_L_APERCU } from './surcouches';
 
 type Props = {
 	/** Nom accessible de la surcouche (les E2E le cherchent) : le titre du type de document. */
@@ -27,7 +28,7 @@ export function CadreApercu({ libelle, surtitre, titre, aide, notes, actions, di
 	useEffect(() => {
 		const avant = document.body.style.overflow;
 		document.body.style.overflow = 'hidden';
-		const touche = (e: KeyboardEvent) => { if (e.key === 'Escape' && !document.querySelector('.ask.is-on, .dd.is-open, .panel.is-on')) fermer.current(); };
+		const touche = (e: KeyboardEvent) => { if (e.key === 'Escape' && !document.querySelector(AU_DESSUS_DE_L_APERCU)) fermer.current(); };
 		window.addEventListener('keydown', touche);
 		return () => { document.body.style.overflow = avant; window.removeEventListener('keydown', touche); };
 	}, []);

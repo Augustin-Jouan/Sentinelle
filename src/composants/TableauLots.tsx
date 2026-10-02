@@ -59,7 +59,7 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 		<>
 			<div className="toolbar">
 				<Recherche placeholder="Rechercher un lot, une entreprise, un numéro…" libelle="Rechercher un lot" valeur={requete} onChange={setRequete} />
-				<MenuDeroulant id="lot-sort" k="Trier par" valeur={tri} options={TRIS_LOTS} onChoisir={(v) => { if (estTri(v)) setTri(v); }} />
+				<MenuDeroulant id="lot-sort" k="Trier par" className="self-stretch" valeur={tri} options={TRIS_LOTS} onChoisir={(v) => { if (estTri(v)) setTri(v); }} />
 				<span className="eyebrow">{q ? `${vus.length} lot${vus.length > 1 ? 's' : ''} sur ${vue.lots.length} · les totaux portent sur le chantier entier` : ''}</span>
 			</div>
 			<div className="table-frame">

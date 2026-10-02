@@ -72,7 +72,7 @@ export function BandeauChantier({ chantier: c, chargesAffaire }: { chantier: EnT
 					</div>
 					<div className="field span">
 						<label htmlFor="e-ca">Chargé d&apos;affaire</label>
-						<MenuDeroulant id="e-ca" k="Compte" classe="dd-plein" valeur={c.chargeAffaireId}
+						<MenuDeroulant id="e-ca" k="Compte" largeur="pleine" valeur={c.chargeAffaireId}
 							options={chargesAffaire.map((x) => ({ v: x.id, t: x.nom }))}
 							onChoisir={(v) => agir(() => modifierChampChantierAction(c.id, 'chargeAffaireId', v))} />
 					</div>

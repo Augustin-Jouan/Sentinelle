@@ -147,13 +147,9 @@
 
 /* --- Les menus déroulants : le sélecteur de chantier a donné le dessin, tous
        les autres le reprennent. Un seul jeu de règles, deux familles de classes. --- */
-.picker, .dd { position: relative; flex: none; }
+.picker { position: relative; flex: none; }
 .picker-btn { min-width: 15rem; }
-.dd-btn { min-width: 11rem; }
-.dd.dd-large .dd-btn { min-width: 15rem; }
-.dd.dd-plein { flex: 1; min-width: 0; }
-.dd.dd-plein .dd-btn { min-width: 0; }
-.picker-btn, .dd-btn {
+.picker-btn {
 	width: 100%;
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto;
@@ -169,30 +165,30 @@
 	cursor: pointer;
 	transition: border-color 0.12s, background 0.12s;
 }
-.picker-btn:hover, .dd-btn:hover { background: var(--idle-soft); border-color: var(--muted); border-left-color: var(--accent); }
-.picker-k, .dd-k {
+.picker-btn:hover { background: var(--idle-soft); border-color: var(--muted); border-left-color: var(--accent); }
+.picker-k {
 	grid-column: 1; grid-row: 1;
 	font-family: 'Outfit', sans-serif;
 	font-size: 0.5625rem; font-weight: 600;
 	letter-spacing: 0.1em; text-transform: uppercase;
 	color: var(--faint);
 }
-.picker-v, .dd-v {
+.picker-v {
 	grid-column: 1; grid-row: 2;
 	font-family: 'Outfit', sans-serif;
 	font-size: 0.9375rem; font-weight: 600;
 	line-height: 1.15;
 	overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.picker-caret, .dd-caret {
+.picker-caret {
 	grid-column: 2; grid-row: 1 / 3;
 	width: 0.875rem; height: 0.875rem;
 	stroke: var(--muted); fill: none; stroke-width: 1.6;
 	transition: transform 0.14s;
 }
-.picker.is-open .picker-caret, .dd.is-open .dd-caret { transform: rotate(180deg); }
+.picker.is-open .picker-caret { transform: rotate(180deg); }
 
-.picker-menu, .dd-menu {
+.picker-menu {
 	display: none;
 	position: absolute;
 	top: calc(100% + 0.375rem);
@@ -208,8 +204,8 @@
 	overflow-y: auto;
 	padding: 0.1875rem;
 }
-.picker.is-open .picker-menu, .dd.is-open .dd-menu { display: block; }
-.picker-item, .dd-item {
+.picker.is-open .picker-menu { display: block; }
+.picker-item {
 	width: 100%;
 	display: flex;
 	align-items: baseline;
@@ -219,64 +215,30 @@
 	text-align: left; cursor: pointer;
 	color: var(--ink);
 }
-.picker-item:hover, .dd-item:hover { background: var(--idle-soft); }
-.picker-item.is-current, .dd-item.is-current { background: var(--accent-soft); color: var(--accent-2); font-weight: 600; }
-.picker-item-name, .dd-item-name { flex: 1; min-width: 0; font-size: 0.8125rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.picker-item-meta, .dd-item-meta { font-family: 'Spline Sans Mono', monospace; font-size: 0.625rem; color: var(--faint); flex: none; }
+.picker-item:hover { background: var(--idle-soft); }
+.picker-item.is-current { background: var(--accent-soft); color: var(--accent-2); font-weight: 600; }
+.picker-item-name { flex: 1; min-width: 0; font-size: 0.8125rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.picker-item-meta { font-family: 'Spline Sans Mono', monospace; font-size: 0.625rem; color: var(--faint); flex: none; }
 .picker-item.is-done .picker-item-name { text-decoration: line-through; color: var(--muted); }
-.picker-head, .dd-head {
+.picker-head {
 	padding: 0.4375rem 0.5rem 0.25rem;
 	font-family: 'Outfit', sans-serif;
 	font-size: 0.5625rem; font-weight: 600;
 	letter-spacing: 0.1em; text-transform: uppercase;
 	color: var(--faint);
 }
-.picker-sep, .dd-sep { border: 0; border-top: 1px solid var(--rule); margin: 0.1875rem 0; }
+.picker-sep { border: 0; border-top: 1px solid var(--rule); margin: 0.1875rem 0; }
 .picker-item.picker-new { color: var(--accent-2); font-weight: 500; }
 
 /* la case d'un choix multiple : cochée, elle prend l'accent comme le reste */
-.dd-item.dd-coche { padding-left: 1.75rem; position: relative; }
-.dd-item.dd-coche::before {
-	content: '';
-	position: absolute; left: 0.5rem; top: 0.5rem;
-	width: 0.75rem; height: 0.75rem;
-	border: 1px solid var(--rule-strong);
-	border-radius: 3px;
-	background: var(--raise);
-}
-.dd-item.dd-coche.is-current::before {
-	background: var(--accent); border-color: var(--accent);
-	box-shadow: inset 0 0 0 1px var(--accent);
-}
-.dd-item.dd-coche.is-current::after {
-	content: '';
-	position: absolute; left: 0.71875rem; top: 0.6875rem;
-	width: 0.1875rem; height: 0.375rem;
-	border: solid var(--on-accent);
-	border-width: 0 1.5px 1.5px 0;
-	transform: rotate(45deg);
-}
 
 /* le menu s'ouvre vers le haut quand le bas manque — un panneau qui défile le rognerait */
 /* Ouvert, le menu quitte le flux : ses aïeux le rognaient — le bloc du panneau est
    en overflow:hidden depuis qu'il est arrondi, et il n'en laissait voir que le haut.
    En position fixe, plus rien ne le coupe ; ses coordonnées sont calculées à
    l'ouverture et suivies tant qu'il est ouvert. */
-.dd.est-flottant .dd-menu {
-	position: fixed;
-	min-width: 0;
-	z-index: 70;
-}
-.dd-item:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
-.dd-item[hidden], .dd-sep[hidden], .dd-head[hidden] { display: none; }
 /* la recherche reste en haut du menu quand la liste défile */
-.dd-recherche { position: sticky; top: -0.1875rem; z-index: 1; margin: -0.1875rem -0.1875rem 0.1875rem; padding: 0.375rem; background: var(--raise); border-bottom: 1px solid var(--rule); }
-.dd-recherche input { width: 100%; box-sizing: border-box; padding: 0.4375rem 0.625rem; font-size: 0.8125rem; background: var(--surface);
-	border: 1px solid var(--rule-strong); border-radius: var(--r-xs); color: var(--ink); }
-.dd-recherche input:focus { outline: none; border-color: var(--accent); background: var(--raise); }
-.dd-aucun { margin: 0; padding: 0.75rem 0.5rem; font-size: 0.8125rem; font-style: italic; color: var(--muted); text-align: center; }
 /* dans une barre d'outils, le menu s'aligne sur ses voisins */
-.toolbar .dd { align-self: stretch; }
 
 /* --- le compte : ce qui n'a pas sa place dans la navigation --- */
 .compte { position: relative; flex: none; margin-left: 0.25rem; }
@@ -691,69 +653,9 @@ tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
 /* Dialogue de confirmation maison. `confirm()` est bloqué dans l'iframe bac à sable
    qui héberge l'artefact : il y renvoie false sans rien afficher, et toute action
    qui en dépendait ne partait jamais. */
-.ask {
-	position: fixed; inset: 0; z-index: 80;
-	display: none; align-items: center; justify-content: center;
-	padding: 1.5rem;
-	background: rgba(10, 14, 16, 0.5);
-}
-.ask.is-on { display: flex; }
-.ask-card {
-	width: min(27rem, 100%);
-	background: var(--raise);
-	border: 1px solid var(--rule-strong);
-	border-radius: var(--r);
-	box-shadow: var(--ombre-h);
-	padding: 1.25rem 1.375rem 1.125rem;
-}
-.ask-txt { margin: 0 0 1.125rem; font-size: 0.875rem; line-height: 1.5; }
-.ask-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
-
-.scrim {
-	position: fixed;
-	inset: 0;
-	background: rgba(10, 14, 16, 0.42);
-	z-index: 40;
-	opacity: 0;
-	pointer-events: none;
-	transition: opacity 0.18s;
-}
-.scrim.is-on { opacity: 1; pointer-events: auto; }
-
-.panel {
-	position: fixed;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	width: min(31rem, 100vw);
-	background: var(--paper);
-	border-left: 1px solid var(--rule-strong);
-	border-radius: var(--r-lg) 0 0 var(--r-lg);
-	box-shadow: var(--ombre-h);
-	overflow: hidden;
-	z-index: 50;
-	transform: translateX(100%);
-	transition: transform 0.2s ease;
-	display: flex;
-	flex-direction: column;
-}
-.panel.is-on { transform: none; }
-
-.panel-head {
-	padding: 1rem 1.25rem 0.875rem;
-	border-bottom: 1px solid var(--rule);
-	background: var(--surface);
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 1rem;
-}
-.panel-body { overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; flex: 1; }
 /* Les blocs gardent leur hauteur naturelle : sans cela le flex les comprime, et
    depuis qu'ils sont arrondis leur overflow:hidden coupe le contenu en silence
    au lieu de le laisser déborder. C'est le panneau qui doit défiler, pas eux. */
-.panel-body > * { flex: none; }
-.panel-foot { border-top: 1px solid var(--rule); background: var(--surface); padding: 0.875rem 1.25rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
 .kv { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 0.375rem 0.875rem; }
 .kv dt { font-size: 0.75rem; color: var(--muted); }
@@ -786,8 +688,8 @@ tr.empty-row .btn { margin-left: 0.75rem; font-style: normal; }
 /* Un document ouvert couvre toute la fenêtre : la molette ne doit faire défiler que
    lui. Sans ce verrou, arrivée en bout de feuille ou passée sur l'en-tête, elle
    entraînait la page de derrière. Même chose sous le panneau latéral et la confirmation. */
-html:has(.gen.is-on), html:has(.panel.is-on), html:has(.ask.is-on) { overflow: hidden; }
-.gen-preview, .gen-fields, .panel-body, .dd-menu { overscroll-behavior: contain; }
+html:has(.gen.is-on) { overflow: hidden; }
+.gen-preview, .gen-fields { overscroll-behavior: contain; }
 
 .gen-head {
 	display: flex;
@@ -1122,7 +1024,6 @@ tr.ligne-dep td::before {
 	position: absolute; left: 0.375rem; top: -0.0625rem;
 	color: var(--faint); font-size: 0.8125rem;
 }
-tr.ligne-dep .dd { max-width: 100%; }
 
 /* La période venue de la grille : même bleu que la ligne ouverte d'un tableau,
    plus un filet d'accent à gauche qui court sur les deux rangs. */
@@ -1299,20 +1200,6 @@ tr.dm-inactif .dm-lot-d, tr.dm-inactif .dm-lot-e { color: var(--muted); }
 /* ============================================================
    TOAST
    ============================================================ */
-.toast {
-	background: var(--ink);
-	color: var(--paper);
-	padding: 0.5625rem 0.9375rem;
-	border-radius: var(--r-xs);
-	font-size: 0.8125rem;
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	animation: rise 0.2s ease;
-	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-}
-.toast b { color: var(--accent-2); font-weight: 500; }
-@keyframes rise { from { opacity: 0; transform: translateY(0.5rem); } to { opacity: 1; transform: none; } }
 
 /* ============================================================
    ACCUEIL — bande de synthèse
@@ -1419,7 +1306,7 @@ a.chantier-new { text-decoration: none; color: inherit; }
 
 /* Le TTC du panneau est en gras (style en ligne dans la maquette, que ChampEnLigne ne porte pas). */
 /* Les liens-boutons du pied du panneau et des lignes d'avenant. */
-.panel-foot a.btn, .cell-actions a.btn { text-decoration: none; }
+.cell-actions a.btn { text-decoration: none; }
 /* Nature du marché : des libellés sans bouton radio, comme la maquette ; focus visible au clavier. */
 .radio-row label[role='radio']:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 

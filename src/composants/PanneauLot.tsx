@@ -97,7 +97,7 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 					{artisan && <Link className="btn btn-ghost btn-sm" href={`/artisans?fiche=${artisan.id}`}>Voir la fiche</Link>}
 				</div>
 				<div className="block-body" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-					<MenuDeroulant id="dd-ent" k="Attribuée à" valeur={lot.artisanId ?? ''} recherche="Nom, commune…" classe="dd-plein" desactive={enCours}
+					<MenuDeroulant id="dd-ent" k="Attribuée à" valeur={lot.artisanId ?? ''} recherche="Nom, commune…" largeur="pleine" desactive={enCours}
 						options={options} onChoisir={(v) => agir(() => attribuerArtisanAction(lot.id, v || null))} />
 					{artisan && (
 						<>
