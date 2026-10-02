@@ -11,8 +11,6 @@
 .btn-danger
 .btn-danger:hover
 .btn-danger svg
-.btn-ico
-.btn-ico svg
 .pill
 .pill::before
 .pill-actif
@@ -43,97 +41,7 @@ tr.empty-row .btn
 .radio-row input
 .radio-row label.is-on
 .block
-.block-head
 .block-body
-.g-toolbar
-.g-outils
-.zoom
-.zoom-lbl
-.zoom-b
-.zoom-b:first-of-type
-.zoom-b:hover
-.zoom-b.is-on
-.zoom-ic
-.zoom-ic svg
-.gantt.outil-main .g-piste
-.gantt.outil-main.est-saisi
-.gantt.outil-main.est-saisi .g-piste
-.gantt.outil-main.est-saisi .g-bar
-.gantt.est-saisi
-.gantt
-.g-row
-.g-row:last-child
-.g-row:not(.g-head):not(.g-ferm-row):hover
-.g-fixe
-.g-row:not(.g-head):not(.g-ferm-row):hover .g-fixe
-.g-puce
-.g-nom
-.g-sous
-.g-sous .unset
-.g-sous .num
-.g-head
-.g-head .g-fixe
-.g-th
-.g-axe
-.g-mois
-.g-sems
-.g-mois span
-.g-mois span.pair
-.g-sems span
-.g-sems span.an-neuf
-.g-sems span.auj
-.g-corps
-.g-liens
-.g-liens path
-.g-liens marker path
-.g-row[data-lot]
-.g-piste
-.g-bmois
-.g-bmois.pair
-.g-ferm-row
-.g-ferm-row .g-fixe
-.g-fixe-lbl
-.g-piste-lbl
-.g-ferm-lbl
-.g-ferm
-.g-auj
-.g-bar
-.g-bar:hover
-.g-bar:active
-.g-bar.is-sel
-.g-bar-txt
-.g-etiq
-.g-poignee
-.g-poignee::after
-.g-bar:hover .g-poignee::after
-.g-fantome
-.g-vide
-.g-legende
-.leg
-.leg i
-.pal
-.pal-c
-.pal-c.is-on
-.pal-note
-table.plain.plain-mini
-table.plain.plain-mini thead th
-table.plain.plain-mini tbody td
-table.plain.plain-mini tbody td:first-child
-table.plain.plain-mini th.ta-r
-table.plain.plain-mini td.ta-r
-.vide-mini
-table.plain.plain-mini tbody tr.ligne-per td
-table.plain.plain-mini tbody tr.ligne-dep td
-tr.ligne-dep td::before
-table.plain.plain-mini tbody tr.est-vise td
-table.plain.plain-mini tbody tr.est-vise td:first-child
-table.plain.plain-mini tbody tr.ligne-dep.est-vise td::before
-.g-tete-g
-.g-sel-aide
-.g-sel
-.g-sel kbd
-.g-lasso
-.g-chip
 .toolbar
 table.plain
 table.plain thead th
@@ -154,7 +62,6 @@ table.plain tbody td.cell-actions .btn + .btn
 .dash
 table thead th.ta-r
 table tbody td.ta-r
-.g-bar.est-temp
 .field input.est-erreur
 .field .erreur
 .erreur
@@ -166,5 +73,3 @@ table tbody td.ta-r
 a.btn
 .cell-actions a.btn
 .radio-row label[role='radio']:focus-visible
-.gen-note
-.gen-note.est-info

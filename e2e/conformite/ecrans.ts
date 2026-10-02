@@ -65,6 +65,13 @@ const onglet = (nom: string) => async (page: Page, cible: Cible) => {
 		page.locator('header').getByRole('link', { name: new RegExp(`^${nom}`) })).click();
 };
 
+/** Le Gantt au début du chantier ; la semaine en cours bouge avec la date, elle est masquée. */
+const allerAuPlanning = async (page: Page, cible: Cible) => {
+	await onglet('Planning')(page, cible);
+	await page.locator('.gantt').evaluate((g) => { g.style.scrollBehavior = 'auto'; g.scrollLeft = 0; });
+};
+const masquesPlanning = (page: Page) => [page.locator('.g-auj'), page.locator('.g-sems .auj')];
+
 /**
  * Playwright peint le masque sur la boîte de l'élément. Le menu compte de l'app est plus haut
  * (écart 1 : Paramètres, Comptes) : un masque sur le menu diffère. Clip de taille fixe,
@@ -113,9 +120,14 @@ export const ECRANS: Ecran[] = [
 		await selon(cible, page.locator('table.lots tbody tr', { hasText: 'CONSTRUCTIONS REBOURS' }).locator('.cell-ent'),
 			page.getByRole('row').filter({ hasText: 'CONSTRUCTIONS REBOURS' }).getByRole('cell', { name: /CONSTRUCTIONS REBOURS/ })).click();
 	} },
-	{ nom: 'planning', masques: (page) => [page.locator('.g-auj'), page.locator('.g-sems .auj')], aller: async (page, cible) => {
-		await onglet('Planning')(page, cible);
-		await page.locator('.gantt').evaluate((g) => { g.style.scrollBehavior = 'auto'; g.scrollLeft = 0; });
+	{ nom: 'planning', masques: masquesPlanning, aller: allerAuPlanning },
+	{ nom: 'panneau-planning', masques: masquesPlanning, aller: async (page, cible) => {
+		await allerAuPlanning(page, cible);
+		await page.locator('.g-fixe[title="Modifier les périodes et la couleur"]').first().click();
+	} },
+	{ nom: 'fermetures', masques: masquesPlanning, aller: async (page, cible) => {
+		await allerAuPlanning(page, cible);
+		await page.getByRole('button', { name: 'Fermetures' }).click();
 	} },
 	{ nom: 'documents', aller: onglet('Documents') },
 	{ nom: 'artisans', aller: async (page, cible) => {

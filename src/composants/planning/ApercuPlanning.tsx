@@ -1,11 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { genererPlanningAction, genererVisaAction } from '@/actions/documents';
-import { CadreApercu } from '@/composants/briques/CadreApercu';
+import { Bouton } from '@/composants/briques/Bouton';
+import { CadreApercu, NoteApercu } from '@/composants/briques/CadreApercu';
 import { telecharger } from '@/composants/telecharger';
 import { Gabarit } from '@/documents/gabarits/Gabarit';
 import { TITRES_TYPES } from '@/documents/libelles';
@@ -48,33 +48,33 @@ export function ApercuPlanning(props: Props) {
 	}
 
 	const planningDAbord = (
-		<Link href="?apercu=planning" replace scroll={false} className={planning ? 'btn' : 'btn btn-primary'}>
+		<Bouton variante={planning ? 'normal' : 'primaire'} href="?apercu=planning" replace scroll={false}>
 			Générer le planning d&apos;abord
-		</Link>
+		</Bouton>
 	);
 
 	return (
 		<CadreApercu libelle={titre} surtitre={titre} titre={reference} disposition="simple" onFermer={() => router.replace(chemin, { scroll: false })}
 			notes={<>
-				{erreur && <p role="note" className="gen-note est-info">{erreur}</p>}
-				{planning?.modifie && <p role="note" className="gen-note est-info">Le planning a changé depuis la v{planning.version} : ce visa portera sur la v{planning.version}.</p>}
-				{tropDeLots && <p role="note" className="gen-note">{TROP_DE_LOTS}</p>}
+				{erreur && <NoteApercu info>{erreur}</NoteApercu>}
+				{planning?.modifie && <NoteApercu info>Le planning a changé depuis la v{planning.version} : ce visa portera sur la v{planning.version}.</NoteApercu>}
+				{tropDeLots && <NoteApercu>{TROP_DE_LOTS}</NoteApercu>}
 			</>}
 			actions={<>
-				<button type="button" className="btn btn-ghost" onClick={() => router.replace(chemin, { scroll: false })}>Fermer</button>
+				<Bouton variante="fantome" onClick={() => router.replace(chemin, { scroll: false })}>Fermer</Bouton>
 				{mode === 'visa' && !planning && planningDAbord}
 				{mode === 'visa' && planning?.modifie && (
 					<>
 						{planningDAbord}
-						<button type="button" className="btn btn-primary" onClick={generer} disabled={enCours || !donnees || tropDeLots}>
+						<Bouton variante="primaire" onClick={generer} enCours={enCours} desactive={!donnees || tropDeLots}>
 							{enCours ? 'Génération…' : `Générer le visa sur la v${planning.version}`}
-						</button>
+						</Bouton>
 					</>
 				)}
 				{(mode === 'planning' || (planning && !planning.modifie)) && (
-					<button type="button" className="btn btn-primary" onClick={generer} disabled={enCours || !donnees || tropDeLots} title={tropDeLots ? TROP_DE_LOTS : undefined}>
+					<Bouton variante="primaire" onClick={generer} enCours={enCours} desactive={!donnees || tropDeLots} title={tropDeLots ? TROP_DE_LOTS : undefined}>
 						{enCours ? 'Génération…' : 'Générer le PDF'}
-					</button>
+					</Bouton>
 				)}
 			</>}>
 			{donnees && (
