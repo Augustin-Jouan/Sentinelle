@@ -13,7 +13,7 @@ async function main() {
 	const admin = await prisma.utilisateur.findUniqueOrThrow({ where: { email: process.env.ADMIN_EMAIL } });
 	const ids = await insererMaquette(admin.id);
 	await documentsPerrier(ids['PERRIER — Louisfert'], admin.id);
-	console.log('Conformité : les 4 chantiers de la maquette sont prêts.');
+	console.log('Banc visuel : les 4 chantiers de la maquette sont prêts.');
 }
 
 /** Les 6 documents de PERRIER dans la maquette, à jour des données (même empreinte que l'état calculé). PDF factice : base de test. */

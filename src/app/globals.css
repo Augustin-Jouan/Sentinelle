@@ -1,10 +1,9 @@
-/* L'entrée unique du style. Tailwind, puis l'identité (jetons → thème → base), puis l'héritage de la maquette.
+/* L'entrée unique du style. Tailwind, puis l'identité (jetons → thème → base), puis le Gantt.
    Un composant n'importe jamais de CSS : la doc de Next 16 prévient qu'une feuille globale importée par un
    composant n'est pas retirée quand on change de route. */
 @import 'tailwindcss';
 @import '../styles/jetons.css';
 @import '../styles/theme.css';
 @import '../styles/base.css';
-/* Au-dessus du preflight, sous les utilitaires : une règle restée là ne peut pas écraser une brique. */
-@import '../styles/heritage.css' layer(components);
+/* La seule feuille d'écran (docs/interface.md) : au-dessus du preflight, sous les utilitaires. */
 @import '../composants/planning/planning.css' layer(components);
