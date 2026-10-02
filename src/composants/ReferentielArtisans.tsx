@@ -5,10 +5,19 @@ import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { changerActiviteArtisanAction, creerArtisanAction, modifierChampArtisanAction } from '@/actions/artisans';
 import { enregistrerArtisan, idArtisanOuverte, type FicheArtisan as Fiche } from '@/composants/ficheArtisan';
+import { BarreOutils } from '@/composants/briques/BarreOutils';
+import { Bloc } from '@/composants/briques/Bloc';
+import { Bouton } from '@/composants/briques/Bouton';
+import { Champ, GrilleChamps, Saisie } from '@/composants/briques/Champ';
 import { useConfirmation } from '@/composants/briques/Confirmation';
+import { cx } from '@/composants/briques/cx';
 import * as Icone from '@/composants/briques/icones';
 import { Panneau } from '@/composants/briques/Panneau';
+import { Pastille } from '@/composants/briques/Pastille';
 import { Recherche } from '@/composants/briques/Recherche';
+import { Surtitre } from '@/composants/briques/Surtitre';
+import { CadreTableau, Tableau } from '@/composants/briques/Tableau';
+import { CHIFFRES } from '@/composants/briques/typo';
 import type { ArtisanFiche, ChampArtisan } from '@/donnees/artisans';
 import { normaliser } from '@/domaine/recherche';
 
@@ -27,7 +36,7 @@ const CHAMPS: { champ: ChampArtisan; id: string; libelle: string; placeholder: s
 	{ champ: 'telephone', id: 'e-tel', libelle: 'Téléphone', placeholder: '02-28-50-46-95', num: true },
 	{ champ: 'email', id: 'e-mail', libelle: 'Courriel (optionnel)', placeholder: 'contact@entreprise.fr', span: true, type: 'email' },
 ];
-const vide = (v: string, texte = '—') => v || <span className="dash">{texte}</span>;
+const vide = (v: string, texte = '—') => v || <span className="text-faint">{texte}</span>;
 
 export function ReferentielArtisans({ artisans, ficheInitiale }: { artisans: ArtisanFiche[]; ficheInitiale: string | null }) {
 	const router = useRouter();
@@ -102,61 +111,62 @@ export function ReferentielArtisans({ artisans, ficheInitiale }: { artisans: Art
 
 	return (
 		<>
-			<div className="toolbar">
+			<BarreOutils>
 				<Recherche placeholder="Rechercher une entreprise, une commune, un interlocuteur…" libelle="Rechercher une entreprise" valeur={requete} onChange={setRequete} />
-				<span className="eyebrow">
+				<Surtitre>
 					{`${vues.length} entreprise${vues.length > 1 ? 's' : ''}${vues.length !== artisans.length ? ` sur ${artisans.length}` : ''}${archivees ? ` · ${archivees} archivée${archivees > 1 ? 's' : ''}` : ''}`}
-				</span>
-			</div>
-			<div className="table-frame">
-				<table className="plain">
-					<thead><tr><th>Entreprise</th><th>Adresse</th><th>CP</th><th>Commune</th><th>Interlocuteur</th><th>Téléphone</th><th className="ta-r">Actions</th></tr></thead>
+				</Surtitre>
+			</BarreOutils>
+			<CadreTableau>
+				<Tableau variante="plain">
+					<thead><tr><th>Entreprise</th><th>Adresse</th><th>CP</th><th>Commune</th><th>Interlocuteur</th><th>Téléphone</th><th data-droite>Actions</th></tr></thead>
 					<tbody>
 						{vues.map((a) => (
-							<tr key={a.id} className={a.actif ? undefined : 'is-archived'} onClick={() => ouvrir(a)}>
-								<td className="ent-name">{a.nom}{!a.actif && <> <span className="pill pill-fini">Archivée</span></>}</td>
+							<tr key={a.id} data-inactif={a.actif ? undefined : ''} className="cursor-pointer" onClick={() => ouvrir(a)}>
+								<td className={cx('font-medium', !a.actif && 'line-through decoration-1')}>
+									{a.nom}{!a.actif && <> <Pastille ton="neutre" className="ml-1.5 align-[1px]">Archivée</Pastille></>}
+								</td>
 								<td>{vide(a.adresse)}</td>
-								<td className="num" style={{ fontSize: '0.75rem' }}>{vide(a.cp)}</td>
+								<td className={cx(CHIFFRES, 'text-12')}>{vide(a.cp)}</td>
 								<td>{vide(a.commune)}</td>
 								<td>{vide(a.interlocuteur, 'non renseigné')}</td>
-								<td className="num" style={{ fontSize: '0.75rem' }}>{vide(a.telephone)}</td>
-								<td className="ta-r nowrap cell-actions">
-									<button type="button" className="btn btn-sm" title="Modifier cette entreprise" onClick={(e) => { e.stopPropagation(); ouvrir(a); }}><Icone.Crayon />Modifier</button>
+								<td className={cx(CHIFFRES, 'text-12')}>{vide(a.telephone)}</td>
+								<td data-droite data-actions>
+									<Bouton taille="sm" title="Modifier cette entreprise" onClick={(e) => { e.stopPropagation(); ouvrir(a); }}><Icone.Crayon />Modifier</Bouton>
 									{' '}
 									{a.actif
-										? <button type="button" className="btn btn-sm btn-danger" title="Archiver cette entreprise" onClick={(e) => { e.stopPropagation(); void supprimer(a); }}><Icone.Corbeille />Supprimer</button>
-										: <button type="button" className="btn btn-sm" title="Remettre cette entreprise en service" onClick={(e) => { e.stopPropagation(); void supprimer(a); }}><Icone.Reactiver />Réactiver</button>}
+										? <Bouton taille="sm" variante="danger" title="Archiver cette entreprise" onClick={(e) => { e.stopPropagation(); void supprimer(a); }}><Icone.Corbeille />Supprimer</Bouton>
+										: <Bouton taille="sm" title="Remettre cette entreprise en service" onClick={(e) => { e.stopPropagation(); void supprimer(a); }}><Icone.Reactiver />Réactiver</Bouton>}
 								</td>
 							</tr>
 						))}
-						{!vues.length && <tr className="empty-row"><td colSpan={7}>Aucune entreprise ne correspond.</td></tr>}
+						{!vues.length && <tr><td data-vide colSpan={7}>Aucune entreprise ne correspond.</td></tr>}
 					</tbody>
-				</table>
-			</div>
+				</Tableau>
+			</CadreTableau>
 			<Panneau ouvert={ouverte !== null} surtitre={actuelle ? 'ENTREPRISE' : 'NOUVELLE ENTREPRISE'} titre={actuelle ? actuelle.nom : 'Ajouter au référentiel'} onFermer={fermer}
 				pied={<>
-					<button type="button" className="btn btn-primary" disabled={enCours} onClick={enregistrer}>{actuelle ? 'Enregistrer' : 'Ajouter'}</button>
-					{actuelle && <button type="button" className="btn btn-ghost" disabled={enCours} onClick={() => void supprimer(actuelle)}>{actuelle.actif ? 'Supprimer' : 'Réactiver'}</button>}
-					<button type="button" className="btn btn-ghost" onClick={fermer}>Annuler</button>
+					<Bouton variante="primaire" desactive={enCours} onClick={enregistrer}>{actuelle ? 'Enregistrer' : 'Ajouter'}</Bouton>
+					{actuelle && <Bouton variante="fantome" desactive={enCours} onClick={() => void supprimer(actuelle)}>{actuelle.actif ? 'Supprimer' : 'Réactiver'}</Bouton>}
+					<Bouton variante="fantome" onClick={fermer}>Annuler</Bouton>
 				</>}>
-				<div className="grid-2">
-					{CHAMPS.map((c) => (
-						<div key={c.champ} className={c.span ? 'field span' : 'field'}>
-							<label htmlFor={c.id}>{c.libelle}</label>
-							<input id={c.id} type={c.type ?? 'text'} placeholder={c.placeholder} value={fiche[c.champ]}
-								className={[c.num && 'num', erreur?.champ === c.champ && 'est-erreur'].filter(Boolean).join(' ') || undefined}
-								onChange={(e) => setFiche({ ...fiche, [c.champ]: e.target.value })} />
-							{c.aide && <span className="hint">{c.aide}</span>}
-							{erreur?.champ === c.champ && <span className="erreur">{erreur.message}</span>}
-						</div>
-					))}
-				</div>
+				<GrilleChamps>
+					{CHAMPS.map((c) => {
+						const message = erreur?.champ === c.champ ? erreur.message : undefined;
+						return (
+							<Champ key={c.champ} libelle={c.libelle} pour={c.id} aide={c.aide} erreur={message} pleineLargeur={c.span}>
+								<Saisie id={c.id} type={c.type ?? 'text'} placeholder={c.placeholder} value={fiche[c.champ]} chiffres={c.num} erreur={message}
+									onChange={(e) => setFiche({ ...fiche, [c.champ]: e.target.value })} />
+							</Champ>
+						);
+					})}
+				</GrilleChamps>
 				{actuelle && actuelle.nombreLots > 0 && (
-					<div className="block">
-						<div className="block-body" style={{ fontSize: '0.8125rem', color: 'var(--muted)' }}>
+					<Bloc>
+						<p className="text-13 text-muted">
 							Attribuée à <b>{actuelle.nombreLots} lot{actuelle.nombreLots > 1 ? 's' : ''}</b> dans vos chantiers. Renommer l&apos;entreprise met ces lots à jour ; la supprimer n&apos;est pas possible.
-						</div>
-					</div>
+						</p>
+					</Bloc>
 				)}
 			</Panneau>
 		</>
@@ -166,8 +176,8 @@ export function ReferentielArtisans({ artisans, ficheInitiale }: { artisans: Art
 /** « Ajouter une entreprise » de la barre de titre : ouvre la fiche vide du référentiel. */
 export function BoutonAjouterEntreprise() {
 	return (
-		<button type="button" className="btn btn-primary" onClick={() => window.dispatchEvent(new Event(OUVRIR_FICHE_VIDE))}>
+		<Bouton variante="primaire" onClick={() => window.dispatchEvent(new Event(OUVRIR_FICHE_VIDE))}>
 			<Icone.Plus />Ajouter une entreprise
-		</button>
+		</Bouton>
 	);
 }
