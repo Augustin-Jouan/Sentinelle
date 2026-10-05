@@ -8,6 +8,7 @@ import { Bouton } from '@/composants/briques/Bouton';
 import { Champ, GrilleChamps, Saisie, SectionChamps } from '@/composants/briques/Champ';
 import { ChoixSegmente } from '@/composants/briques/ChoixSegmente';
 import { Ecran } from '@/composants/briques/Ecran';
+import { FormulaireEtFeuille } from '@/composants/briques/Feuille';
 import { Interrupteur } from '@/composants/briques/Interrupteur';
 import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
 import { ExtraitMarche, type Mention } from '@/composants/ExtraitMarche';
@@ -83,54 +84,50 @@ export function FormulaireChantier({ chargesAffaire, moi, entete }: Props) {
 			<Bouton variante="fantome" onClick={annuler}>Annuler</Bouton>
 			<Bouton variante="primaire" enCours={enCours} onClick={creer}>Créer le chantier</Bouton>
 		</>}>
-			<div className="grid grid-cols-2 items-start gap-x-10 gap-y-10 max-etroit:grid-cols-1">
-				<div className="flex flex-col gap-7" onFocus={suivreFocus} onBlur={() => setActive(null)}>
-					<SectionChamps titre="Client">
-						{champ('f-mo', 'maitreOuvrage', 'Nom du client', { placeholder: 'M. et Mme MARTIN, ou SCI LES CHÊNES' })}
-						{champ('f-dem', 'adresseClient', 'Adresse actuelle du client', { placeholder: '12 rue de la Barre, 44110 CHÂTEAUBRIANT', valeur: adresseClient, lecture: surPlace,
-							aide: surPlace ? "Recopiée de l'adresse du chantier." : <>Là où lui écrire <b>aujourd&apos;hui</b>. En construction neuve, ce n&apos;est pas le chantier.</> })}
-						<Interrupteur id="f-meme" variante="discrete" coche={surPlace} onChange={setSurPlace}>Il habite déjà sur le chantier (rénovation, extension)</Interrupteur>
-					</SectionChamps>
+			<FormulaireEtFeuille onFocus={suivreFocus} onBlur={() => setActive(null)} feuille={
+				<ExtraitMarche active={active} raisonSociale={entete.raisonSociale} villeSignature={entete.villeSignature} onExemple={exemple}
+					valeurs={{ ...s, adresseClient, adresseChantier, mission, reference: s.reference }} />
+			}>
+				<SectionChamps titre="Client">
+					{champ('f-mo', 'maitreOuvrage', 'Nom du client', { placeholder: 'M. et Mme MARTIN, ou SCI LES CHÊNES' })}
+					{champ('f-dem', 'adresseClient', 'Adresse actuelle du client', { placeholder: '12 rue de la Barre, 44110 CHÂTEAUBRIANT', valeur: adresseClient, lecture: surPlace,
+						aide: surPlace ? "Recopiée de l'adresse du chantier." : <>Là où lui écrire <b>aujourd&apos;hui</b>. En construction neuve, ce n&apos;est pas le chantier.</> })}
+					<Interrupteur id="f-meme" variante="discrete" coche={surPlace} onChange={setSurPlace}>Il habite déjà sur le chantier (rénovation, extension)</Interrupteur>
+				</SectionChamps>
 
-					<SectionChamps titre="Chantier">
-						{champ('f-nat', 'natureTravaux', 'Nature des travaux', { placeholder: "Construction d'une maison individuelle, 120 m²" })}
-						{champ('f-adr', 'adresse', 'Adresse du chantier', { placeholder: 'Le Haut Bois' })}
-						<div className="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] gap-x-4">
-							{champ('f-cp', 'cp', 'Code postal', { placeholder: '44110', num: true })}
-							{champ('f-com', 'commune', 'Commune', { placeholder: 'LOUISFERT' })}
-						</div>
-					</SectionChamps>
-
-					<SectionChamps titre="Dossier">
-						{champ('f-ref', 'reference', 'Référence dossier', { placeholder: 'Reprend le nom du client si vide' })}
-						<Champ libelle="Chargé d'affaire" pour="f-ca" aide="Chez vous, pas chez le client." erreur={erreurs.chargeAffaireId}>
-							<MenuDeroulant id="f-ca" k="Compte" largeur="pleine" valeur={chargeAffaireId} onChoisir={setChargeAffaireId}
-								options={chargesAffaire.map((c) => ({ v: c.id, t: c.nom }))} />
-						</Champ>
-						<GrilleChamps>
-							<Champ libelle="Type de mission">
-								<ChoixSegmente libelle="Type de mission" options={MISSIONS} valeur={mission} onChoisir={setMission} />
-							</Champ>
-							{champ('f-sig', 'dateSignaturePrevue', 'Signature des marchés prévue le', { type: 'date' })}
-						</GrilleChamps>
-					</SectionChamps>
-
-					<SectionChamps titre="Lots">
-						<Champ aide="Terrassement, gros œuvre, charpente… jusqu'à l'escalier en sous-traitance, sans entreprise ni montant. Supprimez ensuite ceux qui ne servent pas.">
-							<Interrupteur id="f-lots-base" variante="discrete" coche={lotsDeBase} onChange={setLotsDeBase}>Partir des 13 lots de base</Interrupteur>
-						</Champ>
-					</SectionChamps>
-
-					<div className="border-t border-rule pt-5.5">
-						<Bouton variante="primaire" enCours={enCours} onClick={creer}>Créer le chantier</Bouton>
+				<SectionChamps titre="Chantier">
+					{champ('f-nat', 'natureTravaux', 'Nature des travaux', { placeholder: "Construction d'une maison individuelle, 120 m²" })}
+					{champ('f-adr', 'adresse', 'Adresse du chantier', { placeholder: 'Le Haut Bois' })}
+					<div className="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] gap-x-4">
+						{champ('f-cp', 'cp', 'Code postal', { placeholder: '44110', num: true })}
+						{champ('f-com', 'commune', 'Commune', { placeholder: 'LOUISFERT' })}
 					</div>
-				</div>
+				</SectionChamps>
 
-				<div className="sticky top-22 max-etroit:static">
-					<ExtraitMarche active={active} raisonSociale={entete.raisonSociale} villeSignature={entete.villeSignature} onExemple={exemple}
-						valeurs={{ ...s, adresseClient, adresseChantier, mission, reference: s.reference }} />
+				<SectionChamps titre="Dossier">
+					{champ('f-ref', 'reference', 'Référence dossier', { placeholder: 'Reprend le nom du client si vide' })}
+					<Champ libelle="Chargé d'affaire" pour="f-ca" aide="Chez vous, pas chez le client." erreur={erreurs.chargeAffaireId}>
+						<MenuDeroulant id="f-ca" k="Compte" largeur="pleine" valeur={chargeAffaireId} onChoisir={setChargeAffaireId}
+							options={chargesAffaire.map((c) => ({ v: c.id, t: c.nom }))} />
+					</Champ>
+					<GrilleChamps>
+						<Champ libelle="Type de mission">
+							<ChoixSegmente libelle="Type de mission" options={MISSIONS} valeur={mission} onChoisir={setMission} />
+						</Champ>
+						{champ('f-sig', 'dateSignaturePrevue', 'Signature des marchés prévue le', { type: 'date' })}
+					</GrilleChamps>
+				</SectionChamps>
+
+				<SectionChamps titre="Lots">
+					<Champ aide="Terrassement, gros œuvre, charpente… jusqu'à l'escalier en sous-traitance, sans entreprise ni montant. Supprimez ensuite ceux qui ne servent pas.">
+						<Interrupteur id="f-lots-base" variante="discrete" coche={lotsDeBase} onChange={setLotsDeBase}>Partir des 13 lots de base</Interrupteur>
+					</Champ>
+				</SectionChamps>
+
+				<div className="border-t border-rule pt-5.5">
+					<Bouton variante="primaire" enCours={enCours} onClick={creer}>Créer le chantier</Bouton>
 				</div>
-			</div>
+			</FormulaireEtFeuille>
 		</Ecran>
 	);
 }

@@ -12,6 +12,7 @@ import { ChoixSegmente } from '../ChoixSegmente';
 import { Cle, CleValeur, Valeur } from '../CleValeur';
 import { useConfirmation } from '../Confirmation';
 import { EcranCentre, FormulaireCentre } from '../EcranCentre';
+import { Blanc, Coupure, Feuille, FormulaireEtFeuille } from '../Feuille';
 import { Etiquette } from '../Etiquette';
 import * as Icone from '../icones';
 import { Interrupteur } from '../Interrupteur';
@@ -143,7 +144,15 @@ export function Vitrine() {
 						<Bouton variante="fantome">Annuler</Bouton>
 					</PiedFormulaire>
 				</ColonnesFormulaire>
-				<div className="flex max-w-136 flex-col gap-7">
+				<FormulaireEtFeuille feuille={
+					<Feuille legende="La légende de la feuille, sous le papier.">
+						<p>Rempli : <Blanc valeur="M. et Mme PERRIER" /></p>
+						<p>Actif : <Blanc valeur="Le Haut Bois, 44110 LOUISFERT" actif /></p>
+						<p>Vide : <Blanc valeur="" /> ; avec un texte : <Blanc valeur="" vide="jour de l’édition" /></p>
+						<Coupure />
+						<p>Vide et actif : <Blanc valeur="" actif /></p>
+					</Feuille>
+				}>
 					<SectionChamps titre="Client">
 						<Champ libelle="Nom du client" pour="v-section-client"><Saisie id="v-section-client" defaultValue="M. et Mme PERRIER" /></Champ>
 						<Interrupteur coche={coche} onChange={setCoche} variante="discrete">Il habite déjà sur le chantier</Interrupteur>
@@ -151,7 +160,7 @@ export function Vitrine() {
 					<SectionChamps titre="Chantier">
 						<Champ libelle="Adresse du chantier" pour="v-section-adr" aide="Une aide courte, seulement quand elle évite une erreur."><Saisie id="v-section-adr" placeholder="Le Haut Bois" /></Champ>
 					</SectionChamps>
-				</div>
+				</FormulaireEtFeuille>
 			</Section>
 
 			<Section nom="structure" titre="Cartes, blocs, valeurs">
