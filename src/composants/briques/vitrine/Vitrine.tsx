@@ -7,7 +7,7 @@ import { Bloc } from '../Bloc';
 import { Bouton } from '../Bouton';
 import { CadreApercu, NoteApercu } from '../CadreApercu';
 import { Carte } from '../Carte';
-import { Champ, ColonnesFormulaire, Erreur, GrilleChamps, GroupeChamps, PiedFormulaire, Saisie, ZoneTexte } from '../Champ';
+import { Champ, ColonnesFormulaire, Erreur, GrilleChamps, GroupeChamps, PiedFormulaire, Saisie, SectionChamps, ZoneTexte } from '../Champ';
 import { ChoixSegmente } from '../ChoixSegmente';
 import { Cle, CleValeur, Valeur } from '../CleValeur';
 import { useConfirmation } from '../Confirmation';
@@ -143,6 +143,15 @@ export function Vitrine() {
 						<Bouton variante="fantome">Annuler</Bouton>
 					</PiedFormulaire>
 				</ColonnesFormulaire>
+				<div className="flex max-w-136 flex-col gap-7">
+					<SectionChamps titre="Client">
+						<Champ libelle="Nom du client" pour="v-section-client"><Saisie id="v-section-client" defaultValue="M. et Mme PERRIER" /></Champ>
+						<Interrupteur coche={coche} onChange={setCoche} variante="discrete">Il habite déjà sur le chantier</Interrupteur>
+					</SectionChamps>
+					<SectionChamps titre="Chantier">
+						<Champ libelle="Adresse du chantier" pour="v-section-adr" aide="Une aide courte, seulement quand elle évite une erreur."><Saisie id="v-section-adr" placeholder="Le Haut Bois" /></Champ>
+					</SectionChamps>
+				</div>
 			</Section>
 
 			<Section nom="structure" titre="Cartes, blocs, valeurs">

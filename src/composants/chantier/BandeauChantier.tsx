@@ -45,7 +45,7 @@ export function BandeauChantier({ chantier: c, chargesAffaire }: { chantier: EnT
 		['Signature', c.dateSignaturePrevue ? dateFr(c.dateSignaturePrevue) : 'non fixée', Boolean(c.dateSignaturePrevue)],
 	];
 	return (
-		<>
+		<div className="w-full">
 			{/* Le bandeau du chantier (ex-.context) : un clic ouvre l'en-tête à modifier. */}
 			<button type="button" className="flex w-full cursor-pointer overflow-x-auto border-t border-rule bg-surface text-left hover:bg-idle-soft"
 				title="Modifier l'en-tête du chantier" onClick={() => setOuvert(true)}>
@@ -82,6 +82,6 @@ export function BandeauChantier({ chantier: c, chargesAffaire }: { chantier: EnT
 					</Champ>
 				</GrilleChamps>
 			</Panneau>
-		</>
+		</div>
 	);
 }

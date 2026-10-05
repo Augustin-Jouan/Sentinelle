@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
-import { SCRIPT_THEME } from '@/composants/briques/theme';
+import { cookies } from 'next/headers';
+import { InitTheme } from '@/composants/briques/InitTheme';
 import { Toasts } from '@/composants/briques/Toasts';
+import { CLE_THEME } from '@/composants/briques/theme';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -8,14 +10,13 @@ export const metadata: Metadata = {
 	description: "Les marchés de vos chantiers, saisis une fois et imprimés autant de fois qu'il le faut.",
 };
 
-export default function LayoutRacine({ children }: { children: React.ReactNode }) {
+export default async function LayoutRacine({ children }: { children: React.ReactNode }) {
+	const theme = (await cookies()).get(CLE_THEME)?.value;
+	const dataTheme = theme === 'light' || theme === 'dark' ? theme : undefined;
 	return (
-		// data-theme est posé par SCRIPT_THEME avant l'hydratation : React ne doit pas s'en offusquer.
-		<html lang="fr" suppressHydrationWarning>
-			<head>
-				<script dangerouslySetInnerHTML={{ __html: SCRIPT_THEME }} />
-			</head>
+		<html lang="fr" {...(dataTheme ? { 'data-theme': dataTheme } : {})} suppressHydrationWarning>
 			<body>
+				<InitTheme />
 				{children}
 				<Toasts />
 			</body>
