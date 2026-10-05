@@ -21,6 +21,8 @@ type Props = {
 	/** Chiffres alignés : un code postal. */
 	chiffres?: boolean;
 	id?: string;
+	/** À chaque frappe, avant l'enregistrement : un aperçu qui suit la saisie. */
+	onSaisie?: (valeur: string) => void;
 };
 
 /**
@@ -28,7 +30,7 @@ type Props = {
  * et garde la saisie. Il se recale sur la valeur du serveur quand celle-ci change
  * (TTC reformaté, modification d'un collègue).
  */
-export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', multiligne, className, placeholder, variante = 'texte', gras, chiffres, id }: Props) {
+export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', multiligne, className, placeholder, variante = 'texte', gras, chiffres, id, onSaisie }: Props) {
 	const [texte, setTexte] = useState(valeur);
 	const [valeurRecue, setValeurRecue] = useState(valeur);
 	const [enErreur, setEnErreur] = useState(false);
@@ -36,6 +38,8 @@ export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', mult
 	// Les écritures partent dans l'ordre (Next.js envoie les Server Actions d'un client une par une) ;
 	// seule la réponse au dernier enregistrement compte : un échec tardif ne rougit pas une saisie plus récente.
 	const dernierEnvoi = useRef(0);
+
+	const saisir = (v: string) => { setTexte(v); onSaisie?.(v); };
 
 	if (valeur !== valeurRecue) {
 		setValeurRecue(valeur);
@@ -69,12 +73,12 @@ export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', mult
 		className: cx(classesSaisie(variante, { gras, chiffres }), className),
 	};
 	return multiligne ? (
-		<textarea {...communs} rows={3} onChange={(e) => setTexte(e.target.value)} />
+		<textarea {...communs} rows={3} onChange={(e) => saisir(e.target.value)} />
 	) : (
 		<input
 			{...communs}
 			type={type}
-			onChange={(e) => setTexte(e.target.value)}
+			onChange={(e) => saisir(e.target.value)}
 			onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
 		/>
 	);
