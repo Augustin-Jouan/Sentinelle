@@ -109,6 +109,16 @@ export function GroupeChamps({ titre, className, children }: { titre: React.Reac
 	);
 }
 
+/** Une section d'un formulaire en une seule colonne : son titre puis ses champs, un filet la sépare de la précédente. */
+export function SectionChamps({ titre, children }: { titre: React.ReactNode; children: React.ReactNode }) {
+	return (
+		<section className="flex flex-col gap-3.5 border-t border-rule pt-5.5 first:border-t-0 first:pt-0">
+			<h2 className="text-15">{titre}</h2>
+			{children}
+		</section>
+	);
+}
+
 /** Les groupes coulent sur trois colonnes dès qu'il y a la place (ex-.form-wrap). */
 export function ColonnesFormulaire({ className, children }: { className?: string; children: React.ReactNode }) {
 	return <div className={cx('columns-[3_24rem] gap-x-5', className)}>{children}</div>;

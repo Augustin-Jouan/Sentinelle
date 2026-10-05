@@ -1,5 +1,5 @@
 /* L'identité « bleu de plan » de la maquette : un jeton par ligne, light-dark(clair, sombre).
-   data-theme (posé par SCRIPT_THEME, changé par basculerTheme) choisit le thème ; sans lui, le système décide. */
+   data-theme (cookie lu au SSR, changé par basculerTheme) choisit le thème ; sans lui, le système décide. */
 :root { color-scheme: light dark; }
 :root[data-theme='light'] { color-scheme: light; }
 :root[data-theme='dark'] { color-scheme: dark; }
@@ -30,6 +30,13 @@
 	--alerte: light-dark(#7a3d00, #f2c38a);
 	--alerte-soft: light-dark(#fbeedd, #3d2e1c);
 	--alerte-trait: #b35c00;
+	/* fac-similé d'un document à l'écran : du papier dans les deux thèmes, comme CSS_DOCUMENTS (.sheet, .fill, .zone) */
+	--feuille: #fdfdfb;
+	--feuille-encre: #16191b;
+	--feuille-gris: #5a6062;
+	--feuille-trait: #b9beb8;
+	--feuille-zone: #e8f0f8;
+	--feuille-zone-trait: #1c4e80;
 	/* divers */
 	--idle-soft: light-dark(#e0e4e8, #27394a);
 	--band: light-dark(rgba(16, 22, 25, 0.06), rgba(255, 255, 255, 0.06));

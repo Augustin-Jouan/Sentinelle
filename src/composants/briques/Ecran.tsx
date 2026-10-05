@@ -1,3 +1,5 @@
+import { Children } from 'react';
+
 /** Un écran : sa barre de titre et son corps (ex-section.screen, .topbar, .body-pad). */
 export function Ecran({ titre, sousTitre, actions, contexte, children }: {
 	titre: string;
@@ -16,11 +18,11 @@ export function Ecran({ titre, sousTitre, actions, contexte, children }: {
 						<h1 className="text-22">{titre}</h1>
 						{sousTitre}
 					</div>
-					{actions && <div className="flex items-center gap-2">{actions}</div>}
+					{actions ? <div className="flex items-center gap-2">{Children.toArray(actions)}</div> : null}
 				</div>
-				{contexte}
+				{contexte ? <div className="w-full">{contexte}</div> : null}
 			</div>
-			<div className="p-6">{children}</div>
+			<div className="p-6">{Children.toArray(children)}</div>
 		</section>
 	);
 }

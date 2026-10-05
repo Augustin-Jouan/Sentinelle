@@ -29,16 +29,21 @@ export function changerPreference<T>(cle: string, v: T): void {
 	notifier();
 }
 
-export function valeurPreference<T>(cle: string, defaut: T, valide: (v: unknown) => v is T): T {
+/** `brut` : le JSON du stockage, ou `null` (rendu serveur / hydratation). */
+export function interpreterPreference<T>(brut: string | null, defaut: T, valide: (v: unknown) => v is T): T {
 	try {
-		const lu: unknown = JSON.parse(lireBrut(cle) ?? 'null');
+		const lu: unknown = JSON.parse(brut ?? 'null');
 		if (valide(lu)) return lu;
 	} catch { /* stockage indisponible ou valeur corrompue : le défaut reste */ }
 	return defaut;
 }
 
-/** Lue après le montage (le rendu serveur prend le défaut) ; une valeur illisible ou d'une ancienne version est ignorée. */
+export function valeurPreference<T>(cle: string, defaut: T, valide: (v: unknown) => v is T): T {
+	return interpreterPreference(lireBrut(cle), defaut, valide);
+}
+
+/** Lue après le montage (le rendu serveur et l'hydratation prennent le défaut) ; une valeur illisible ou d'une ancienne version est ignorée. */
 export function usePreference<T>(cle: string, defaut: T, valide: (v: unknown) => v is T): [T, (v: T) => void] {
-	useSyncExternalStore(abonner, () => lireBrut(cle), () => null);
-	return [valeurPreference(cle, defaut, valide), (v) => changerPreference(cle, v)];
+	const brut = useSyncExternalStore(abonner, () => lireBrut(cle), () => null);
+	return [interpreterPreference(brut, defaut, valide), (v) => changerPreference(cle, v)];
 }

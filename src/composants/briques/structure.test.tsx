@@ -42,4 +42,17 @@ describe('briques de structure', () => {
 	it('Ecran : un titre de niveau 1', () => {
 		expect(renderToStaticMarkup(<Ecran titre="Artisans">x</Ecran>)).toContain('<h1 class="text-22">Artisans</h1>');
 	});
+
+	it('Ecran : plusieurs enfants du corps et des actions', () => {
+		const html = renderToStaticMarkup(
+			<Ecran titre="Planning" actions={<><button type="button">A</button><button type="button">B</button></>}>
+				<p>barre</p>
+				<p>grille</p>
+			</Ecran>,
+		);
+		expect(html).toContain('<p>barre</p>');
+		expect(html).toContain('<p>grille</p>');
+		expect(html).toContain('>A</button>');
+		expect(html).toContain('>B</button>');
+	});
 });

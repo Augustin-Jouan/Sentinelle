@@ -20,6 +20,12 @@
 	--color-alerte: var(--alerte);
 	--color-alerte-soft: var(--alerte-soft);
 	--color-alerte-trait: var(--alerte-trait);
+	--color-feuille: var(--feuille);
+	--color-feuille-encre: var(--feuille-encre);
+	--color-feuille-gris: var(--feuille-gris);
+	--color-feuille-trait: var(--feuille-trait);
+	--color-feuille-zone: var(--feuille-zone);
+	--color-feuille-zone-trait: var(--feuille-zone-trait);
 	--color-idle-soft: var(--idle-soft);
 	--color-band: var(--band);
 	--color-bar-ring: var(--bar-ring);
