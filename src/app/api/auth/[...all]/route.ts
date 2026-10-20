@@ -2,6 +2,7 @@ import { toNextJsHandler } from 'better-auth/next-js';
 import type { NextRequest } from 'next/server';
 import { auth } from '@/auth';
 import { estEndpointAdminAuth } from '@/auth/adminHttp';
+import { traiterConnexionEmail } from '@/auth/connexion';
 
 const { GET: getAuth, POST: postAuth } = toNextJsHandler(auth);
 
@@ -15,5 +16,8 @@ export async function GET(requete: NextRequest) {
 }
 
 export async function POST(requete: NextRequest) {
-	return refuserAdmin(requete) ?? postAuth(requete);
+	const refus = refuserAdmin(requete);
+	if (refus) return refus;
+	if (requete.nextUrl.pathname.endsWith('/sign-in/email')) return traiterConnexionEmail(requete, postAuth);
+	return postAuth(requete);
 }

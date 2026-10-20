@@ -37,8 +37,9 @@ export async function marquerTermineAction(id: string, termine: boolean): Promis
 }
 
 export async function supprimerChantierAction(id: string): Promise<Resultat> {
-	return executer({}, async () => {
+	return executer({}, async (u) => {
 		await supprimerChantier(id);
+		console.error('[chantier] suppression', { par: u.id, chantier: id });
 		revalidatePath('/', 'layout');
 		return null;
 	});

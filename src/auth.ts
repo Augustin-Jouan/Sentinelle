@@ -5,6 +5,12 @@ import { admin } from 'better-auth/plugins';
 import { prisma } from '@/donnees/prisma';
 
 if (!process.env.BETTER_AUTH_SECRET) throw new Error('BETTER_AUTH_SECRET est absent.');
+if (process.env.E2E === '1' && (process.env.BETTER_AUTH_URL ?? '').startsWith('https://')) {
+	throw new Error('E2E=1 est interdit lorsque BETTER_AUTH_URL est en https.');
+}
+if (process.env.NODE_ENV === 'production' && process.env.CHROMIUM_NO_SANDBOX === '1') {
+	console.warn('[chromium] CHROMIUM_NO_SANDBOX=1 : le bac à sable de Chromium est désactivé.');
+}
 
 export const auth = betterAuth({
 	database: prismaAdapter(prisma, { provider: 'postgresql' }),
@@ -18,6 +24,7 @@ export const auth = betterAuth({
 		},
 	},
 	account: { modelName: 'compte' },
+	session: { expiresIn: 60 * 60 * 12 },
 	// En E2E la suite enchaîne plus de 5 connexions en <60 s ; on ne désactive que le plafond sign-in.
 	rateLimit: {
 		enabled: true,

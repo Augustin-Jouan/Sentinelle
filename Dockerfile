@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM node:22.23.3-bookworm-slim AS base
+FROM node:22.23.3-bookworm-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392 AS base
 WORKDIR /app
 
 FROM base AS dependances
@@ -14,6 +14,10 @@ RUN npx prisma generate \
 
 # Migrations et seed, lancés une fois au démarrage par le service « migration ».
 FROM construction AS outils
+RUN useradd --system --uid 1001 --create-home sentinelle \
+ && chown -R sentinelle /app
+ENV HOME=/home/sentinelle
+USER sentinelle
 CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx prisma/seed.ts"]
 
 FROM base AS application
