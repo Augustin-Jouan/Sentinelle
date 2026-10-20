@@ -1,10 +1,8 @@
 import { zipSync, type Zippable } from 'fflate';
-import { construireDonneesRecap } from '@/documents/donnees';
 import { avenantDeLaSerie } from '@/documents/series';
-import { recapVersXlsx } from '@/documents/tableur';
 import { cheminsArchive, dernieresVersions, DOSSIERS_ARCHIVE } from '@/domaine/archive';
 import { ErreurMetier } from '@/domaine/erreurs';
-import { nomFichierArchive, nomFichierTableur } from '@/domaine/fichiers';
+import { nomFichierArchive } from '@/domaine/fichiers';
 import { dateParis, versIso } from '@/domaine/semaines';
 import { prisma } from './prisma';
 
@@ -13,8 +11,8 @@ export const MAX_OCTETS_ARCHIVE = 60 * 1024 * 1024;
 export const ARCHIVE_TROP_LOURDE = "L'archive dépasse 60 Mo : contactez l'administrateur pour un export.";
 
 /**
- * « Tout télécharger » (spec § 8) : la dernière version de chaque série, rangée par dossier, plus le tableur du
- * récapitulatif produit à la volée. Les lettres des avenants supprimés n'y sont pas. Nul : rien à télécharger.
+ * « Tout télécharger » (spec § 8) : la dernière version de chaque série, rangée par dossier. Les lettres des avenants
+ * supprimés n'y sont pas. Nul : rien à télécharger.
  * PDF stockés sans recompression (niveau 0) ; noms en UTF-8 (fflate pose le drapeau UTF-8 du ZIP).
  */
 export async function construireArchive(
@@ -44,7 +42,5 @@ export async function construireArchive(
 	);
 	const contenu: Zippable = {};
 	for (const f of fichiers) contenu[f.chemin] = new Uint8Array(pdfs.get(f.id) ?? new Uint8Array());
-	const { donnees } = await construireDonneesRecap(chantierId, maintenant);
-	contenu[nomFichierTableur(chantier.reference)] = new Uint8Array(await recapVersXlsx(donnees));
 	return { zip: zipSync(contenu, { level: 0 }), nomFichier: nomFichierArchive(chantier.reference, versIso(dateParis(maintenant))) };
 }

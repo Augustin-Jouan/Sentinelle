@@ -36,7 +36,6 @@ COPY --from=dependances --chown=sentinelle /app/node_modules/playwright-core ./n
 RUN node node_modules/playwright/cli.js install --with-deps chromium \
  && chown -R sentinelle /ms-playwright \
  && rm -rf /var/lib/apt/lists/*
-COPY --from=dependances --chown=sentinelle /app/node_modules/exceljs ./node_modules/exceljs
 COPY --from=construction --chown=sentinelle /app/.next/standalone ./
 COPY --from=construction --chown=sentinelle /app/.next/static ./.next/static
 COPY --from=construction --chown=sentinelle /app/public ./public

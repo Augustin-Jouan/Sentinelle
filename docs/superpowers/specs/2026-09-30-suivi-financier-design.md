@@ -31,7 +31,7 @@ Certificats / Réception). Ce sous-projet en fait de vraies données partagées 
 ### Critères de réussite
 
 - Un avenant saisi dans le panneau du lot change aussitôt le montant engagé partout (tableau des
-  marchés, total du chantier, récapitulatif PDF et tableur) ; le marché imprimé garde son montant
+  marchés, total du chantier, récapitulatif PDF) ; le marché imprimé garde son montant
   initial.
 - La lettre d'avenant se génère, se versionne et se retrouve comme un marché.
 - Un certificat se fait en saisissant seulement le cumul réalisé, le mois et la date ; ses montants
@@ -158,7 +158,7 @@ acompte ; pour un acompte non manuel, `cumulRealiseHt`, `mois` et `date` non nul
   engagé HT × (1 + TVA). Les fonctions du Socle `htEngage`, `ttcEngage`, `htDepuisTtc` reçoivent
   enfin la somme des avenants (elles valaient 0 au Socle).
 - Le montant engagé remplace l'initial dans : le tableau des marchés (colonne TTC), le panneau du lot,
-  le total du chantier dans la liste des chantiers, le récapitulatif PDF et le tableur, et le « Total
+  le total du chantier dans la liste des chantiers, le récapitulatif PDF, et le « Total
   HT » du certificat. Le **marché imprimé** garde le montant initial (son empreinte ne change pas avec
   un avenant).
 - **Saisie d'un TTC** (tableau ou panneau) : HT initial = TTC / (1 + TVA) − avenants. Résultat
@@ -379,7 +379,7 @@ journalisé sans données (ni montant, ni nom de client) et affiché comme erreu
   - acomptes manuels figés après le premier certificat ; renumérotation tant qu'aucun certificat ;
   - deux certificats simultanés sur un lot : un seul passe, l'autre reçoit le message, rien d'écrit ;
   - correction du dernier certificat → v2 et `Acompte` à jour ; correction d'un plus ancien refusée ;
-  - récapitulatif et tableur au montant engagé ; marché « à jour » après ajout d'un avenant, mais
+  - récapitulatif au montant engagé ; marché « à jour » après ajout d'un avenant, mais
     « modifié » après saisie d'un TTC ; état « modifié » de la lettre quand un avenant antérieur change ;
   - « générer les marchés manquants » génère le marché d'un lot qui n'a qu'une lettre d'avenant et un
     certificat ;

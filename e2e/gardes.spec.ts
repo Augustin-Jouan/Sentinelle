@@ -50,7 +50,6 @@ test('sans session valide, aucune page ne livre de données, même avec un cooki
 
 	const fichiers = [
 		`/api/chantiers/${chantierId}/archive`,
-		`/api/chantiers/${chantierId}/recap-xlsx`,
 		`/api/chantiers/${chantierId}/receptions-pdf?documents=x`,
 		'/api/documents/x/pdf',
 	];

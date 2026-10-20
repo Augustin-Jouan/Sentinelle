@@ -89,13 +89,15 @@ test('du chantier au récapitulatif, en passant par trois versions de marché', 
 	await expect(page.getByRole('dialog', { name: 'Marché de travaux de gré à gré — version 1' })).toBeVisible();
 	await page.getByRole('button', { name: 'Fermer' }).click();
 
-	// 8. récapitulatif et tableur
-	await page.locator('[data-serie="recap"]').getByRole('link', { name: 'Exporter à jour' }).click();
+	// 8. récapitulatif : « Exporter le récap » (Marchés) ouvre l'aperçu ; « Générer le PDF » crée la v1 de la page Documents
+	await page.goto(marches);
+	await page.getByRole('link', { name: 'Exporter le récap' }).click();
 	const recap = page.getByRole('dialog', { name: 'Récapitulatif des marchés' });
 	await expect(recap).toContainText('M. et Mme MARTIN');
+	await expect(recap.getByText('Télécharger le tableur')).toHaveCount(0);
 	expect(await telecharger(page, () => recap.getByRole('button', { name: 'Générer le PDF' }).click()))
 		.toBe('PARCOURS-RecapMarches-v1.pdf');
-	expect(await telecharger(page, () => recap.getByRole('link', { name: 'Télécharger le tableur' }).click()))
-		.toBe('PARCOURS-RecapMarches.xlsx');
 	await recap.getByRole('button', { name: 'Fermer' }).click();
+	await page.getByRole('link', { name: 'Documents' }).click();
+	await expect(page.locator('[data-serie="recap"]')).toContainText('v1');
 });
