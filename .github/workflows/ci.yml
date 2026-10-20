@@ -1,8 +1,14 @@
+# Vérifie chaque push et chaque pull request. Sur `main`, construit et publie les quatre images sur GHCR,
+# puis prévient Coolify : le VPS ne compile rien, il tire les images (docker-compose.coolify.yml).
 name: CI
 
 on:
   push:
   pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verifications:
@@ -18,3 +24,58 @@ jobs:
       - run: npm test
       # exceljs dépend de uuid < 11 sans correctif compatible : on bloque les avis hauts, pas ce moderate.
       - run: npm audit --omit=dev --audit-level=high
+
+  images:
+    name: Image ${{ matrix.nom }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: verifications
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          # GHCR impose des noms en minuscules, d'où les noms en dur.
+          - { nom: sentinelle, contexte: ., cible: application }
+          - { nom: sentinelle-outils, contexte: ., cible: outils }
+          - { nom: sentinelle-roles, contexte: infra/postgres, cible: '' }
+          - { nom: sentinelle-sauvegarde, contexte: infra/sauvegarde, cible: '' }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.contexte }}
+          target: ${{ matrix.cible }}
+          push: true
+          tags: |
+            ghcr.io/augustin-jouan/${{ matrix.nom }}:latest
+            ghcr.io/augustin-jouan/${{ matrix.nom }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.nom }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.nom }}
+
+  deployer:
+    name: Déploiement Coolify
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: images
+    steps:
+      # Les deux secrets viennent de Coolify : l'URL de déploiement de la ressource et un jeton d'API (permission
+      # deploy). Tant qu'ils ne sont pas définis, l'étape est sautée.
+      - name: Prévenir Coolify
+        env:
+          WEBHOOK_URL: ${{ secrets.COOLIFY_WEBHOOK_URL }}
+          TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ] || [ -z "$TOKEN" ]; then
+            echo "Secrets Coolify absents : déploiement non déclenché."
+            exit 0
+          fi
+          curl --fail --silent --show-error --request POST "$WEBHOOK_URL" --header "Authorization: Bearer $TOKEN"
