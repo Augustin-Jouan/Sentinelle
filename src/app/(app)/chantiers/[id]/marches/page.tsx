@@ -8,10 +8,10 @@ import { Bouton } from '@/composants/briques/Bouton';
 import { Ecran } from '@/composants/briques/Ecran';
 import * as Icone from '@/composants/briques/icones';
 import { BoutonAjouterLot, TableauLots } from '@/composants/TableauLots';
-import { construireDonneesAvenant, construireDonneesMarche } from '@/documents/donnees';
+import { construireDonneesAvenant, construireDonneesMarche, construireDonneesRecap } from '@/documents/donnees';
 import { versionsDeLaSerie } from '@/documents/etats';
 import { TITRES_TYPES } from '@/documents/libelles';
-import { serieAvenant } from '@/documents/series';
+import { serieAvenant, SERIES } from '@/documents/series';
 import { ouvrirCorrection, ouvrirNouveauCertificat } from '@/donnees/acomptes';
 import { lireEnTeteChantier, listerChargesAffaire } from '@/donnees/chantiers';
 import { lireVueMarches } from '@/donnees/marches';
@@ -49,6 +49,15 @@ async function apercuAvenant(chantierId: string, avenantId: string) {
 	);
 }
 
+/** « Exporter le récap » : l'aperçu des données actuelles ; « Générer le PDF » y crée la version de la page Documents. */
+async function apercuRecap(chantierId: string, reference: string) {
+	const { donnees } = await construireDonneesRecap(chantierId);
+	return (
+		<ApercuDocument titre={TITRES_TYPES.RECAPITULATIF} sousTitre={reference} donnees={donnees} source={{ type: 'recap', chantierId }}
+			chantierId={chantierId} versions={await versionsDeLaSerie(chantierId, SERIES.RECAPITULATIF)} />
+	);
+}
+
 async function apercuCertificat(chantierId: string, p: { certificat?: string; corriger?: string }) {
 	const ouvert = await siPresent(() => (p.corriger ? ouvrirCorrection(p.corriger) : ouvrirNouveauCertificat(p.certificat ?? '')));
 	if (!ouvert || ouvert.chantierId !== chantierId) return null;
@@ -70,7 +79,8 @@ export default async function PageMarches({ params, searchParams }: Props) {
 	if (!vue || !chantier) notFound();
 	const lot = apercu ? vue.lots.find((l) => l.id === apercu) : undefined;
 	const donnees = lot ? (await construireDonneesMarche(lot.id)).donnees : null;
-	const autreApercu = avenant ? await apercuAvenant(id, avenant)
+	const autreApercu = apercu === 'recap' ? await apercuRecap(id, chantier.reference)
+		: avenant ? await apercuAvenant(id, avenant)
 		: certificat || corriger ? await apercuCertificat(id, { certificat, corriger })
 			: null;
 	return (
@@ -78,7 +88,7 @@ export default async function PageMarches({ params, searchParams }: Props) {
 			titre="Marchés & récapitulatif"
 			actions={<>
 				<BoutonAjouterLot chantierId={id} />
-				<Bouton natif href={`/api/chantiers/${id}/recap-xlsx`}><Icone.Telecharger />Exporter le récap</Bouton>
+				<Bouton href="?apercu=recap" scroll={false}><Icone.Telecharger />Exporter le récap</Bouton>
 				<BoutonMarchesManquants chantierId={id} forme="barre" />
 			</>}
 			contexte={<BandeauChantier chantier={chantier} chargesAffaire={chargesAffaire} />}

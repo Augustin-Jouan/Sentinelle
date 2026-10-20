@@ -49,10 +49,6 @@ export function nomFichierVisa(reference: string, version: number): string {
 	return `${slugifier(reference)}-VisaPlanning-v${version}.pdf`;
 }
 
-export function nomFichierTableur(reference: string): string {
-	return `${slugifier(reference)}-RecapMarches.xlsx`;
-}
-
 /** `jour` : AAAA-MM-JJ, le jour du téléchargement à Châteaubriant. */
 export function nomFichierArchive(reference: string, jour: string): string {
 	return `${slugifier(reference)}-Documents-${jour}.zip`;

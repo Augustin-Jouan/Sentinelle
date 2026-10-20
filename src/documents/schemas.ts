@@ -55,7 +55,7 @@ export const ligneRecapSchema = z.object({
 	numero: texte,
 	designation: texte,
 	entreprise: texte.nullable(),
-	/** Valeur décimale brute (pour le tableur), null si le lot n'a pas de montant. */
+	/** Valeur décimale brute, null si le lot n'a pas de montant. */
 	montantTtc: texte.nullable(),
 	montantTtcTexte: texte,
 	tauxTva: texte,

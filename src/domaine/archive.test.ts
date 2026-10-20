@@ -20,7 +20,7 @@ describe('archive « Tout télécharger »', () => {
 	it('chemins triés ; un nom déjà pris dans un dossier prend « (2) » avant l\'extension', () => {
 		const r = cheminsArchive([
 			{ dossier: '05 Réceptions', nom: 'X-Reception-v1.pdf' },
-			{ dossier: '', nom: 'X-RecapMarches.xlsx' },
+			{ dossier: '', nom: 'X-RecapMarches-v1.pdf' },
 			{ dossier: '01 Marchés', nom: 'X-Lot-A-Marche-v1.pdf' },
 			{ dossier: '01 Marchés', nom: 'X-Lot-A-Marche-v1.pdf' },
 			{ dossier: '02 Avenants', nom: 'X-Lot-A-Marche-v1.pdf' },
@@ -29,7 +29,7 @@ describe('archive « Tout télécharger »', () => {
 		]);
 		expect(r.map((f) => f.chemin)).toEqual([
 			'01 Marchés/SANSEXTENSION', '01 Marchés/SANSEXTENSION (2)', '01 Marchés/X-Lot-A-Marche-v1.pdf', '01 Marchés/X-Lot-A-Marche-v1 (2).pdf',
-			'02 Avenants/X-Lot-A-Marche-v1.pdf', '05 Réceptions/X-Reception-v1.pdf', 'X-RecapMarches.xlsx',
+			'02 Avenants/X-Lot-A-Marche-v1.pdf', '05 Réceptions/X-Reception-v1.pdf', 'X-RecapMarches-v1.pdf',
 		]);
 	});
 });
