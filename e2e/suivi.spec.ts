@@ -131,7 +131,7 @@ test('PV de réception : tous les lots, refus puis 12 PV assemblés ; levée des
 });
 
 // Spec § 10, étape 7.
-test('Tout télécharger : dernières versions rangées et tableur', async ({ page }) => {
+test('Tout télécharger : dernières versions rangées par dossier', async ({ page }) => {
 	await ouvrirDocuments(page);
 	const attente = page.waitForEvent('download');
 	await page.getByRole('link', { name: 'Tout télécharger' }).click();
@@ -141,5 +141,5 @@ test('Tout télécharger : dernières versions rangées et tableur', async ({ pa
 	expect(fichiers).toContain('04 Comptes rendus/SUIVI-CompteRendu01-v2.pdf');
 	expect(fichiers).not.toContain('04 Comptes rendus/SUIVI-CompteRendu01-v1.pdf');
 	expect(fichiers.filter((f) => f.startsWith('05 Réceptions/'))).toHaveLength(12);
-	expect(fichiers).toContain('SUIVI-RecapMarches.xlsx');
+	expect(fichiers.some((f) => f.endsWith('.xlsx'))).toBe(false);
 });

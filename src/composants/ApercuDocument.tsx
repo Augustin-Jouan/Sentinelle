@@ -77,7 +77,6 @@ export function ApercuDocument({ titre, sousTitre, donnees, source, manques = []
 		<>
 			<Bouton variante="fantome" onClick={fermer}>Fermer</Bouton>
 			<MenuVersions chantierId={chantierId} versions={versions} courante={courante} retourActuel={retourActuel} />
-			{source.type === 'recap' && <Bouton natif href={`/api/chantiers/${source.chantierId}/recap-xlsx`}><Icone.Telecharger />Télécharger le tableur</Bouton>}
 			{source.type === 'version' ? (
 				<Bouton variante="primaire" natif href={`/api/documents/${source.documentId}/pdf`}><Icone.Telecharger />Télécharger le PDF</Bouton>
 			) : (

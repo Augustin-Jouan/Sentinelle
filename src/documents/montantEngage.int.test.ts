@@ -1,4 +1,3 @@
-import ExcelJS from 'exceljs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { listerChantiers } from '@/donnees/chantiers';
 import { modifierChampLot } from '@/donnees/lots';
@@ -10,7 +9,6 @@ import { insererPerrier } from '../../tests/integration/perrier';
 import { construireDonneesRecap } from './donnees';
 import { etatsDocumentsChantier } from './etats';
 import { genererMarche, genererMarchesManquants, genererRecap } from './generer';
-import { recapVersXlsx } from './tableur';
 
 const faux = vi.fn(async () => new Uint8Array([37, 80, 68, 70]));
 const deps = { maintenant: new Date('2026-09-29T08:00:00Z'), rendrePdf: faux };
@@ -30,7 +28,7 @@ describe('montant engagé', () => {
 		p = await insererPerrier();
 	});
 
-	it('compte les avenants : tableau, totaux, liste des chantiers, récapitulatif, tableur', async () => {
+	it('compte les avenants : tableau, totaux, liste des chantiers, récapitulatif', async () => {
 		// Annexe A : CARRELAGE 12 600 HT, + 850 puis − 300 → 13 150 HT, 15 780 TTC.
 		await avenant('CARRELAGE — FAÏENCE', 1, '850');
 		await avenant('CARRELAGE — FAÏENCE', 2, '-300');
@@ -45,11 +43,6 @@ describe('montant engagé', () => {
 		const { donnees } = await construireDonneesRecap(p.chantierId, deps.maintenant);
 		expect(donnees.contenu.lignes.find((l) => l.designation === 'CARRELAGE — FAÏENCE')?.montantTtc).toBe('15780.00');
 		expect(donnees.contenu.totalTtc).toBe('374676.00');
-		const classeur = new ExcelJS.Workbook();
-		await classeur.xlsx.load((await recapVersXlsx(donnees)) as never);
-		const lignes = classeur.getWorksheet('Récapitulatif')!.getSheetValues().filter(Boolean) as unknown[][];
-		expect(lignes.find((l) => l[2] === 'CARRELAGE — FAÏENCE')?.[4]).toBe(15780);
-		expect(lignes.find((l) => l[1] === 'TOTAL MARCHÉS')?.[4]).toBe(374676);
 	});
 
 	it('un avenant laisse le marché « à jour » mais rend le récapitulatif « modifié » ; saisir un TTC rend le marché « modifié »', async () => {

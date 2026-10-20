@@ -62,6 +62,7 @@ describe('gardes de session', () => {
 
 	it('les listes ne sont pas vides (le test voit bien les fichiers)', () => {
 		expect(trouver(path.join('src', 'app', '(app)'), ['page.tsx']).length).toBeGreaterThan(8);
-		expect(routes.length).toBeGreaterThanOrEqual(4);
+		// archive, receptions-pdf, documents/[id]/pdf
+		expect(routes.length).toBeGreaterThanOrEqual(3);
 	});
 });

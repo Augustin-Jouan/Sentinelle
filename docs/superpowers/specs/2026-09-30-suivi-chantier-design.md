@@ -58,7 +58,7 @@ rendus) et livre « Tout télécharger ».
 | Levée des réserves | Une date sur la réception du lot ; pas de document ; la case repasse en bleu |
 | Formats | A4 portrait avec logo ; compte rendu sur une ou plusieurs pages ; PV sur une page par lot (mise à l'échelle « une feuille ») |
 | « Tous les lots » | Un document par lot, puis un PDF assemblé (pdf-lib) pour l'impression, non stocké |
-| « Tout télécharger » | ZIP construit à la demande (fflate) : dernière version de chaque série + tableur du récapitulatif |
+| « Tout télécharger » | ZIP construit à la demande (fflate) : dernière version de chaque série |
 | Verrous | Compte rendu : `FOR UPDATE` sur sa ligne ; enregistrement et correction : `FOR UPDATE` sur le chantier ; réception d'un lot : `sousVerrouLot` |
 | Versions | Règle du Socle : pas de nouvelle version si l'empreinte n'a pas changé |
 
@@ -412,7 +412,6 @@ portrait, `TROP_DE_LIGNES` au-delà) :
   05 Réceptions/
   06 Planning/                  planning et visa
   <REF>-RecapMarches-vN.pdf     s'il a été généré
-  <REF>-RecapMarches.xlsx       toujours, produit à la volée
   ```
 
   Deux fichiers de même nom dans un dossier : le second prend « (2) » avant l'extension. Les noms sont
@@ -467,7 +466,7 @@ générique.
     changement : « inchangés » ; un nouveau PV au contenu changé efface la levée, une régénération sans changement la garde ;
     levée antérieure refusée ; levée refusée sur une différée ;
   - route d'assemblage : un document d'un autre chantier est refusé ;
-  - archive : dossiers, dernières versions seulement, avenant supprimé exclu, tableur présent ;
+  - archive : dossiers, dernières versions seulement, avenant supprimé exclu, récapitulatif PDF à la racine ;
   - migration dans un schéma à part (comme `migrationPlanning.int.test.ts`) : index partiels et
     `CHECK`, `siteWeb` rempli.
 - **Playwright E2E** (chantier `SUIVI`, copie de la fixture PERRIER insérée par
@@ -484,7 +483,7 @@ générique.
   6. case PEINTURE orangée « Avec réserves » ; « Réserves levées… » : case bleue « Réserves levées
      le … » ;
   7. « Tout télécharger » : `SUIVI-Documents-<date>.zip` contient `04 Comptes rendus/`
-     `SUIVI-CompteRendu01-v2.pdf`, 12 fichiers dans `05 Réceptions/` et le tableur.
+     `SUIVI-CompteRendu01-v2.pdf`, 12 fichiers dans `05 Réceptions/`, sans tableur.
 
 ## 11. Hors périmètre
 
