@@ -1,6 +1,6 @@
 import { unzipSync } from 'fflate';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { genererAvenant, genererMarche } from '@/documents/generer';
+import { genererAvenant, genererMarche, genererRecap } from '@/documents/generer';
 import { viderBase } from '../../tests/integration/aide';
 import { insererPerrier } from '../../tests/integration/perrier';
 import { ARCHIVE_TROP_LOURDE, construireArchive } from './archive';
@@ -33,8 +33,9 @@ describe('archive du chantier', () => {
 		expect(await construireArchive(p.chantierId)).toBeNull();
 	});
 
-	it('dossiers, dernières versions seulement, avenant supprimé exclu, brouillon absent, tableur présent', async () => {
+	it('dossiers, dernières versions seulement, avenant supprimé exclu, brouillon absent, récapitulatif à la racine', async () => {
 		await genererMarche(p.lots['GROS ŒUVRE'], p.utilisateurId, deps);
+		await genererRecap(p.chantierId, p.utilisateurId, deps);
 		await avenant('GROS ŒUVRE');
 		const supprime = await avenant('PEINTURE');
 		await supprimerAvenant(supprime);
@@ -57,12 +58,10 @@ describe('archive du chantier', () => {
 			'02 Avenants/PERRIER-LOUISFERT-Lot02-GROS-OEUVRE-Avenant01-v1.pdf',
 			'04 Comptes rendus/PERRIER-LOUISFERT-CompteRendu01-v2.pdf',
 			'05 Réceptions/PERRIER-LOUISFERT-Lot11-PEINTURE-Reception-v1.pdf',
-			'PERRIER-LOUISFERT-RecapMarches.xlsx',
+			'PERRIER-LOUISFERT-RecapMarches-v1.pdf',
 		]);
 		const pdfV2 = (await prisma.document.findUniqueOrThrow({ where: { id: v2.documentId } })).pdf;
 		expect(fichiers['04 Comptes rendus/PERRIER-LOUISFERT-CompteRendu01-v2.pdf']).toEqual(new Uint8Array(pdfV2));
-		// Un tableur .xlsx est lui-même un ZIP : il commence par « PK ».
-		expect([...fichiers['PERRIER-LOUISFERT-RecapMarches.xlsx'].slice(0, 2)]).toEqual([0x50, 0x4b]);
 	});
 
 	it('refuse une archive trop lourde avant de charger les PDF', async () => {

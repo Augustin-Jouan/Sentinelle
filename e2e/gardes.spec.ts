@@ -3,7 +3,8 @@ import { config } from 'dotenv';
 import pg from 'pg';
 import { ADMIN, carteChantier, seConnecter } from './aide';
 
-config({ path: '.env.test' });
+// override : aide.ts (importé avant, imports hissés) a déjà chargé .env et sa base de développement.
+config({ path: '.env.test', override: true });
 
 /** Compte les PV d'un chantier sans passer par Prisma (le client généré est ESM, Playwright charge le spec en CJS). */
 async function compterReceptions(chantierId: string) {
@@ -50,7 +51,6 @@ test('sans session valide, aucune page ne livre de données, même avec un cooki
 
 	const fichiers = [
 		`/api/chantiers/${chantierId}/archive`,
-		`/api/chantiers/${chantierId}/recap-xlsx`,
 		`/api/chantiers/${chantierId}/receptions-pdf?documents=x`,
 		'/api/documents/x/pdf',
 	];

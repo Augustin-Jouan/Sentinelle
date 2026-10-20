@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { enTeteTelechargement, nomFichierArchive, nomFichierAvenant, nomFichierCertificat, nomFichierCompteRendu, nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierReception, nomFichierReceptions, nomFichierTableur, nomFichierVisa, slugifier } from './fichiers';
+import { enTeteTelechargement, nomFichierArchive, nomFichierAvenant, nomFichierCertificat, nomFichierCompteRendu, nomFichierMarche, nomFichierPlanning, nomFichierRecap, nomFichierReception, nomFichierReceptions, nomFichierVisa, slugifier } from './fichiers';
 
 describe('noms de fichiers', () => {
 	it('slugifie accents, ligatures et ponctuation', () => {
@@ -20,9 +20,8 @@ describe('noms de fichiers', () => {
 		expect(nomFichierMarche({ reference: 'X', numero: null, designation: 'Divers', nature: 'GRE_A_GRE', version: 1 }))
 			.toBe('X-Lot-DIVERS-Marche-v1.pdf');
 	});
-	it('récapitulatif et tableur', () => {
+	it('récapitulatif', () => {
 		expect(nomFichierRecap('PERRIER — Louisfert', 3)).toBe('PERRIER-LOUISFERT-RecapMarches-v3.pdf');
-		expect(nomFichierTableur('PERRIER — Louisfert')).toBe('PERRIER-LOUISFERT-RecapMarches.xlsx');
 	});
 	it('planning et feuille de visa', () => {
 		expect(nomFichierPlanning('PERRIER — Louisfert', 1)).toBe('PERRIER-LOUISFERT-Planning-v1.pdf');

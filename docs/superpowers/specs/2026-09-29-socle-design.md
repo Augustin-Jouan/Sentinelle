@@ -20,7 +20,7 @@ collègues, PDF et exports réellement produits.
 Chaque sous-projet a sa propre spec, son plan et une livraison utilisable :
 
 1. **Socle** (ce document) : comptes, chantiers, artisans, lots, marchés (gré à gré et
-   sous-traitance) en PDF, récapitulatif PDF + tableur, déploiement VPS.
+   sous-traitance) en PDF, récapitulatif PDF, déploiement VPS.
 2. **Planning** : Gantt interactif, fermetures, planning imprimable sur une feuille, feuille de visa.
 3. **Suivi financier** : avenants, certificats de paiement.
 4. **Suivi de chantier** : comptes rendus, PV de réception, page Documents complète, « Tout télécharger » (ZIP).
@@ -47,7 +47,7 @@ Chaque sous-projet a sa propre spec, son plan et une livraison utilisable :
 | Visibilité | Tout utilisateur voit et modifie tous les chantiers **et le référentiel artisans** |
 | Rôles | `admin` (comptes, paramètres) et `user` |
 | PDF | Gabarits React rendus en HTML côté serveur puis imprimés par Playwright (Chromium) |
-| Tableur | ExcelJS |
+| Tableur | Aucun : retiré le 20/10/2026, le récapitulatif n'existe qu'en PDF (voir « Exporter le récap », § 7) |
 | Tests | Vitest (domaine, documents) + Playwright (parcours) |
 | Hébergement | VPS, Docker Compose, **une seule réplique** de l'app : app + Postgres + Caddy (HTTPS) + sauvegarde |
 | Sauvegarde | `pg_dump` chiffré par `age`, envoyé par `rclone` vers OVHcloud Object Storage |
@@ -84,7 +84,6 @@ src/
     donnees.ts    construireDonneesMarche, construireDonneesRecap (lecture en base puis batir)
     generer.ts    enchaînement construire → empreinte → PDF → enregistrer
     pdf.ts        navigateur Playwright partagé, HTML → PDF
-    tableur.ts    export ExcelJS du récapitulatif
     styles.ts     CSS des feuilles (reprise des styles .sheet de la maquette), partagée écran / PDF
   composants/   Interface (shadcn/ui, tableau des lots, menu d'artisan…)
   app/          Routes et pages
@@ -95,7 +94,7 @@ src/
 - Les pages serveur lisent via `donnees/` et passent les données aux composants client.
 - Toute modification passe par une Server Action, puis revalidation de la page.
 - Les calculs de montants n'existent **qu'à un seul endroit**, dans `domaine/montants.ts`. L'écran, les
-  objets de document et l'export tableur l'appellent tous.
+  objets de document l'appellent tous.
 
 ### Principes
 
@@ -272,7 +271,7 @@ Sans Mono, thème clair et sombre.
       (menu avec recherche, coordonnées du référentiel en lecture), HT, TVA, TTC, retenue de garantie
       (taux + montant calculé), exemplaires (affichés), date de signature (avec rappel de la date
       du chantier par défaut) et un bouton d'ouverture du marché ;
-    - boutons « Générer les marchés manquants » et « Exporter le récap » (xlsx).
+    - boutons « Générer les marchés manquants » et « Exporter le récap » (aperçu du récapitulatif, § 7).
   - **Documents** (piste B de la maquette, réduite au Socle) :
     - carte « Récapitulatif » en haut, puis un tableau par entreprise avec une colonne **Marché** ;
     - états d'une case : **à produire** (pointillé), **à jour** (bleu, s'ouvre), **modifié depuis la
@@ -330,7 +329,7 @@ DonneesRecap.contenu
   lignes[] { numero, designation, entreprise?, montantTtc?, montantTtcTexte, tauxTva, tvaTexte,
              adresse, cp, commune, interlocuteur, telephone },
   nombreLots, totalLibelle ("Total marchés — 13 lots"), totalTtc, totalTtcTexte
-  (montantTtc, tauxTva et totalTtc : valeurs décimales brutes, pour l'export tableur)
+  (montantTtc, tauxTva et totalTtc : valeurs décimales brutes)
 ```
 
 Le gabarit imprime `contenu.dateSignature` si elle existe, sinon `cadre.dateGeneration`.
@@ -389,7 +388,7 @@ en majuscules (comme `nomFichierRecap` dans la maquette). `<REF>` est la référ
 
 - Marché de gré à gré : `<REF>-Lot<NN>-<DESIGNATION>-Marche-v<N>.pdf`
 - Marché de sous-traitance (sans numéro) : `<REF>-ST-<DESIGNATION>-Marche-v<N>.pdf`
-- Récapitulatif : `<REF>-RecapMarches-v<N>.pdf` ; export tableur : `<REF>-RecapMarches.xlsx`
+- Récapitulatif : `<REF>-RecapMarches-v<N>.pdf`
 
 ### Consultation
 
@@ -402,8 +401,9 @@ en majuscules (comme `nomFichierRecap` dans la maquette). `<REF>` est la référ
 - **Générer les marchés manquants :** génère **l'un après l'autre** un marché pour chaque lot qui
   remplit les conditions et n'en a pas encore, puis affiche la liste des lots ignorés avec leur
   raison (« Lot 07 : pas d'entreprise »).
-- **Exporter le récap (xlsx) :** depuis l'onglet Marchés, produit à la volée depuis
-  `construireDonneesRecap`, sans être stocké.
+- **Exporter le récap :** depuis l'onglet Marchés, ouvre l'aperçu du récapitulatif par-dessus l'écran
+  (données actuelles, comme la carte « Récap des marchés » de l'onglet Documents) ; « Générer le PDF » y crée la
+  version et la télécharge, Fermer ne crée rien. L'export tableur (xlsx) a été retiré le 20/10/2026.
 
 ### Mise en forme
 
@@ -520,7 +520,7 @@ restaurer dans un Postgres vierge. Le test est réussi si :
   6. générer la v2 ;
   7. passer ce lot en sous-traitance, générer la v3 et vérifier que l'historique montre les deux
      types ;
-  8. générer le récapitulatif et exporter le tableur ;
+  8. ouvrir « Exporter le récap » depuis l'onglet Marchés, générer le récapitulatif et le retrouver en v1 dans Documents ;
   9. l'échec de Playwright sans ligne `Document` est vérifié par un test d'intégration (en injectant
      une fonction d'impression qui échoue) : le provoquer depuis le navigateur demanderait un
      interrupteur de test dans le code de production.
