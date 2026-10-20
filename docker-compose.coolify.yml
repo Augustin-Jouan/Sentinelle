@@ -1,0 +1,98 @@
+# Préproduction sur le VPS Coolify (sentinelle.jouan.dev) : docs/exploitation/preproduction-coolify.md.
+# Même pile que docker-compose.yml, avec deux différences :
+# - les images viennent de GHCR, construites par la CI : le VPS ne compile rien ;
+# - pas de Caddy : Traefik (Coolify) porte le HTTPS. Les en-têtes de sécurité sont posés par Next (next.config.ts).
+# Le domaine se règle dans Coolify, sur le service « app » : https://sentinelle.jouan.dev:3000.
+# Une seule réplique de « app » (la limite de 2 PDF simultanés en dépend).
+# `exclude_from_hc` est une clé de Coolify, qu'il retire avant de lancer la pile : `docker compose config` la refuse.
+services:
+  db:
+    image: postgres:17.11-bookworm@sha256:3645570cccdfa447589da9f57dd740faa29b30938e861289a5574b6ca6b03826
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sentinelle
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: sentinelle
+    volumes: ['donnees-postgres:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U sentinelle']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  roles:
+    image: ghcr.io/augustin-jouan/sentinelle-roles:latest
+    pull_policy: always
+    restart: 'no'
+    # Tâche ponctuelle : Coolify ne la compte pas dans l'état de santé de la pile.
+    exclude_from_hc: true
+    environment:
+      PGHOST: db
+      PGUSER: sentinelle
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: sentinelle
+      PASS_APP: ${POSTGRES_PASSWORD_APP}
+      PASS_MIGRATION: ${POSTGRES_PASSWORD_MIGRATION}
+      PASS_SAUVEGARDE: ${POSTGRES_PASSWORD_SAUVEGARDE}
+    depends_on:
+      db: { condition: service_healthy }
+    security_opt: ['no-new-privileges:true']
+
+  migration:
+    image: ghcr.io/augustin-jouan/sentinelle-outils:latest
+    pull_policy: always
+    restart: 'no'
+    exclude_from_hc: true
+    environment:
+      DATABASE_URL: postgresql://sentinelle_migration:${POSTGRES_PASSWORD_MIGRATION}@db:5432/sentinelle
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: https://${DOMAINE}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_NOM: ${ADMIN_NOM}
+      ADMIN_MOT_DE_PASSE: ${ADMIN_MOT_DE_PASSE:-}
+    depends_on:
+      roles: { condition: service_completed_successfully }
+    security_opt: ['no-new-privileges:true']
+
+  app:
+    image: ghcr.io/augustin-jouan/sentinelle:latest
+    pull_policy: always
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://sentinelle_app:${POSTGRES_PASSWORD_APP}@db:5432/sentinelle
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: https://${DOMAINE}
+      TZ: Europe/Paris
+      # « 1 » si la génération PDF échoue : le seccomp de Docker refuse en général les namespaces du bac à sable.
+      CHROMIUM_NO_SANDBOX: ${CHROMIUM_NO_SANDBOX:-}
+    depends_on:
+      migration: { condition: service_completed_successfully }
+    security_opt: ['no-new-privileges:true']
+
+  sauvegarde:
+    image: ghcr.io/augustin-jouan/sentinelle-sauvegarde:latest
+    pull_policy: always
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGUSER: sentinelle_sauvegarde
+      PGPASSWORD: ${POSTGRES_PASSWORD_SAUVEGARDE}
+      PGDATABASE: sentinelle
+      TZ: Europe/Paris
+      AGE_DESTINATAIRE: ${AGE_DESTINATAIRE}
+      OVH_BUCKET: ${OVH_BUCKET:-}
+      SAUVEGARDE_LOCALE_SEULEMENT: ${SAUVEGARDE_LOCALE_SEULEMENT:-0}
+      RCLONE_CONFIG_OVH_TYPE: s3
+      RCLONE_CONFIG_OVH_PROVIDER: Other
+      RCLONE_CONFIG_OVH_ACCESS_KEY_ID: ${OVH_ACCESS_KEY_ID:-}
+      RCLONE_CONFIG_OVH_SECRET_ACCESS_KEY: ${OVH_SECRET_ACCESS_KEY:-}
+      RCLONE_CONFIG_OVH_ENDPOINT: ${OVH_ENDPOINT:-}
+      RCLONE_CONFIG_OVH_REGION: ${OVH_REGION:-}
+    volumes: ['sauvegardes:/sauvegardes']
+    depends_on:
+      db: { condition: service_healthy }
+      migration: { condition: service_completed_successfully }
+
+volumes:
+  donnees-postgres:
+  sauvegardes:

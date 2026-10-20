@@ -17,6 +17,9 @@ ALTER ROLE sentinelle_app WITH LOGIN PASSWORD :'pass_app';
 ALTER ROLE sentinelle_sauvegarde WITH LOGIN PASSWORD :'pass_sauvegarde';
 
 GRANT CONNECT ON DATABASE sentinelle TO sentinelle_migration, sentinelle_app, sentinelle_sauvegarde;
+-- La migration initiale commence par CREATE SCHEMA IF NOT EXISTS "public" : Postgres exige le droit CREATE sur la
+-- base avant même de constater que le schéma existe.
+GRANT CREATE ON DATABASE sentinelle TO sentinelle_migration;
 GRANT USAGE, CREATE ON SCHEMA public TO sentinelle_migration;
 GRANT USAGE ON SCHEMA public TO sentinelle_app, sentinelle_sauvegarde;
 REVOKE CREATE ON SCHEMA public FROM sentinelle_app, sentinelle_sauvegarde;
