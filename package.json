@@ -10,12 +10,12 @@
     "test": "vitest run --project unit --passWithNoTests",
     "test:int": "vitest run --project integration --passWithNoTests",
     "test:e2e": "playwright test",
-    "visuel:serveur": "dotenv -e .env.test -- sh -c 'export E2E=1 BETTER_AUTH_URL=http://localhost:3200 && node scripts/reinitialiser-base-test.mjs && tsx prisma/seed.ts && tsx e2e/visuel/preparer-maquette.ts && next build && next start -p 3200'",
+    "visuel:serveur": "dotenv -e .env.test -- sh -c 'export E2E=1 BETTER_AUTH_URL=http://localhost:3200 && node scripts/reinitialiser-base-test.mjs && tsx prisma/seed.ts && tsx e2e/admin-sans-provisoire.ts && tsx e2e/visuel/preparer-maquette.ts && next build && next start -p 3200'",
     "visuel:references": "playwright test -c playwright.visuel.config.ts --update-snapshots",
     "test:visuel": "playwright test -c playwright.visuel.config.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:demo": "tsx prisma/seed-demo.ts",
-    "e2e:serveur": "dotenv -e .env.test -- sh -c 'export E2E=1 && node scripts/reinitialiser-base-test.mjs && tsx prisma/seed.ts && tsx e2e/preparer-planning.ts && tsx e2e/preparer-financier.ts && tsx e2e/preparer-suivi.ts && next build && next start -p 3100'"
+    "e2e:serveur": "dotenv -e .env.test -- sh -c 'export E2E=1 && node scripts/reinitialiser-base-test.mjs && tsx prisma/seed.ts && tsx e2e/admin-sans-provisoire.ts && tsx e2e/preparer-planning.ts && tsx e2e/preparer-financier.ts && tsx e2e/preparer-suivi.ts && next build && next start -p 3100'"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
