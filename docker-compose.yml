@@ -17,10 +17,8 @@ services:
     # Pas de no-new-privileges : l'entrypoint officiel passe par gosu.
 
   roles:
-    image: postgres:17.11-bookworm@sha256:3645570cccdfa447589da9f57dd740faa29b30938e861289a5574b6ca6b03826
+    build: infra/postgres
     restart: 'no'
-    user: postgres
-    entrypoint: ['bash', '/roles.sh']
     environment:
       PGHOST: db
       PGUSER: sentinelle
@@ -29,9 +27,6 @@ services:
       PASS_APP: ${POSTGRES_PASSWORD_APP}
       PASS_MIGRATION: ${POSTGRES_PASSWORD_MIGRATION}
       PASS_SAUVEGARDE: ${POSTGRES_PASSWORD_SAUVEGARDE}
-    volumes:
-      - ./infra/postgres/roles.sh:/roles.sh:ro
-      - ./infra/postgres/roles.sql:/roles.sql:ro
     depends_on:
       db: { condition: service_healthy }
     networks: [data]
