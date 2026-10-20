@@ -19,6 +19,6 @@ export async function seedArtisans(): Promise<number> {
 /** Crée l'admin seulement s'il n'en existe aucun ; n'écrase jamais un mot de passe. */
 export async function creerPremierAdmin(p: { email: string; nom: string; motDePasse: string }): Promise<'cree' | 'existe'> {
 	if ((await prisma.utilisateur.count({ where: { role: 'admin' } })) > 0) return 'existe';
-	await creerCompteAvecMotDePasse({ ...p, role: 'admin', doitChangerMotDePasse: false });
+	await creerCompteAvecMotDePasse({ ...p, role: 'admin', doitChangerMotDePasse: true });
 	return 'cree';
 }

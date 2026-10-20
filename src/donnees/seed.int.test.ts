@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { auth } from '@/auth';
 import { viderBase } from '../../tests/integration/aide';
+import { statutConnexionPublique } from '@/auth/connexion';
 import { creerCompteAvecMotDePasse, initialesDe } from './comptes';
 import { prisma } from './prisma';
 import { creerPremierAdmin, seedArtisans, seedParametres } from './seed';
@@ -44,14 +45,15 @@ describe('données de départ', () => {
 		const id = await creerCompteAvecMotDePasse({ email: 'x@b.fr', nom: 'X', role: 'user', motDePasse: 'motdepasse-1234', doitChangerMotDePasse: false });
 		await prisma.utilisateur.update({ where: { id }, data: { banned: true } });
 		const reponse = await auth.api.signInEmail({ body: { email: 'x@b.fr', password: 'motdepasse-1234' }, asResponse: true });
-		expect(reponse.status).toBe(403);
+		expect(reponse.status).not.toBe(200);
+		expect(statutConnexionPublique(reponse.status)).toBe(401);
 	});
 
 	it('crée le premier admin seulement s\'il n\'existe aucun admin', async () => {
 		expect(await creerPremierAdmin({ email: 'Admin@Socoreve.local', nom: 'Augustin Jouan', motDePasse: 'motdepasse-1234' })).toBe('cree');
 		expect(await creerPremierAdmin({ email: 'autre@socoreve.local', nom: 'X', motDePasse: 'autre-mot-de-passe' })).toBe('existe');
 		const admin = await prisma.utilisateur.findUniqueOrThrow({ where: { email: 'admin@socoreve.local' } });
-		expect(admin).toMatchObject({ role: 'admin', emailVerified: true, initiales: 'AJ', doitChangerMotDePasse: false });
+		expect(admin).toMatchObject({ role: 'admin', emailVerified: true, initiales: 'AJ', doitChangerMotDePasse: true });
 		expect(await motDePasseValide('admin@socoreve.local', 'motdepasse-1234')).toBe(true);
 	});
 

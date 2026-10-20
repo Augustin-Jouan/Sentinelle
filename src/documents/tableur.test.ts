@@ -21,4 +21,17 @@ describe('export tableur du récapitulatif', () => {
 		const total = lignes.find((l) => l[1] === 'TOTAL MARCHÉS')!;
 		expect(total[4]).toBe(374016);
 	});
+
+	it('neutralise un texte que le tableur lirait comme une formule', async () => {
+		const donnees = batirRecap(PERRIER_CHANTIER, PERRIER_LOTS, PERRIER_PARAMETRES, new Date('2026-09-29T08:00:00Z'));
+		donnees.contenu.maitreOuvrage = '=1+1';
+		donnees.contenu.lignes[0].telephone = '+33600000000';
+		const tampon = await recapVersXlsx(donnees);
+		const classeur = new ExcelJS.Workbook();
+		await classeur.xlsx.load(tampon as never);
+		const f = classeur.getWorksheet('Récapitulatif')!;
+		expect(f.getCell('B3').value).toBe("'=1+1");
+		expect(JSON.stringify(f.getSheetValues())).toContain("'+33600000000");
+		expect(JSON.stringify(f.getSheetValues())).not.toContain('"formula"');
+	});
 });

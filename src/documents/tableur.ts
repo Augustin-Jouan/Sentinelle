@@ -3,6 +3,15 @@ import type { DonneesRecap } from './schemas';
 
 const vide = (t: string) => (t === '—' ? '' : t);
 
+/** Un texte qui commence par ces signes est une formule pour Excel et LibreOffice. */
+const DECLENCHEUR_FORMULE = /^[=+\-@\t\r]/;
+
+/** Apostrophe initiale : le tableur affiche le texte et ne l'évalue pas. */
+export function texteTableur(valeur: string): string {
+	const t = vide(valeur);
+	return DECLENCHEUR_FORMULE.test(t) ? `'${t}` : t;
+}
+
 /** Même trame que le récap imprimé. Les montants deviennent des nombres de cellule pour que le tableur sache les additionner. */
 export async function recapVersXlsx(d: DonneesRecap): Promise<Buffer> {
 	const c = d.contenu;
@@ -19,13 +28,13 @@ export async function recapVersXlsx(d: DonneesRecap): Promise<Buffer> {
 		['Mission', c.mission],
 		["Chargé d'affaire", c.chargeAffaire],
 		[`${d.cadre.villeSignature} le`, c.dateSignature ?? d.cadre.dateGeneration],
-	]) f.addRow([libelle, vide(valeur)]);
+	]) f.addRow([libelle, texteTableur(valeur)]);
 	f.addRow([]);
 	f.addRow(['N°', 'Lot', 'Entreprise', 'Montant TTC', 'TVA', "Adresse de l'artisan", 'Code postal', 'Commune', 'Interlocuteur', 'Téléphone']).font = { bold: true };
 	for (const l of c.lignes) {
 		const ligne = f.addRow([
-			vide(l.numero), l.designation, l.entreprise ?? '', l.montantTtc === null ? null : Number(l.montantTtc),
-			Number(l.tauxTva) / 100, vide(l.adresse), vide(l.cp), vide(l.commune), vide(l.interlocuteur), vide(l.telephone),
+			texteTableur(l.numero), texteTableur(l.designation), texteTableur(l.entreprise ?? ''), l.montantTtc === null ? null : Number(l.montantTtc),
+			Number(l.tauxTva) / 100, texteTableur(l.adresse), texteTableur(l.cp), texteTableur(l.commune), texteTableur(l.interlocuteur), texteTableur(l.telephone),
 		]);
 		ligne.getCell(4).numFmt = '#,##0.00 "€"';
 		ligne.getCell(5).numFmt = '0.00%';

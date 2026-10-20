@@ -1,7 +1,7 @@
 # Production : une seule réplique de « app » (la limite de 2 PDF simultanés en dépend).
 services:
   db:
-    image: postgres:17.11-bookworm
+    image: postgres:17.11-bookworm@sha256:3645570cccdfa447589da9f57dd740faa29b30938e861289a5574b6ca6b03826
     restart: unless-stopped
     environment:
       POSTGRES_USER: sentinelle
@@ -13,25 +13,50 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    networks: [data]
+    # Pas de no-new-privileges : l'entrypoint officiel passe par gosu.
+
+  roles:
+    image: postgres:17.11-bookworm@sha256:3645570cccdfa447589da9f57dd740faa29b30938e861289a5574b6ca6b03826
+    restart: 'no'
+    user: postgres
+    entrypoint: ['bash', '/roles.sh']
+    environment:
+      PGHOST: db
+      PGUSER: sentinelle
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: sentinelle
+      PASS_APP: ${POSTGRES_PASSWORD_APP}
+      PASS_MIGRATION: ${POSTGRES_PASSWORD_MIGRATION}
+      PASS_SAUVEGARDE: ${POSTGRES_PASSWORD_SAUVEGARDE}
+    volumes:
+      - ./infra/postgres/roles.sh:/roles.sh:ro
+      - ./infra/postgres/roles.sql:/roles.sql:ro
+    depends_on:
+      db: { condition: service_healthy }
+    networks: [data]
+    security_opt: ['no-new-privileges:true']
 
   migration:
     build: { context: ., target: outils }
     restart: 'no'
     environment:
-      DATABASE_URL: postgresql://sentinelle:${POSTGRES_PASSWORD}@db:5432/sentinelle
+      DATABASE_URL: postgresql://sentinelle_migration:${POSTGRES_PASSWORD_MIGRATION}@db:5432/sentinelle
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: https://${DOMAINE}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_NOM: ${ADMIN_NOM}
-      ADMIN_MOT_DE_PASSE: ${ADMIN_MOT_DE_PASSE}
+      ADMIN_MOT_DE_PASSE: ${ADMIN_MOT_DE_PASSE:-}
     depends_on:
-      db: { condition: service_healthy }
+      roles: { condition: service_completed_successfully }
+    networks: [data]
+    security_opt: ['no-new-privileges:true']
 
   app:
     build: { context: ., target: application }
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://sentinelle:${POSTGRES_PASSWORD}@db:5432/sentinelle
+      DATABASE_URL: postgresql://sentinelle_app:${POSTGRES_PASSWORD_APP}@db:5432/sentinelle
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: https://${DOMAINE}
       TZ: Europe/Paris
@@ -39,9 +64,11 @@ services:
       # CHROMIUM_NO_SANDBOX: '1'
     depends_on:
       migration: { condition: service_completed_successfully }
+    networks: [edge, data]
+    security_opt: ['no-new-privileges:true']
 
   caddy:
-    image: caddy:2.10.2
+    image: caddy:2.10.2@sha256:c3d7ee5d2b11f9dc54f947f68a734c84e9c9666c92c88a7f30b9cba5da182adb
     restart: unless-stopped
     ports: ['80:80', '443:443']
     environment:
@@ -53,14 +80,16 @@ services:
     depends_on:
       # Attend le HEALTHCHECK du Dockerfile : pas de 502 pendant le démarrage de Next.
       app: { condition: service_healthy }
+    networks: [edge]
+    # Pas de no-new-privileges : l'image lie les ports 80 et 443 grâce à une capability.
 
   sauvegarde:
     build: infra/sauvegarde
     restart: unless-stopped
     environment:
       PGHOST: db
-      PGUSER: sentinelle
-      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGUSER: sentinelle_sauvegarde
+      PGPASSWORD: ${POSTGRES_PASSWORD_SAUVEGARDE}
       PGDATABASE: sentinelle
       TZ: Europe/Paris
       AGE_DESTINATAIRE: ${AGE_DESTINATAIRE}
@@ -76,6 +105,12 @@ services:
     depends_on:
       db: { condition: service_healthy }
       migration: { condition: service_completed_successfully }
+    networks: [data]
+    # Pas de no-new-privileges : l'image part de Postgres et son entrypoint utilise gosu.
+
+networks:
+  edge:
+  data:
 
 volumes:
   donnees-postgres:

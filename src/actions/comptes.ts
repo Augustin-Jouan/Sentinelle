@@ -31,6 +31,7 @@ export async function bloquerCompteAction(utilisateurId: string, bloquer: boolea
 	return executer({ admin: true }, async (u) => {
 		if (bloquer) await bloquerCompte(utilisateurId, u.id);
 		else await debloquerCompte(utilisateurId);
+		console.error('[auth] compte', { par: u.id, cible: utilisateurId, bloque: bloquer });
 		revalidatePath('/admin/comptes');
 		return null;
 	});
@@ -38,7 +39,9 @@ export async function bloquerCompteAction(utilisateurId: string, bloquer: boolea
 
 export async function changerRoleAction(utilisateurId: string, role: 'admin' | 'user'): Promise<Resultat> {
 	return executer({ admin: true }, async (u) => {
-		await changerRole(utilisateurId, z.enum(['admin', 'user']).parse(role), u.id);
+		const roleValide = z.enum(['admin', 'user']).parse(role);
+		await changerRole(utilisateurId, roleValide, u.id);
+		console.error('[auth] rôle modifié', { par: u.id, cible: utilisateurId, role: roleValide });
 		revalidatePath('/admin/comptes');
 		return null;
 	});

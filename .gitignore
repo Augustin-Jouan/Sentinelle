@@ -34,9 +34,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env
-.env.test
-.env.local
-.env.production
+.env.*
+!.env.example
+!.env.production.example
 /src/generated/
 /test-results/
 /playwright-report/
