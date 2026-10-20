@@ -1,9 +1,11 @@
-# Vérifie chaque push et chaque pull request. Sur `main`, construit et publie les quatre images sur GHCR,
-# puis prévient Coolify : le VPS ne compile rien, il tire les images (docker-compose.coolify.yml).
+# Vérifie chaque pull request et chaque push sur `main` (une branche est vérifiée par sa PR, pas deux fois).
+# Sur `main`, construit et publie les quatre images sur GHCR, puis prévient Coolify : le VPS ne compile rien,
+# il tire les images (docker-compose.coolify.yml).
 name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 concurrency:

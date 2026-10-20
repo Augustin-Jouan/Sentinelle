@@ -12,10 +12,14 @@ COPY . .
 RUN npx prisma generate \
  && DATABASE_URL=postgresql://construction@localhost/construction BETTER_AUTH_SECRET=construction-seulement-0123456789abcdef npm run build
 
-# Migrations et seed, lancés une fois au démarrage par le service « migration ».
-FROM construction AS outils
-RUN useradd --system --uid 1001 --create-home sentinelle \
- && chown -R sentinelle /app
+# Migrations et seed, lancés une fois au démarrage par le service « migration ». Ni le build de Next ni
+# `chown -R` : les fichiers restent à root, lisibles, et seule la couche des sources change d'un push à l'autre.
+FROM dependances AS outils
+RUN useradd --system --uid 1001 --create-home sentinelle
+COPY tsconfig.json prisma.config.ts ./
+COPY prisma ./prisma
+COPY src ./src
+RUN npx prisma generate
 ENV HOME=/home/sentinelle
 USER sentinelle
 CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx prisma/seed.ts"]
@@ -23,18 +27,19 @@ CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx prisma/seed.ts"]
 FROM base AS application
 ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 RUN useradd --system --uid 1001 sentinelle
-COPY --from=construction --chown=sentinelle /app/.next/standalone ./
-COPY --from=construction --chown=sentinelle /app/.next/static ./.next/static
-COPY --from=construction --chown=sentinelle /app/public ./public
-# Le tracé du mode standalone oublie des fichiers de playwright-core (browsers.json…) : essai à l'appui,
-# on recopie les paquets complets des modules externes.
-COPY --from=construction --chown=sentinelle /app/node_modules/playwright ./node_modules/playwright
-COPY --from=construction --chown=sentinelle /app/node_modules/playwright-core ./node_modules/playwright-core
-COPY --from=construction --chown=sentinelle /app/node_modules/exceljs ./node_modules/exceljs
+# Chromium avant l'application : ces couches ne dépendent que de package-lock.json et restent en cache tant
+# que la version de Playwright ne change pas. Le tracé du mode standalone oublie des fichiers de playwright-core
+# (browsers.json…) : essai à l'appui, on recopie les paquets complets des modules externes.
+COPY --from=dependances --chown=sentinelle /app/node_modules/playwright ./node_modules/playwright
+COPY --from=dependances --chown=sentinelle /app/node_modules/playwright-core ./node_modules/playwright-core
 # Chromium de la même version que le paquet copié, lisible par l'utilisateur de l'application.
 RUN node node_modules/playwright/cli.js install --with-deps chromium \
  && chown -R sentinelle /ms-playwright \
  && rm -rf /var/lib/apt/lists/*
+COPY --from=dependances --chown=sentinelle /app/node_modules/exceljs ./node_modules/exceljs
+COPY --from=construction --chown=sentinelle /app/.next/standalone ./
+COPY --from=construction --chown=sentinelle /app/.next/static ./.next/static
+COPY --from=construction --chown=sentinelle /app/public ./public
 USER sentinelle
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \
