@@ -63,6 +63,8 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: https://${DOMAINE}
       TZ: Europe/Paris
+      # Lien « Aide » du menu Mon compte (le guide d'utilisation) ; vide : pas de lien.
+      URL_AIDE: ${URL_AIDE:-}
       # « 1 » si la génération PDF échoue : le seccomp de Docker refuse en général les namespaces du bac à sable.
       CHROMIUM_NO_SANDBOX: ${CHROMIUM_NO_SANDBOX:-}
     depends_on:

@@ -33,3 +33,12 @@ test('le thème choisi tient au rechargement', async ({ page }) => {
 	await page.reload();
 	await expect(page.locator('html')).toHaveAttribute('data-theme', theme ?? '');
 });
+
+// Le serveur des E2E pose URL_AIDE (package.json) ; sans elle, le menu n'a pas de lien (banc visuel).
+test('« Aide » ouvre le guide d\'utilisation dans un nouvel onglet', async ({ page }) => {
+	await seConnecter(page, ADMIN.email, ADMIN.motDePasse);
+	await page.getByRole('button', { name: 'Mon compte' }).click();
+	const aide = page.getByRole('menuitem', { name: 'Aide — guide d\'utilisation' });
+	await expect(aide).toHaveAttribute('href', 'https://guide.exemple.test/sentinelle');
+	await expect(aide).toHaveAttribute('target', '_blank');
+});
