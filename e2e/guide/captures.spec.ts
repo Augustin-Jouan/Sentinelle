@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import 'dotenv/config';
 import { mkdir, writeFile } from 'node:fs/promises';
 import sharp from 'sharp';
-import { ecran, type IdEcran } from '../../src/aide/ecrans';
+import { ECRANS, ecran, type IdEcran } from '../../src/aide/ecrans';
 
 /**
  * Les captures du guide (page Aide), pastilles rouges comprises : `npm run aide:captures`, à relancer quand un
@@ -16,6 +16,9 @@ type Options = { pos?: Position; cadre?: boolean; dx?: number; dy?: number };
 type Repere = [Locator, Options?];
 
 const DOSSIER = 'public/guide';
+/** La taille d'affichage de chaque capture (la moitié de ses pixels, prise en densité 2), lue par la page Aide. */
+const DIMENSIONS = 'src/aide/dimensions.json';
+const dimensions: Record<string, { largeur: number; hauteur: number }> = {};
 const ROUGE = '#e03131';
 
 type Cadrage = { pleinePage?: boolean; clip?: { x: number; y: number; width: number; height: number }; autour?: Locator };
@@ -72,6 +75,8 @@ async function capturer(page: Page, id: IdEcran, reperes: Repere[], options: Cad
 	const png = await page.screenshot({ fullPage: options.pleinePage ?? false, clip, animations: 'disabled', caret: 'hide' });
 	await page.evaluate(() => document.getElementById('reperes-guide')?.remove());
 	await writeFile(`${DOSSIER}/${id}.webp`, await sharp(png).webp({ quality: 82 }).toBuffer());
+	const { width = 0, height = 0 } = await sharp(png).metadata();
+	dimensions[id] = { largeur: Math.round(width / 2), hauteur: Math.round(height / 2) };
 }
 
 const pause = (p: Page, ms = 600) => p.waitForTimeout(ms);
@@ -474,4 +479,7 @@ test('captures du guide', async ({ page: p }) => {
 		[p.getByLabel('Confirmer le nouveau mot de passe')],
 		[p.getByRole('button', { name: 'Enregistrer' }), { pos: 'gauche' }],
 	], { autour: p.locator('main > div').first() });
+
+	const triees = Object.fromEntries(ECRANS.map((e) => [e.id, dimensions[e.id]]));
+	await writeFile(DIMENSIONS, `${JSON.stringify(triees, null, '\t')}\n`);
 });

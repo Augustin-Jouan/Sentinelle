@@ -1,0 +1,110 @@
+{
+	"connexion": {
+		"largeur": 528,
+		"hauteur": 526
+	},
+	"mot-de-passe": {
+		"largeur": 528,
+		"hauteur": 608
+	},
+	"accueil": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"selecteur": {
+		"largeur": 560,
+		"hauteur": 420
+	},
+	"compte": {
+		"largeur": 400,
+		"hauteur": 330
+	},
+	"nouveau": {
+		"largeur": 1440,
+		"hauteur": 1251
+	},
+	"entete": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"marches": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"lot": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"avenants": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"apercu-marche": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"apercu-recap": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"planning": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"planning-lot": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"fermetures": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"apercu-planning": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"apercu-visa": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"documents": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"certificat": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"compte-rendu": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"pv": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"artisans": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"fiche-artisan": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"comptes": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"nouveau-compte": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"mot-de-passe-provisoire": {
+		"largeur": 1440,
+		"hauteur": 900
+	},
+	"parametres": {
+		"largeur": 1440,
+		"hauteur": 1180
+	}
+}
