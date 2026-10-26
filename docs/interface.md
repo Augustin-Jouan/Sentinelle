@@ -97,7 +97,7 @@ panneaux et les boutons du planning restent, eux, des briques.
 
 ## Le guide d'utilisation (page Aide)
 
-- **`/aide`** (Quoi fait quoi) et **`/aide/comment-faire`**, ouverts par « Aide — guide d'utilisation » dans le
+- **`/aide`** (Écran par écran) et **`/aide/comment-faire`**, ouverts par « Aide — guide d'utilisation » dans le
   menu Mon compte. Réservés aux comptes connectés, comme les captures (`public/guide/`).
 - Le texte vit dans `src/aide/` : `ecrans.ts` (chaque écran et la légende de chaque pastille, dans l'ordre),
   `taches.ts` (les tâches pas à pas, au format décrit dans `blocs.ts`). `src/aide/contenu.test.ts` vérifie

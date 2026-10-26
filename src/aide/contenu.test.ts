@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { lireBlocs, type Bloc } from './blocs';
+import DIMENSIONS from './dimensions.json';
 import { ECRANS } from './ecrans';
 import { PARTIES_TACHES } from './taches';
 
@@ -14,6 +15,7 @@ describe('le guide', () => {
 		for (const e of ECRANS) {
 			expect(e.reperes.length, e.id).toBeGreaterThan(0);
 			expect(existsSync(`public/guide/${e.id}.webp`), `public/guide/${e.id}.webp`).toBe(true);
+			expect(DIMENSIONS, `dimensions de ${e.id}`).toHaveProperty(e.id);
 		}
 	});
 

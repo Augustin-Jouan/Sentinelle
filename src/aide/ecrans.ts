@@ -1,5 +1,5 @@
 /**
- * Le guide, partie « Quoi fait quoi » : chaque écran, sa capture (`public/guide/<id>.webp`, pastilles rouges
+ * Le guide, partie « Écran par écran » : chaque écran, sa capture (`public/guide/<id>.webp`, pastilles rouges
  * numérotées) et la légende de chaque pastille, dans l'ordre : le repère n est `reperes[n - 1]`.
  * Les captures se refont par `npm run aide:captures` (e2e/aide/captures.ts), qui vérifie qu'elles posent autant
  * de pastilles que ce fichier a de légendes.

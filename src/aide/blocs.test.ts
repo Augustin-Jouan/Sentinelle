@@ -6,8 +6,8 @@ describe('une ligne du guide', () => {
 		expect(lireLigne('Cliquez sur **Créer le chantier** ⑬.')).toEqual([
 			{ texte: 'Cliquez sur ' }, { texte: 'Créer le chantier', gras: true }, { texte: ' ⑬.' },
 		]);
-		expect(lireLigne('Voir [Quoi fait quoi](/aide#lot), puis **Enregistrer**')).toEqual([
-			{ texte: 'Voir ' }, { texte: 'Quoi fait quoi', lien: '/aide#lot' }, { texte: ', puis ' }, { texte: 'Enregistrer', gras: true },
+		expect(lireLigne('Voir [Écran par écran](/aide#lot), puis **Enregistrer**')).toEqual([
+			{ texte: 'Voir ' }, { texte: 'Écran par écran', lien: '/aide#lot' }, { texte: ', puis ' }, { texte: 'Enregistrer', gras: true },
 		]);
 	});
 

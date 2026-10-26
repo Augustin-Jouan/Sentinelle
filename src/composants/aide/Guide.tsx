@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { lireBlocs, type Bloc, type Ligne } from '@/aide/blocs';
+import DIMENSIONS from '@/aide/dimensions.json';
 import { ecran, PARTIES_ECRANS, type IdEcran } from '@/aide/ecrans';
 import { PARTIES_TACHES } from '@/aide/taches';
 import { Ecran } from '@/composants/briques/Ecran';
@@ -11,12 +12,14 @@ import { SURTITRE } from '@/composants/briques/typo';
 export type OngletAide = 'quoi' | 'comment';
 
 const ONGLETS: { id: OngletAide; href: string; texte: string; icone: React.ReactNode }[] = [
-	{ id: 'quoi', href: '/aide', texte: 'Quoi fait quoi', icone: <Icone.Loupe /> },
+	{ id: 'quoi', href: '/aide', texte: 'Écran par écran', icone: <Icone.Loupe /> },
 	{ id: 'comment', href: '/aide/comment-faire', texte: 'Comment faire', icone: <Icone.Coche /> },
 ];
 
 /** Le lien d'une ancre ou d'une page, souligné au survol. */
 const LIEN = 'text-accent-2 underline-offset-2 hover:underline';
+/** En deçà (en pixels d'affichage), une capture laisse la place à sa légende à côté d'elle. */
+const ETROITE = 800;
 /** Un titre de section qu'une ancre atteint sous la barre collée en haut. */
 const ANCRE = 'scroll-mt-20';
 
@@ -40,7 +43,7 @@ export function Guide({ onglet }: { onglet: OngletAide }) {
 					<summary className={`${SURTITRE} cursor-pointer`}>Sommaire</summary>
 					<nav aria-label="Sommaire" className="mt-3"><Sommaire parties={sommaire} /></nav>
 				</details>
-				<article className="flex max-w-[60rem] min-w-0 flex-col gap-10">
+				<article className="flex min-w-0 flex-col gap-10">
 					{onglet === 'quoi' ? <QuoiFaitQuoi /> : <CommentFaire />}
 				</article>
 			</div>
@@ -71,7 +74,7 @@ function QuoiFaitQuoi() {
 	return (
 		<>
 			<p className="text-14 text-ink-2">
-				Chaque écran de Sentinelle, avec un numéro rouge sur chaque élément et, juste dessous, ce qu&apos;il fait.
+				Chaque écran de Sentinelle, avec un numéro rouge sur chaque élément et, à côté ou juste dessous, ce qu&apos;il fait.
 				Pour enchaîner les actions d&apos;une tâche (créer un chantier, générer un marché, faire un PV…),
 				voir <Link className={LIEN} href="/aide/comment-faire">Comment faire</Link>, qui renvoie à ces mêmes numéros.
 			</p>
@@ -82,21 +85,24 @@ function QuoiFaitQuoi() {
 						<section key={e.id} className="flex flex-col gap-3">
 							<h3 id={e.id} className={`${ANCRE} text-18 font-semibold`}>{e.titre}</h3>
 							<p className="text-14 text-muted">{e.intro}</p>
-							<Capture id={e.id} />
-							<CadreTableau>
-								<Tableau variante="mini">
-									<thead><tr><th className="w-12">N°</th><th>Élément</th><th>À quoi il sert</th></tr></thead>
-									<tbody>
-										{e.reperes.map((r, n) => (
-											<tr key={r.element}>
-												<td><Numero n={n + 1} /></td>
-												<td className="font-medium whitespace-nowrap max-etroit:whitespace-normal">{r.element}</td>
-												<td className="text-ink-2">{r.role}</td>
-											</tr>
-										))}
-									</tbody>
-								</Tableau>
-							</CadreTableau>
+							{/* Une capture étroite (un menu, un formulaire) a sa légende à côté ; les autres, dessous. */}
+							<div className={DIMENSIONS[e.id].largeur <= ETROITE ? 'grid grid-cols-[auto_minmax(0,1fr)] items-start gap-6 max-etroit:grid-cols-1' : 'flex flex-col gap-3'}>
+								<Capture id={e.id} />
+								<CadreTableau>
+									<Tableau variante="mini">
+										<thead><tr><th className="w-12">N°</th><th>Élément</th><th>À quoi il sert</th></tr></thead>
+										<tbody>
+											{e.reperes.map((r, n) => (
+												<tr key={r.element}>
+													<td><Numero n={n + 1} /></td>
+													<td className="font-medium whitespace-nowrap max-etroit:whitespace-normal">{r.element}</td>
+													<td className="text-ink-2">{r.role}</td>
+												</tr>
+											))}
+										</tbody>
+									</Tableau>
+								</CadreTableau>
+							</div>
 						</section>
 					))}
 				</section>
@@ -110,7 +116,7 @@ function CommentFaire() {
 		<>
 			<p className="text-14 text-ink-2">
 				Les tâches courantes, pas à pas. Les numéros entourés — ①, ②, ③… — renvoient aux pastilles rouges de la capture
-				qui précède ; chaque élément est expliqué dans <Link className={LIEN} href="/aide">Quoi fait quoi</Link>.
+				qui précède ; chaque élément est expliqué dans <Link className={LIEN} href="/aide">Écran par écran</Link>.
 			</p>
 			{PARTIES_TACHES.map((partie, i) => (
 				<section key={partie.titre} className="flex flex-col gap-8">
@@ -167,20 +173,21 @@ function Numero({ n }: { n: number }) {
 }
 
 /**
- * La capture d'un écran, ses pastilles comprises ; un clic l'ouvre en grand. Dans « Comment faire », un lien sous
- * l'image mène aux légendes de ses numéros.
+ * La capture d'un écran, ses pastilles comprises, à sa taille réelle sans dépasser la colonne ; un clic l'ouvre
+ * seule. Dans « Comment faire », un lien sous l'image mène aux légendes de ses numéros.
  * Une simple <img> : les captures sont derrière la connexion (proxy.ts), et l'optimiseur de next/image les
  * demanderait au serveur sans le cookie de session.
  */
 function Capture({ id, legende = false }: { id: IdEcran; legende?: boolean }) {
 	const { titre } = ecran(id);
 	const src = `/guide/${id}.webp`;
+	const { largeur, hauteur } = DIMENSIONS[id];
 	return (
-		<figure className="flex flex-col gap-1.5">
-			<a href={src} target="_blank" rel="noopener" title="Ouvrir la capture en grand">
+		<figure className="flex flex-col items-start gap-1.5">
+			<a href={src} target="_blank" rel="noopener" title="Ouvrir la capture seule" className="max-w-full">
 				{/* eslint-disable-next-line @next/next/no-img-element -- voir le commentaire du composant */}
-				<img src={src} alt={`${titre}, repères numérotés`} loading="lazy" decoding="async"
-					className="h-auto w-full rounded-md border border-rule bg-raise shadow-ombre" />
+				<img src={src} alt={`${titre}, repères numérotés`} width={largeur} height={hauteur} loading="lazy" decoding="async"
+					className="h-auto max-w-full rounded-md border border-rule bg-raise shadow-ombre" />
 			</a>
 			{legende && (
 				<figcaption className={SURTITRE}>
