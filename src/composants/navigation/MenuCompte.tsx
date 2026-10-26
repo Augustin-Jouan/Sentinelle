@@ -18,7 +18,7 @@ export function initiales(nom: string): string {
 const ITEM = 'w-full cursor-pointer rounded-[4px] px-2.25 py-1.75 text-left text-13 text-ink-2 no-underline hover:bg-idle-soft hover:text-ink';
 
 /** Le compte (ex-.compte) : ce qui n'a pas sa place dans la navigation. */
-export function MenuCompte({ utilisateur, aide }: { utilisateur: UtilisateurConnecte; aide: string | null }) {
+export function MenuCompte({ utilisateur }: { utilisateur: UtilisateurConnecte }) {
 	const [ouvert, setOuvert] = useState(false);
 	const racine = useRef<HTMLDivElement>(null);
 	const role = utilisateur.role === 'admin' ? 'Administrateur' : "Maître d'œuvre";
@@ -47,7 +47,7 @@ export function MenuCompte({ utilisateur, aide }: { utilisateur: UtilisateurConn
 					<div className="mt-0.75 font-mono text-10 text-faint">{utilisateur.email}</div>
 				</div>
 				<hr className={MENU.separateur} />
-				{aide && <a className={cx(ITEM, 'flow-root')} role="menuitem" href={aide} target="_blank" rel="noopener noreferrer" onClick={fermer}>Aide — guide d&apos;utilisation</a>}
+				<Link className={cx(ITEM, 'flow-root')} role="menuitem" href="/aide" onClick={fermer}>Aide — guide d&apos;utilisation</Link>
 				<Link className={cx(ITEM, 'flow-root')} role="menuitem" href="/mot-de-passe" onClick={fermer}>Changer mon mot de passe</Link>
 				{utilisateur.role === 'admin' && (
 					<>
