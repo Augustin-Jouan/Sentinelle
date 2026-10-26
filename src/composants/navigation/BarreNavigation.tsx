@@ -24,7 +24,7 @@ const ICONE_AU_REPOS = 'text-muted hover:bg-idle-soft hover:text-ink';
 const ICONE_ACTIVE = 'bg-accent-soft text-accent-2';
 
 /** La barre de navigation (ex-header.nav). Les onglets n'existent que sur les trois écrans d'un chantier (majOnglets). */
-export function BarreNavigation({ utilisateur, navigation, aide, children }: { utilisateur: UtilisateurConnecte; navigation: VueNavigation; aide: string | null; children: React.ReactNode }) {
+export function BarreNavigation({ utilisateur, navigation, children }: { utilisateur: UtilisateurConnecte; navigation: VueNavigation; children: React.ReactNode }) {
 	const chemin = usePathname();
 	const { id } = useParams<{ id?: string }>();
 	const courant = (id && navigation.chantiers.find((c) => c.id === id)) || null;
@@ -50,7 +50,7 @@ export function BarreNavigation({ utilisateur, navigation, aide, children }: { u
 							<span className={cx('font-mono text-11', artisans ? 'text-accent-2 opacity-75' : 'text-faint')}>{navigation.artisans}</span>
 						</Link>
 						<button type="button" className={cx(ICONE, ICONE_AU_REPOS, 'cursor-pointer')} onClick={basculerTheme} title="Basculer clair / sombre" aria-label="Basculer clair / sombre"><Icone.Soleil /></button>
-						<MenuCompte utilisateur={utilisateur} aide={aide} />
+						<MenuCompte utilisateur={utilisateur} />
 					</div>
 				</div>
 				{surChantier && courant && (

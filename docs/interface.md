@@ -95,6 +95,17 @@ panneaux et les boutons du planning restent, eux, des briques.
 - Seule la semaine en cours du Gantt est masquée : « aujourd'hui » vient du serveur, pas de l'horloge figée du
   navigateur.
 
+## Le guide d'utilisation (page Aide)
+
+- **`/aide`** (Quoi fait quoi) et **`/aide/comment-faire`**, ouverts par « Aide — guide d'utilisation » dans le
+  menu Mon compte. Réservés aux comptes connectés, comme les captures (`public/guide/`).
+- Le texte vit dans `src/aide/` : `ecrans.ts` (chaque écran et la légende de chaque pastille, dans l'ordre),
+  `taches.ts` (les tâches pas à pas, au format décrit dans `blocs.ts`). `src/aide/contenu.test.ts` vérifie
+  les captures, les liens internes et qu'aucun numéro entouré ne dépasse les pastilles de la capture qui précède.
+- **Après un changement d'écran** : `npm run aide:captures` refait les 27 captures sur la base du banc visuel
+  (jamais en même temps que `test:e2e` ou `test:visuel`), puis relire les images modifiées. Le parcours échoue
+  si un repère ne se trouve plus ou si un écran n'a plus autant de pastilles que de légendes.
+
 ## Recettes
 
 ### Ajouter un écran
