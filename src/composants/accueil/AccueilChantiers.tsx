@@ -34,8 +34,9 @@ export function AccueilChantiers({ cartes }: { cartes: DonneesCarte[] }) {
 				<Interrupteur coche={masquer} onChange={setMasquer}>Masquer les terminés</Interrupteur>
 				<Surtitre>{q ? `${visibles.length} résultat${visibles.length > 1 ? 's' : ''} sur ${cartes.length}` : ''}</Surtitre>
 			</BarreOutils>
-			{/* 24 rem et non 20 : à 1392 px, 20 rem donnait 4 colonnes où les noms de chantier passaient à la ligne. */}
-			<div className="grid grid-cols-[repeat(auto-fill,minmax(24rem,1fr))] gap-4">
+			{/* 24 rem et non 20 : à 1392 px, 20 rem donnait 4 colonnes où les noms de chantier passaient à la ligne.
+			    min(…, 100 %) : sur un téléphone, une colonne de la largeur de l'écran plutôt qu'une carte qui déborde. */}
+			<div className="grid grid-cols-[repeat(auto-fill,minmax(min(24rem,100%),1fr))] gap-4">
 				{visibles.map((c) => <CarteChantier key={c.id} c={c} ouvert={c.id === ouvert} />)}
 				{!visibles.length && (
 					<Vide variante="liste">{q ? `Aucun chantier ne correspond à « ${q} ».` : 'Tous les chantiers sont terminés. Décochez le filtre pour les revoir.'}</Vide>

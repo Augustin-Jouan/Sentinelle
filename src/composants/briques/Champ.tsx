@@ -17,15 +17,19 @@ const SAISIE = {
 	montant: `w-full ${EN_CELLULE} text-right font-mono tabular-nums text-13`,
 	'montant-mini': `w-full ${EN_CELLULE} text-right font-mono tabular-nums text-12 text-muted`,
 	/** Dans le tableau serré d'un panneau (semaine, année, durée). */
-	'montant-etroit': `w-13 ${EN_CELLULE} text-right font-mono tabular-nums text-12 text-muted`,
+	'montant-etroit': `w-13 max-etroit:w-16 ${EN_CELLULE} text-right font-mono tabular-nums text-12 text-muted`,
 	kv: `w-36 ${KV}`,
-	'kv-etroit': `w-16 ${KV}`,
+	'kv-etroit': `w-16 max-etroit:w-18 ${KV}`,
 	/** Une date posée dans le texte (ex-.date-lot). */
 	date: 'rounded-sm border border-rule-strong bg-surface px-1.5 py-0.75 text-13 text-ink',
 } as const;
 
 /** La graisse propre à chaque saisie ; « gras » la remplace. */
 const POIDS: Partial<Record<VarianteSaisie, string>> = { texte: 'font-medium' };
+
+/** En étroit, 16 px au moins : en dessous, Safari sur iPhone zoome la page à chaque saisie. Les largeurs fixes
+ *  (montant-etroit, kv-etroit) s'élargissent d'autant. */
+const TACTILE = 'max-etroit:text-16';
 
 /** Refusée par le serveur : rouge, la saisie reste (ex-.est-erreur). Pendant l'enregistrement : estompée (ex-.est-en-cours). */
 const ETATS = 'aria-invalid:border-danger aria-invalid:bg-danger-soft aria-busy:opacity-70';
@@ -34,7 +38,7 @@ export type VarianteSaisie = keyof typeof SAISIE;
 
 /** Les classes d'une saisie : pour Saisie, ZoneTexte, ChampEnLigne, ou un <input> qui ne peut pas être une brique. */
 export function classesSaisie(variante: VarianteSaisie, o: { gras?: boolean; chiffres?: boolean } = {}): string {
-	return cx(SAISIE[variante], o.gras ? 'font-semibold' : POIDS[variante], o.chiffres && CHIFFRES, ETATS);
+	return cx(SAISIE[variante], o.gras ? 'font-semibold' : POIDS[variante], o.chiffres && CHIFFRES, ETATS, TACTILE);
 }
 
 /** L'id du message d'erreur d'un champ, que la saisie annonce par aria-describedby. */

@@ -18,7 +18,7 @@ export function Ecran({ titre, sousTitre, actions, contexte, children }: {
 						<h1 className="text-22">{titre}</h1>
 						{sousTitre}
 					</div>
-					{actions ? <div className="flex items-center gap-2">{Children.toArray(actions)}</div> : null}
+					{actions ? <div className="flex flex-wrap items-center gap-2">{Children.toArray(actions)}</div> : null}
 				</div>
 				{contexte ? <div className="w-full">{contexte}</div> : null}
 			</div>

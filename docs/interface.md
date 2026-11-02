@@ -70,6 +70,9 @@ pas de repli.
 - **Surcouches** : `data-surcouche="panneau" | "menu" | "confirmation" | "apercu"`, `data-ouvert`,
   `data-verrou-defilement` (fige la page), `data-bloque-clavier`. Échap ne ferme que la plus haute ; les
   sélecteurs sont dans `src/composants/briques/surcouches.ts`.
+- **Téléphone (`max-etroit:`)** : rien ne déborde de l'écran à 320 px (une rangée d'actions passe à la ligne, une
+  grille s'écrit `minmax(min(24rem,100%),1fr)`). Une saisie fait au moins 16 px en étroit (`TACTILE` dans
+  `Champ.tsx`, et la `Recherche`) : en dessous, Safari sur iPhone zoome la page à chaque saisie.
 - **Tests de bout en bout** : rôles, libellés, puis `data-testid`. Jamais une classe de style, sauf `g-*` (le
   Gantt) et les classes des feuilles imprimables.
 
