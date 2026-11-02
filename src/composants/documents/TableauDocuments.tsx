@@ -26,8 +26,8 @@ const MANQUES_CASE: Record<ManqueAvenant, string> = { entreprise: "pas d'entrepr
 const modifie = <Pastille className="ml-1">modifié</Pastille>;
 /** Des cases côte à côte, qui passent à la ligne (ex-.dm-pile). */
 const PILE = 'flex flex-wrap items-center gap-1';
-/** Une colonne de documents, en carte (étroit) : deux par rang. */
-const CASE_CARTE = 'max-etroit:flex-1 max-etroit:basis-[40%]';
+/** Une colonne de documents, en carte (étroit) : à sa largeur, côte à côte tant qu'elles tiennent (une ligne pour la plupart des lots). */
+const CASE_CARTE = 'max-etroit:grow max-etroit:basis-auto';
 /** Les actions secondaires sous une case : Corriger, Nouveau PV, Réserves levées (ex-.dm-sous). */
 const SOUS = 'mt-0.75 flex gap-2';
 
@@ -152,7 +152,7 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 								{lot}
 								{/* En carte, deux documents par rang (au moins 40 % chacun) sous leur libellé. */}
 								<td role="cell" data-cle="Marché" className={CASE_CARTE}><CaseMarche base={base} l={l} /></td>
-								<td role="cell" data-cle="Avenants" className={CASE_CARTE}><div className={PILE}>{l.avenants.length ? l.avenants.map((a) => <CaseAv key={a.avenantId} base={base} a={a} />) : <span className="text-faint" aria-label="aucun">—</span>}</div></td>
+								<td role="cell" data-cle="Avenants" data-manque={l.avenants.length ? undefined : ''} className={CASE_CARTE}><div className={PILE}>{l.avenants.length ? l.avenants.map((a) => <CaseAv key={a.avenantId} base={base} a={a} />) : <span className="text-faint" aria-label="aucun">—</span>}</div></td>
 								<td role="cell" data-cle="Certificats" className={CASE_CARTE}><CasesCertificats base={base} l={l} /></td>
 								<td role="cell" data-cle="Réception" className={CASE_CARTE}><CaseReception l={l} /></td>
 							</tr>

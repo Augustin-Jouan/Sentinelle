@@ -34,7 +34,7 @@ const CHAMPS: { champ: ChampArtisan; id: string; libelle: string; placeholder: s
 	{ champ: 'cp', id: 'e-cp', libelle: 'Code postal', placeholder: '44590', num: true },
 	{ champ: 'commune', id: 'e-com', libelle: 'Commune', placeholder: 'DERVAL' },
 	{ champ: 'interlocuteur', id: 'e-int', libelle: 'Interlocuteur', placeholder: 'Stéphane BIORET' },
-	{ champ: 'telephone', id: 'e-tel', libelle: 'Téléphone', placeholder: '02-28-50-46-95', num: true },
+	{ champ: 'telephone', id: 'e-tel', libelle: 'Téléphone', placeholder: '02-28-50-46-95', num: true, type: 'tel' },
 	{ champ: 'email', id: 'e-mail', libelle: 'Courriel (optionnel)', placeholder: 'contact@entreprise.fr', span: true, type: 'email' },
 ];
 const vide = (v: string, texte = '—') => v || <span className="text-faint">{texte}</span>;
@@ -115,11 +115,16 @@ export function ReferentielArtisans({ artisans, ficheInitiale }: { artisans: Art
 	return (
 		<>
 			<BarreOutils>
-				<Recherche placeholder="Rechercher une entreprise, une commune, un interlocuteur…" libelle="Rechercher une entreprise" valeur={requete} onChange={setRequete} />
+				<Recherche id="recherche-artisans" placeholder="Rechercher une entreprise, une commune, un interlocuteur…" libelle="Rechercher une entreprise" valeur={requete} onChange={setRequete} />
 				<Surtitre>
 					{`${vues.length} entreprise${vues.length > 1 ? 's' : ''}${vues.length !== artisans.length ? ` sur ${artisans.length}` : ''}${archivees ? ` · ${archivees} archivée${archivees > 1 ? 's' : ''}` : ''}`}
 				</Surtitre>
 			</BarreOutils>
+			{/* Sur un téléphone, la liste fait une dizaine d'écrans et l'en-tête ne colle plus : la recherche reste à un toucher,
+			    en bas à gauche (l'ajout flotte à droite). Le champ reprend le focus, la page remonte jusqu'à lui. */}
+			<div className="fixed bottom-4 left-4 z-20 hidden rounded-sm shadow-ombre-h max-etroit:flex">
+				<Bouton seulIcone aria-label="Rechercher une entreprise" onClick={() => document.getElementById('recherche-artisans')?.focus()}><Icone.Loupe /></Bouton>
+			</div>
 			<CadreTableau>
 				<Tableau variante="plain" cartes>
 					<thead><tr role="row"><th role="columnheader">Entreprise</th><th role="columnheader">Adresse</th><th role="columnheader">CP</th><th role="columnheader">Commune</th><th role="columnheader">Interlocuteur</th><th role="columnheader">Téléphone</th><th role="columnheader" data-droite>Actions</th></tr></thead>
@@ -168,7 +173,7 @@ export function ReferentielArtisans({ artisans, ficheInitiale }: { artisans: Art
 						const message = erreur?.champ === c.champ ? erreur.message : undefined;
 						return (
 							<Champ key={c.champ} libelle={c.libelle} pour={c.id} aide={c.aide} erreur={message} pleineLargeur={c.span}>
-								<Saisie id={c.id} type={c.type ?? 'text'} placeholder={c.placeholder} value={fiche[c.champ]} chiffres={c.num} erreur={message}
+								<Saisie id={c.id} type={c.type ?? 'text'} inputMode={c.champ === 'cp' ? 'numeric' : undefined} placeholder={c.placeholder} value={fiche[c.champ]} chiffres={c.num} erreur={message}
 									onChange={(e) => setFiche({ ...fiche, [c.champ]: e.target.value })} />
 							</Champ>
 						);

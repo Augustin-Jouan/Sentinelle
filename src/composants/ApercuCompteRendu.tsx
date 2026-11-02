@@ -7,9 +7,12 @@ import {
 	abandonnerBrouillonAction, changerConvocationAction, corrigerCompteRenduAction, enregistrerCompteRenduAction, modifierChampCompteRenduAction,
 } from '@/actions/comptesRendus';
 import { Bouton } from '@/composants/briques/Bouton';
+import { ActionsEcran } from '@/composants/briques/ActionsEcran';
 import { CadreApercu, NoteApercu } from '@/composants/briques/CadreApercu';
 import { useConfirmation } from '@/composants/briques/Confirmation';
+import { useEtroit } from '@/composants/briques/etroit';
 import * as Icone from '@/composants/briques/icones';
+import { FormulaireCompteRendu } from '@/composants/FormulaireCompteRendu';
 import { telecharger } from '@/composants/telecharger';
 import { batirCompteRendu, type SaisiesCompteRendu } from '@/documents/compteRendu';
 import { CompteRendu, type EditionCompteRendu } from '@/documents/gabarits/CompteRendu';
@@ -36,6 +39,7 @@ export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOu
 	const enregistrements = useRef(new Set<Promise<unknown>>());
 	const { mode } = ouvert;
 	const n = numeroTexte(ouvert.numero);
+	const etroit = useEtroit();
 
 	async function fermer(confirmerSortie = true) {
 		if (confirmerSortie && mode === 'correction' && modifie
@@ -148,21 +152,29 @@ export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOu
 	const lecture = mode === 'lecture';
 	const donnees = lecture && ouvert.fige ? ouvert.fige : batirCompteRendu(ouvert.source, saisies);
 	const edition: EditionCompteRendu = { saisies, generation, surChamp, surConvocation };
+	// Sur un téléphone, on n'écrit pas dans la feuille réduite à moitié : un formulaire à la taille du doigt la précède,
+	// et la feuille, en lecture, montre ce qui s'imprimera au fil de la saisie. Sur ordinateur, rien ne change.
+	const formulaire = etroit && !lecture;
 	const entete = mode === 'brouillon' ? `Brouillon n° ${n}` : mode === 'correction' ? `Correction du n° ${n}`
 		: `N° ${n}${ouvert.derniere ? ` — version ${ouvert.derniere.version}` : ''}`;
 
 	return (
-		<CadreApercu libelle={TITRES_TYPES.COMPTE_RENDU} surtitre={entete} titre={reference} disposition="solo" onFermer={() => void fermer()}
-			aide={mode === 'brouillon' ? "Écrivez directement dans les zones bleues — le bleu ne s'imprime pas." : undefined}
+		<CadreApercu libelle={TITRES_TYPES.COMPTE_RENDU} surtitre={entete} titre={reference} disposition={formulaire ? 'formulaire' : 'solo'} onFermer={() => void fermer()}
+			champs={formulaire ? <FormulaireCompteRendu edition={edition} lots={ouvert.source.lots} /> : undefined}
+			aide={mode === 'brouillon' ? (formulaire ? 'Chaque champ s\'enregistre quand vous le quittez ; la feuille, dessous, montre ce qui s\'imprimera.'
+				: "Écrivez directement dans les zones bleues — le bleu ne s'imprime pas.") : undefined}
 			notes={ouvert.blocage && <NoteApercu>{ouvert.blocage}</NoteApercu>}
 			actions={<>
 				<Bouton variante="fantome" onClick={() => void fermer()}>Fermer</Bouton>
 				{mode === 'brouillon' && (
-					<>
-						<Bouton onClick={repartir} desactive={enCours} title="Remplacer la coordination par les seuls intitulés des lots">Repartir des lots</Bouton>
-						<Bouton onClick={abandonner} desactive={enCours}>Abandonner le brouillon</Bouton>
-						<Bouton variante="primaire" onClick={enregistrer} enCours={enCours}>{enCours ? 'Enregistrement…' : `Enregistrer le n° ${n}`}</Bouton>
-					</>
+					// Sur un téléphone : « Enregistrer » flotte sous le pouce, « Repartir » et « Abandonner » (qui efface) passent
+					// derrière « ⋯ », loin de lui. Sur ordinateur, les quatre boutons restent dans cet ordre.
+					<ActionsEcran replier principaleALaFin
+						principale={<Bouton variante="primaire" onClick={enregistrer} enCours={enCours}>{enCours ? 'Enregistrement…' : `Enregistrer le n° ${n}`}</Bouton>}
+						actions={<>
+							<Bouton onClick={repartir} desactive={enCours} title="Remplacer la coordination par les seuls intitulés des lots">Repartir des lots</Bouton>
+							<Bouton onClick={abandonner} desactive={enCours}>Abandonner le brouillon</Bouton>
+						</>} />
 				)}
 				{mode === 'correction' && (
 					<Bouton variante="primaire" onClick={corriger} enCours={enCours}>{enCours ? 'Génération…' : `Générer la v${(ouvert.derniere?.version ?? 0) + 1}`}</Bouton>
@@ -174,7 +186,7 @@ export function ApercuCompteRendu({ ouvert, reference }: { ouvert: CompteRenduOu
 					<Bouton variante="primaire" natif href={`/api/documents/${ouvert.derniere.documentId}/pdf`}><Icone.Telecharger />Télécharger le PDF</Bouton>
 				)}
 			</>}>
-			<CompteRendu donnees={donnees} mode={lecture ? 'lecture' : 'edition'} edition={lecture ? undefined : edition} />
+			<CompteRendu donnees={donnees} mode={lecture || formulaire ? 'lecture' : 'edition'} edition={lecture || formulaire ? undefined : edition} />
 		</CadreApercu>
 	);
 }

@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { CSS_DOCUMENTS } from '@/documents/styles';
+import { Bouton } from './Bouton';
 import { cx } from './cx';
 import { Surtitre } from './Surtitre';
 import { AU_DESSUS_DE_L_APERCU } from './surcouches';
@@ -16,8 +17,12 @@ type Props = {
 	/** Ce qui empêche de générer, ou une précision sur la version affichée (des NoteApercu). */
 	notes?: React.ReactNode;
 	actions: React.ReactNode;
-	/** 'champs' : la colonne des champs puis la feuille (le marché) ; 'solo' : la feuille seule, dans la grille (compte rendu, certificat, PV) ; 'simple' : la feuille seule. */
-	disposition: 'champs' | 'solo' | 'simple';
+	/**
+	 * 'champs' : la colonne des champs puis la feuille (le marché) ; 'solo' : la feuille seule, dans la grille (compte rendu,
+	 * certificat, PV) ; 'simple' : la feuille seule ; 'formulaire' : un formulaire de saisie puis la feuille, qui défilent
+	 * ensemble (le compte rendu sur un téléphone : on n'écrit pas dans une feuille réduite à moitié).
+	 */
+	disposition: 'champs' | 'solo' | 'simple' | 'formulaire';
 	champs?: React.ReactNode;
 	onFermer: () => void;
 	children: React.ReactNode;
@@ -46,6 +51,9 @@ function Feuille({ children }: { children: React.ReactNode }) {
 	const cadre = useRef<HTMLDivElement>(null);
 	const bloc = useRef<HTMLDivElement>(null);
 	const page = useRef<HTMLDivElement>(null);
+	// « Taille réelle » (téléphone) : la feuille n'est plus réduite, on la parcourt en la faisant glisser — pour la lire,
+	// ou écrire dans ses zones bleues à une taille où le doigt les atteint.
+	const [reelle, setReelle] = useState(false);
 	useLayoutEffect(() => {
 		const c = cadre.current, b = bloc.current, p = page.current;
 		if (!c || !b || !p) return;
@@ -53,6 +61,7 @@ function Feuille({ children }: { children: React.ReactNode }) {
 			// Mesure à taille réelle (avant peinture : rien ne clignote).
 			p.style.transform = ''; p.style.width = '';
 			b.style.width = ''; b.style.height = ''; b.style.overflow = '';
+			if (reelle) return;
 			const s = getComputedStyle(c);
 			const dispo = c.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight);
 			const naturelle = p.scrollWidth;
@@ -70,12 +79,19 @@ function Feuille({ children }: { children: React.ReactNode }) {
 		observateur.observe(c);
 		observateur.observe(p);
 		return () => observateur.disconnect();
-	}, []);
+	}, [reelle]);
 	return (
-		<div ref={cadre} className="flex items-start justify-center-safe overflow-auto overscroll-contain p-7 max-etroit:p-3.5" data-testid="cadre-feuille">
-			<div ref={bloc} className="min-w-0">
-				{/* La page reprend la disposition du cadre (feuille et notes côte à côte) ; elle se réduit depuis son coin haut gauche. */}
-				<div ref={page} className="flex origin-top-left items-start">{children}</div>
+		<div className="flex min-h-0 flex-col">
+			{/* Sur un téléphone seulement : sur ordinateur la feuille tient à sa taille. */}
+			<div className="hidden items-center justify-between gap-3 px-3.5 pt-3 max-etroit:flex">
+				<span className="text-12 text-muted">{reelle ? 'Faites glisser la feuille pour la parcourir.' : 'La feuille est réduite pour tenir dans l\'écran.'}</span>
+				<Bouton taille="sm" aria-pressed={reelle} onClick={() => setReelle((r) => !r)}>{reelle ? 'Ajuster à l\'écran' : 'Taille réelle'}</Bouton>
+			</div>
+			<div ref={cadre} className="flex min-h-0 flex-1 items-start justify-center-safe overflow-auto overscroll-contain p-7 max-etroit:p-3.5" data-testid="cadre-feuille">
+				<div ref={bloc} className="min-w-0">
+					{/* La page reprend la disposition du cadre (feuille et notes côte à côte) ; elle se réduit depuis son coin haut gauche. */}
+					<div ref={page} className="flex origin-top-left items-start">{children}</div>
+				</div>
 			</div>
 		</div>
 	);
@@ -97,7 +113,9 @@ export function CadreApercu({ libelle, surtitre, titre, aide, notes, actions, di
 	return (
 		<div role="dialog" aria-label={libelle} data-surcouche="apercu" data-ouvert="" data-verrou-defilement="" data-bloque-clavier=""
 			// paysage: l'aperçu défile d'un bloc ; son en-tête (titre, actions) ne reste pas collé au-dessus de la feuille.
-			className="fixed inset-0 z-60 grid grid-rows-[auto_minmax(0,1fr)] bg-paper paysage:block paysage:overflow-y-auto">
+			className={cx('fixed inset-0 z-60 bg-paper',
+				// 'formulaire' : tout défile d'un bloc (en-tête, formulaire, feuille) ; sinon la feuille défile sous l'en-tête.
+				disposition === 'formulaire' ? 'block overflow-y-auto' : 'grid grid-rows-[auto_minmax(0,1fr)] paysage:block paysage:overflow-y-auto')}>
 			<style dangerouslySetInnerHTML={{ __html: CSS_DOCUMENTS }} />
 			<div className="flex flex-wrap items-center justify-between gap-4 border-b border-rule bg-surface px-5 py-3.5">
 				{/* En colonne : le surtitre (un span) prend sa propre hauteur de ligne. */}
@@ -115,7 +133,14 @@ export function CadreApercu({ libelle, surtitre, titre, aide, notes, actions, di
 					<div className="flex flex-col gap-4.5 overflow-y-auto overscroll-contain border-r border-rule bg-surface p-4.5 max-etroit:max-h-[40vh] max-etroit:border-r-0 max-etroit:border-b">{champs}</div>
 					{feuille}
 				</div>
-			) : disposition === 'solo' ? <div className={SPLIT.solo}>{feuille}</div> : feuille}
+			) : disposition === 'solo' ? <div className={SPLIT.solo}>{feuille}</div>
+				: disposition === 'formulaire' ? (
+					<>
+						<div className="flex flex-col gap-4.5 border-b border-rule bg-surface p-4.5">{champs}</div>
+						<div className="px-4.5 pt-4"><Surtitre>La feuille imprimée</Surtitre></div>
+						{feuille}
+					</>
+				) : feuille}
 		</div>
 	);
 }

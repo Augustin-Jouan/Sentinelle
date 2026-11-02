@@ -23,9 +23,9 @@ export function FormulaireParametres({ initiales }: { initiales: ValeursParametr
 	const [v, setV] = useState(initiales);
 	const [active, setActive] = useState<ChampParametres | null>(null);
 
-	const champ = (c: ChampParametres, libelle: string, o: { aide?: string; type?: 'text' | 'email' | 'tel'; chiffres?: boolean } = {}) => (
+	const champ = (c: ChampParametres, libelle: string, o: { aide?: string; type?: 'text' | 'email' | 'tel'; chiffres?: boolean; clavier?: 'numeric' } = {}) => (
 		<Champ libelle={libelle} pour={`p-${c}`} aide={o.aide}>
-			<ChampEnLigne id={`p-${c}`} variante="champ" libelle={libelle} type={o.type} chiffres={o.chiffres} valeur={initiales[c]}
+			<ChampEnLigne id={`p-${c}`} variante="champ" libelle={libelle} type={o.type} chiffres={o.chiffres} clavier={o.clavier} valeur={initiales[c]}
 				enregistrer={modifierParametreAction.bind(null, c)} onSaisie={(x) => setV((avant) => ({ ...avant, [c]: x }))} />
 		</Champ>
 	);
@@ -75,7 +75,7 @@ export function FormulaireParametres({ initiales }: { initiales: ValeursParametr
 				<SectionChamps titre="Coordonnées">
 					{champ('adresse', 'Adresse')}
 					<Paire etroit>
-						{champ('cp', 'Code postal', { chiffres: true })}
+						{champ('cp', 'Code postal', { chiffres: true, clavier: 'numeric' })}
 						{champ('ville', 'Ville')}
 					</Paire>
 					<Paire>

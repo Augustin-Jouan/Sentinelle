@@ -32,7 +32,8 @@ export function AccueilChantiers({ cartes }: { cartes: DonneesCarte[] }) {
 				<Recherche placeholder="Rechercher un chantier, un client, une commune…" libelle="Rechercher un chantier" valeur={requete} onChange={setRequete} />
 				{/* En étroit, le tri se serre à côté de l'interrupteur : une ligne de moins avant les chantiers. */}
 				<MenuDeroulant id="ch-sort" k="Trier par" className="self-stretch max-etroit:min-w-0 max-etroit:flex-1" valeur={tri} options={TRIS_CHANTIERS} onChoisir={(v) => { if (estTri(v)) setTri(v); }} />
-				<Interrupteur coche={masquer} onChange={setMasquer}>Masquer les terminés</Interrupteur>
+				{/* « les » se tait sur un téléphone : le tri, à côté, garde la place de son libellé. */}
+				<Interrupteur coche={masquer} onChange={setMasquer}>Masquer <span className="max-etroit:hidden">les </span>terminés</Interrupteur>
 				<Surtitre>{q ? `${visibles.length} résultat${visibles.length > 1 ? 's' : ''} sur ${cartes.length}` : ''}</Surtitre>
 			</BarreOutils>
 			{/* 24 rem et non 20 : à 1392 px, 20 rem donnait 4 colonnes où les noms de chantier passaient à la ligne.
@@ -42,11 +43,14 @@ export function AccueilChantiers({ cartes }: { cartes: DonneesCarte[] }) {
 				{!visibles.length && (
 					<Vide variante="liste">{q ? `Aucun chantier ne correspond à « ${q} ».` : 'Tous les chantiers sont terminés. Décochez le filtre pour les revoir.'}</Vide>
 				)}
-				<Carte variante="ajout" href="/chantiers/nouveau">
-					<span className="font-titre text-24 leading-none text-accent">+</span>
-					<span className="font-titre text-17 font-semibold text-accent-2">Nouveau chantier</span>
-					<div className="text-12 leading-[1.45] text-muted">Saisissez l&apos;en-tête une fois, il alimentera tous les documents.</div>
-				</Carte>
+				{/* Sur un téléphone, « Nouveau chantier » flotte déjà sous le pouce : la carte ferait doublon. */}
+				<div className="contents max-etroit:hidden">
+					<Carte variante="ajout" href="/chantiers/nouveau">
+						<span className="font-titre text-24 leading-none text-accent">+</span>
+						<span className="font-titre text-17 font-semibold text-accent-2">Nouveau chantier</span>
+						<div className="text-12 leading-[1.45] text-muted">Saisissez l&apos;en-tête une fois, il alimentera tous les documents.</div>
+					</Carte>
+				</div>
 			</div>
 		</>
 	);

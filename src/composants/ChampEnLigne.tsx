@@ -22,8 +22,15 @@ type Props = {
 	/** Chiffres alignés : un code postal. */
 	chiffres?: boolean;
 	id?: string;
+	/** Le clavier d'un téléphone ; par défaut, celui de la variante (montants : décimal ; semaine, année, durée : numérique). */
+	clavier?: 'decimal' | 'numeric' | 'tel';
 	/** À chaque frappe, avant l'enregistrement : un aperçu qui suit la saisie. */
 	onSaisie?: (valeur: string) => void;
+};
+
+/** Le clavier d'un téléphone selon la variante : un montant ou un taux ouvre le pavé décimal, un nombre entier le pavé numérique. */
+const CLAVIERS: Partial<Record<VarianteSaisie, 'decimal' | 'numeric'>> = {
+	montant: 'decimal', 'montant-mini': 'decimal', kv: 'decimal', 'kv-etroit': 'decimal', 'montant-etroit': 'numeric',
 };
 
 /**
@@ -31,7 +38,7 @@ type Props = {
  * et garde la saisie. Il se recale sur la valeur du serveur quand celle-ci change
  * (TTC reformaté, modification d'un collègue).
  */
-export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', multiligne, className, placeholder, variante = 'texte', gras, chiffres, id, onSaisie }: Props) {
+export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', multiligne, className, placeholder, variante = 'texte', gras, chiffres, id, onSaisie, clavier }: Props) {
 	const [texte, setTexte] = useState(valeur);
 	const [valeurRecue, setValeurRecue] = useState(valeur);
 	const [enErreur, setEnErreur] = useState(false);
@@ -107,6 +114,7 @@ export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', mult
 		<input
 			{...communs}
 			type={type}
+			inputMode={clavier ?? CLAVIERS[variante]}
 			onChange={(e) => saisir(e.target.value)}
 			onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
 		/>

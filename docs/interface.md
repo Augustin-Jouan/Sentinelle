@@ -101,6 +101,12 @@ pas de repli.
     sur ordinateur, lien souligné de 44 px sur un téléphone ; une fiche propose « Appeler » et « Écrire » en tête.
   - Les actions destructrices (supprimer un chantier, un lot) se tiennent en bout de carte ou de pied, à l'écart.
   - Le fac-similé d'un formulaire (Nouveau chantier, Paramètres) se replie sous le formulaire (`FeuilleRepliable`).
+  - Un aperçu de document propose « Taille réelle » sur un téléphone : la feuille, réduite pour tenir, se lit et se
+    remplit à 100 % en la faisant glisser. Le compte rendu, écrit sur le chantier, se saisit dans un formulaire
+    (`FormulaireCompteRendu`, disposition `formulaire` de `CadreApercu`) ; sa feuille, en lecture, en est l'aperçu.
+  - Le clavier suit le champ : `ChampEnLigne` ouvre le pavé décimal pour un montant ou un taux, numérique pour une
+    semaine ou une durée (`clavier` pour l'imposer) ; un code postal prend `inputMode="numeric"`, un téléphone `type="tel"`.
+  - Les messages (`Toasts`) s'affichent en haut sur un téléphone, loin de l'action flottante.
 - **Un élément ou deux ?** Une saisie n'existe qu'une fois : quand il lui faut un autre élément en étroit (la
   désignation d'un lot, `<input>` qui devient un `<textarea>` ajusté), `useEtroit()` (`briques/etroit.ts`) le dit au
   composant, et `ChampEnLigne` garde le focus si l'élément change pendant la saisie. Une action, elle, peut être rendue
