@@ -36,7 +36,8 @@ export function BarreNavigation({ utilisateur, navigation, children }: { utilisa
 		<div className="flex min-h-screen min-w-0 flex-col">
 			<SigleDefs />
 			{/* Deux étages : au-dessus du filet ce qui vaut partout, en dessous ce qui appartient au chantier ouvert. */}
-			<header className="sticky top-0 z-25 border-b border-rule bg-surface">
+			{/* Couché (paysage:), le téléphone n'a pas la hauteur de garder l'en-tête collé : il part avec la page. */}
+			<header className="sticky top-0 z-25 border-b border-rule bg-surface paysage:static">
 				<div className="flex min-h-13 items-center gap-3.5 px-6 py-1.5 max-etroit:gap-2 max-etroit:px-3.5 max-etroit:py-2">
 					<Link className="group inline-flex flex-none items-center justify-center rounded-sm px-1 py-0.5 hover:bg-idle-soft max-etroit:min-h-11 max-etroit:min-w-11" href="/chantiers"
 						title="Sentinelle — revenir à l'accueil" aria-label="Sentinelle — revenir à l'accueil"><Sigle survol /></Link>

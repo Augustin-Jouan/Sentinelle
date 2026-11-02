@@ -33,9 +33,10 @@
 
 	/* Les 13 tailles de la maquette, nommées d'après leur valeur en pixels. Sans interligne : il s'hérite, comme dans la maquette. */
 	--text-*: initial;
-	--text-9: 0.5625rem;
-	--text-10: 0.625rem;
-	--text-11: 0.6875rem;
+	/* 9, 10, 11 : leur valeur est un jeton (jetons.css), qui remonte sur un téléphone. */
+	--text-9: var(--t-9);
+	--text-10: var(--t-10);
+	--text-11: var(--t-11);
 	--text-12: 0.75rem;
 	--text-13: 0.8125rem;
 	--text-14: 0.875rem;
@@ -85,3 +86,6 @@
 	&:where([data-theme='dark'], [data-theme='dark'] *) { @slot; }
 	@media (prefers-color-scheme: dark) { &:where(:root:not([data-theme='light']), :root:not([data-theme='light']) *) { @slot; } }
 }
+
+/* Un téléphone couché (moins de 30 rem de haut) : ce qui colle en haut ou en bas mangerait l'écran. */
+@custom-variant paysage (@media (height < 30rem));

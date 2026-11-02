@@ -38,7 +38,9 @@ export function Panneau({ ouvert, surtitre, titre, onFermer, pied, libelle, sans
 			{/* data-bloque-clavier, seulement ouvert : sinon les raccourcis du planning seraient coupés en permanence (useClavier). */}
 			<aside role="dialog" aria-label={nomAccessible(libelle, titre)} aria-hidden={!ouvert}
 				data-surcouche="panneau" data-ouvert={ouverture} data-verrou-defilement={ouverture} data-bloque-clavier={ouverture}
-				className={cx('fixed inset-y-0 right-0 z-50 flex w-[min(31rem,100vw)] flex-col overflow-hidden rounded-l-lg border-l border-rule-strong bg-paper shadow-ombre-h',
+				// paysage: le panneau défile d'un bloc (en-tête, corps et pied) : un pied collé de deux rangs de boutons ne
+				// laissait au corps qu'un tiers de l'écran.
+				className={cx('fixed inset-y-0 right-0 z-50 flex w-[min(31rem,100vw)] flex-col overflow-hidden rounded-l-lg border-l border-rule-strong bg-paper shadow-ombre-h paysage:overflow-y-auto',
 					'transition-transform duration-200 ease-[ease]', !ouvert && 'translate-x-full max-etroit:shadow-none')}>
 				<div className="flex items-start justify-between gap-4 border-b border-rule bg-surface px-5 pt-4 pb-3.5">
 					{/* En colonne : le surtitre (un span) prend sa propre hauteur de ligne, pas celle du corps. */}
@@ -49,7 +51,7 @@ export function Panneau({ ouvert, surtitre, titre, onFermer, pied, libelle, sans
 					{!sansFermeture && <Bouton variante="fantome" taille="sm" onClick={onFermer} aria-label="Fermer">✕</Bouton>}
 				</div>
 				{/* Les enfants gardent leur hauteur : c'est le corps qui défile, pas eux. */}
-				<div className="flex flex-1 flex-col gap-5 overflow-y-auto overscroll-contain p-5 *:flex-none">{ouvert && children}</div>
+				<div className="flex flex-1 flex-col gap-5 overflow-y-auto overscroll-contain p-5 *:flex-none paysage:flex-none paysage:overflow-visible">{ouvert && children}</div>
 				{pied && <div className="flex flex-wrap gap-2 border-t border-rule bg-surface px-5 py-3.5">{pied}</div>}
 			</aside>
 		</>

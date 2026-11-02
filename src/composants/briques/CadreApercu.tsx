@@ -96,7 +96,8 @@ export function CadreApercu({ libelle, surtitre, titre, aide, notes, actions, di
 	const feuille = <Feuille>{children}</Feuille>;
 	return (
 		<div role="dialog" aria-label={libelle} data-surcouche="apercu" data-ouvert="" data-verrou-defilement="" data-bloque-clavier=""
-			className="fixed inset-0 z-60 grid grid-rows-[auto_minmax(0,1fr)] bg-paper">
+			// paysage: l'aperçu défile d'un bloc ; son en-tête (titre, actions) ne reste pas collé au-dessus de la feuille.
+			className="fixed inset-0 z-60 grid grid-rows-[auto_minmax(0,1fr)] bg-paper paysage:block paysage:overflow-y-auto">
 			<style dangerouslySetInnerHTML={{ __html: CSS_DOCUMENTS }} />
 			<div className="flex flex-wrap items-center justify-between gap-4 border-b border-rule bg-surface px-5 py-3.5">
 				{/* En colonne : le surtitre (un span) prend sa propre hauteur de ligne. */}
