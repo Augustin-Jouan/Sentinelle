@@ -30,7 +30,8 @@ export function AccueilChantiers({ cartes }: { cartes: DonneesCarte[] }) {
 			<Synthese s={synthese(cartes)} />
 			<BarreOutils>
 				<Recherche placeholder="Rechercher un chantier, un client, une commune…" libelle="Rechercher un chantier" valeur={requete} onChange={setRequete} />
-				<MenuDeroulant id="ch-sort" k="Trier par" className="self-stretch" valeur={tri} options={TRIS_CHANTIERS} onChoisir={(v) => { if (estTri(v)) setTri(v); }} />
+				{/* En étroit, le tri se serre à côté de l'interrupteur : une ligne de moins avant les chantiers. */}
+				<MenuDeroulant id="ch-sort" k="Trier par" className="self-stretch max-etroit:min-w-0 max-etroit:flex-1" valeur={tri} options={TRIS_CHANTIERS} onChoisir={(v) => { if (estTri(v)) setTri(v); }} />
 				<Interrupteur coche={masquer} onChange={setMasquer}>Masquer les terminés</Interrupteur>
 				<Surtitre>{q ? `${visibles.length} résultat${visibles.length > 1 ? 's' : ''} sur ${cartes.length}` : ''}</Surtitre>
 			</BarreOutils>

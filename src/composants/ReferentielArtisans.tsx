@@ -7,6 +7,7 @@ import { changerActiviteArtisanAction, creerArtisanAction, modifierChampArtisanA
 import { enregistrerArtisan, idArtisanOuverte, type FicheArtisan as Fiche } from '@/composants/ficheArtisan';
 import { BarreOutils } from '@/composants/briques/BarreOutils';
 import { Bloc } from '@/composants/briques/Bloc';
+import { hrefTelephone, LienTelephone } from '@/composants/briques/Contact';
 import { Bouton } from '@/composants/briques/Bouton';
 import { Champ, GrilleChamps, Saisie } from '@/composants/briques/Champ';
 import { useConfirmation } from '@/composants/briques/Confirmation';
@@ -133,8 +134,10 @@ export function ReferentielArtisans({ artisans, ficheInitiale }: { artisans: Art
 								<td role="cell" data-manque={manque(a.cp)} className={cx(CHIFFRES, 'text-12 max-etroit:-mr-1.5')}>{vide(a.cp)}</td>
 								<td role="cell" data-manque={manque(a.commune)}>{vide(a.commune)}</td>
 								<td role="cell" data-manque={manque(a.interlocuteur)} className="max-etroit:basis-full">{vide(a.interlocuteur, 'non renseigné')}</td>
-								<td role="cell" data-manque={manque(a.telephone)} className={cx(CHIFFRES, 'text-12 max-etroit:basis-full')}>{vide(a.telephone)}</td>
-								<td role="cell" data-droite data-actions>
+								<td role="cell" data-manque={manque(a.telephone)} className={cx(CHIFFRES, 'text-12 max-etroit:basis-full')}>{a.telephone ? <LienTelephone numero={a.telephone} /> : vide(a.telephone)}</td>
+								{/* En carte, toucher la carte ouvre déjà la fiche (où se trouve « Supprimer ») : cette rangée de boutons s'efface,
+								    la liste devient deux fois plus courte. */}
+								<td role="cell" data-droite data-actions data-hors-carte>
 									<Bouton taille="sm" title="Modifier cette entreprise" onClick={(e) => { e.stopPropagation(); ouvrir(a); }}><Icone.Crayon />Modifier</Bouton>
 									{' '}
 									{a.actif
@@ -153,6 +156,13 @@ export function ReferentielArtisans({ artisans, ficheInitiale }: { artisans: Art
 					{actuelle && <Bouton variante="fantome" desactive={enCours} onClick={() => void supprimer(actuelle)}>{actuelle.actif ? 'Supprimer' : 'Réactiver'}</Bouton>}
 					<Bouton variante="fantome" onClick={fermer}>Annuler</Bouton>
 				</>}>
+				{/* Sur un téléphone, appeler ou écrire est le geste qu'on vient faire : il passe avant les champs. */}
+				{actuelle && (actuelle.telephone || actuelle.email) && (
+					<div className="hidden flex-wrap gap-2 max-etroit:flex">
+						{actuelle.telephone && <Bouton variante="primaire" natif href={hrefTelephone(actuelle.telephone)}><Icone.Telephone />Appeler</Bouton>}
+						{actuelle.email && <Bouton natif href={`mailto:${actuelle.email}`}><Icone.Courriel />Écrire</Bouton>}
+					</div>
+				)}
 				<GrilleChamps>
 					{CHAMPS.map((c) => {
 						const message = erreur?.champ === c.champ ? erreur.message : undefined;

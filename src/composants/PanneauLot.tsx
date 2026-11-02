@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { ajouterAvenantAction, modifierAvenantAction, supprimerAvenantAction } from '@/actions/avenants';
 import { attribuerArtisanAction, changerNatureAction, modifierChampLotAction, supprimerLotAction } from '@/actions/lots';
 import { Bloc } from '@/composants/briques/Bloc';
+import { LienTelephone } from '@/composants/briques/Contact';
 import { Bouton } from '@/composants/briques/Bouton';
 import { ChoixSegmente } from '@/composants/briques/ChoixSegmente';
 import { Cle, CleValeur, Valeur } from '@/composants/briques/CleValeur';
@@ -84,7 +85,8 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 				</Bouton>
 			)}
 			{lot.artisanId && <Bouton href={`/chantiers/${vue.chantierId}/documents?pv=${lot.id}`} onClick={onFermer}>PV de réception</Bouton>}
-			<Bouton variante="fantome" desactive={enCours} onClick={supprimerLot}>Supprimer le lot</Bouton>
+			{/* En étroit, la suppression est repoussée au bout du pied, loin des actions courantes. */}
+			<Bouton variante="fantome" desactive={enCours} onClick={supprimerLot} className="max-etroit:ml-auto">Supprimer le lot</Bouton>
 		</>
 	);
 
@@ -104,7 +106,7 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 							<Cle>Adresse</Cle><Valeur>{artisan.adresse || '—'}</Valeur>
 							<Cle>Commune</Cle><Valeur>{artisan.cp} {artisan.commune || '—'}</Valeur>
 							<Cle>Interlocuteur</Cle><Valeur>{artisan.interlocuteur || <span className="text-faint">non renseigné</span>}</Valeur>
-							<Cle>Téléphone</Cle><Valeur chiffres>{artisan.telephone || <span className="text-faint">—</span>}</Valeur>
+							<Cle>Téléphone</Cle><Valeur chiffres>{artisan.telephone ? <LienTelephone numero={artisan.telephone} /> : <span className="text-faint">—</span>}</Valeur>
 						</CleValeur>
 						<p className="text-12 text-muted">Ces lignes sont lues dans le référentiel au moment de l&apos;impression. Elles ne sont pas recopiées dans le marché.</p>
 					</>
@@ -149,18 +151,19 @@ export function PanneauLot({ lot, vue, onFermer }: { lot: LotVue; vue: VueMarche
 				})}>Ajouter</Bouton>}>
 				{avecAvenants ? (
 					<>
-						<Tableau variante="mini">
-							<thead><tr><th>N°</th><th>Devis</th><th data-droite>Montant HT</th><th>Date</th><th /></tr></thead>
+						{/* En carte (étroit) : n° et devis, puis montant et date sous leurs libellés, puis les actions. */}
+						<Tableau variante="mini" cartes>
+							<thead><tr role="row"><th role="columnheader">N°</th><th role="columnheader">Devis</th><th role="columnheader" data-droite>Montant HT</th><th role="columnheader">Date</th><th role="columnheader" /></tr></thead>
 							<tbody>
 								{lot.avenants.map((a) => {
 									const n = numeroAvenantTexte(a.numero);
 									return (
-										<tr key={a.id} data-avenant={n}>
-											<td className={cx(CHIFFRES, 'text-muted')}>{n}</td>
-											<td><ChampEnLigne variante="texte-mini" libelle={`Devis de l'avenant n° ${n}`} placeholder="n° devis" valeur={a.devis} enregistrer={modifierAvenantAction.bind(null, a.id, 'devis')} /></td>
-											<td data-droite><ChampEnLigne variante="montant" libelle={`Montant HT de l'avenant n° ${n}`} valeur={formatMontantSaisie(a.montantHt)} enregistrer={modifierAvenantAction.bind(null, a.id, 'montantHt')} /></td>
-											<td><ChampEnLigne variante="date" type="date" libelle={`Date de l'avenant n° ${n}`} valeur={a.date} enregistrer={modifierAvenantAction.bind(null, a.id, 'date')} /></td>
-											<td data-droite data-actions>
+										<tr role="row" key={a.id} data-avenant={n}>
+											<td role="cell" data-cle="N°" className={cx(CHIFFRES, 'text-muted max-etroit:flex-none')}>{n}</td>
+											<td role="cell" data-cle="Devis" className="max-etroit:grow max-etroit:basis-48"><ChampEnLigne variante="texte-mini" libelle={`Devis de l'avenant n° ${n}`} placeholder="n° devis" valeur={a.devis} enregistrer={modifierAvenantAction.bind(null, a.id, 'devis')} /></td>
+											<td role="cell" data-droite data-cle="Montant HT" className="max-etroit:grow max-etroit:basis-32"><ChampEnLigne variante="montant" libelle={`Montant HT de l'avenant n° ${n}`} valeur={formatMontantSaisie(a.montantHt)} enregistrer={modifierAvenantAction.bind(null, a.id, 'montantHt')} /></td>
+											<td role="cell" data-cle="Date" className="max-etroit:grow max-etroit:basis-32"><ChampEnLigne variante="date" type="date" libelle={`Date de l'avenant n° ${n}`} valeur={a.date} enregistrer={modifierAvenantAction.bind(null, a.id, 'date')} /></td>
+											<td role="cell" data-droite data-actions>
 												<Bouton taille="sm" seulIcone href={`?avenant=${a.id}`} scroll={false} onClick={onFermer}
 													title={`Ouvrir l'avenant n° ${n}`} aria-label={`Ouvrir la lettre de l'avenant n° ${n}`}><Icone.Doc /></Bouton>
 												<Bouton taille="sm" variante="danger" seulIcone desactive={enCours} onClick={() => supprimerAvenant(a)}

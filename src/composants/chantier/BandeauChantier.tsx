@@ -8,6 +8,7 @@ import { Bouton } from '@/composants/briques/Bouton';
 import { Champ, GrilleChamps } from '@/composants/briques/Champ';
 import { ChoixSegmente } from '@/composants/briques/ChoixSegmente';
 import { cx } from '@/composants/briques/cx';
+import * as Icone from '@/composants/briques/icones';
 import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
 import { Panneau } from '@/composants/briques/Panneau';
 import { CHIFFRES, CLE } from '@/composants/briques/typo';
@@ -37,26 +38,27 @@ export function BandeauChantier({ chantier: c, chargesAffaire }: { chantier: EnT
 		else if (succes) toast(succes);
 	});
 	const situee = [c.adresse, [c.cp, c.commune].filter(Boolean).join(' ')].filter(Boolean).join(', ') || '—';
-	// En étroit (téléphone), le bandeau ne défile plus à l'horizontale : client et adresse côte à côte, la construction
-	// dessous sur toute la largeur ; mission et signature restent dans le panneau qu'ouvre un toucher.
+	// En étroit (téléphone), le bandeau tient sur une ligne : « client · adresse › », tronquée ; le toucher ouvre
+	// l'en-tête entier (construction, mission, signature) dans le panneau. Le contenu de l'écran remonte d'autant.
 	const cellules: [string, string, boolean, string][] = [
-		['Client', c.maitreOuvrage || '—', false, ''],
-		['Construction', c.natureTravaux || '—', false, 'max-etroit:order-1 max-etroit:col-span-2 max-etroit:border-t max-etroit:border-r-0'],
-		['Située', situee, false, 'max-etroit:border-r-0'],
+		['Client', c.maitreOuvrage || '—', false, 'max-etroit:max-w-[45%] max-etroit:flex-none'],
+		['Construction', c.natureTravaux || '—', false, 'max-etroit:hidden'],
+		['Située', situee, false, "max-etroit:flex-1 max-etroit:before:mr-1.5 max-etroit:before:text-faint max-etroit:before:content-['·']"],
 		['Mission', c.mission === 'COMPLETE' ? 'Complète' : 'Partielle', false, 'max-etroit:hidden'],
 		['Signature', c.dateSignaturePrevue ? dateFr(c.dateSignaturePrevue) : 'non fixée', Boolean(c.dateSignaturePrevue), 'max-etroit:hidden'],
 	];
 	return (
 		<div className="w-full">
 			{/* Le bandeau du chantier (ex-.context) : un clic ouvre l'en-tête à modifier. */}
-			<button type="button" className="flex w-full cursor-pointer overflow-x-auto border-t border-rule bg-surface text-left hover:bg-idle-soft max-etroit:grid max-etroit:grid-cols-2 max-etroit:overflow-x-visible"
+			<button type="button" className="flex w-full cursor-pointer overflow-x-auto border-t border-rule bg-surface text-left hover:bg-idle-soft max-etroit:min-h-11 max-etroit:items-center max-etroit:gap-1.5 max-etroit:overflow-x-visible max-etroit:px-4"
 				title="Modifier l'en-tête du chantier" onClick={() => setOuvert(true)}>
 				{cellules.map(([k, v, mono, etroit]) => (
-					<div key={k} className={cx('min-w-0 flex-none border-r border-rule px-6 pt-2.5 pb-2.75 last:border-r-0 max-etroit:px-4', etroit)}>
-						<span className={cx(CLE, 'mb-0.25 flow-root')}>{k}</span>
-						<span className={cx('text-13 whitespace-nowrap max-etroit:whitespace-normal', mono && CHIFFRES)}>{v}</span>
+					<div key={k} className={cx('min-w-0 flex-none border-r border-rule px-6 pt-2.5 pb-2.75 last:border-r-0 max-etroit:flex max-etroit:border-r-0 max-etroit:px-0 max-etroit:py-0', etroit)}>
+						<span className={cx(CLE, 'mb-0.25 flow-root max-etroit:hidden')}>{k}</span>
+						<span className={cx('text-13 whitespace-nowrap max-etroit:min-w-0 max-etroit:truncate', mono && CHIFFRES)}>{v}</span>
 					</div>
 				))}
+				<span className="hidden flex-none pl-2 text-faint max-etroit:inline-flex [&_svg]:size-4 [&_svg]:-rotate-90" aria-hidden="true"><Icone.Chevron /></span>
 			</button>
 			<Panneau ouvert={ouvert} surtitre="CHANTIER" titre="En-tête du chantier" onFermer={() => setOuvert(false)}
 				pied={<>

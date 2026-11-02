@@ -28,7 +28,7 @@ type Props = {
 
 /** Un bouton d'un groupe segmenté (ex-.zoom-b) : collé à son voisin, plein quand il est choisi. */
 const segment = (choisi: boolean, icone = false) => cx(
-	'-ml-px cursor-pointer rounded-xs border py-1.25 text-12 first-of-type:ml-0 max-etroit:min-h-11',
+	'-ml-px cursor-pointer rounded-xs border py-1.25 text-12 first-of-type:ml-0 max-etroit:min-h-11 max-etroit:flex-1',
 	icone ? 'px-2 leading-[0] [&_svg]:size-3.75 [&_svg]:stroke-[1.4] [&_svg]:[stroke-linecap:round] [&_svg]:[stroke-linejoin:round]' : 'px-2.5',
 	choisi ? 'border-accent bg-accent font-medium text-on-accent' : 'border-rule-strong bg-raise text-muted hover:bg-idle-soft hover:text-ink');
 /**
@@ -38,8 +38,8 @@ const segment = (choisi: boolean, icone = false) => cx(
 const SANS_SOURIS = 'pointer-coarse:not-any-pointer-fine:hidden';
 const AU_DOIGT_SEUL = 'hidden pointer-coarse:not-any-pointer-fine:inline';
 /** Un groupe de boutons sous son libellé (ex-.zoom) : l'outil, la densité. */
-const Groupe = ({ libelle, auDoigt = true, children }: { libelle: string; auDoigt?: boolean; children: React.ReactNode }) => (
-	<div className={cx('inline-flex items-center gap-2', !auDoigt && SANS_SOURIS)} role="group" aria-label={libelle}><span className={CLE}>{libelle}</span>{children}</div>
+const Groupe = ({ libelle, auDoigt = true, className, children }: { libelle: string; auDoigt?: boolean; className?: string; children: React.ReactNode }) => (
+	<div className={cx('inline-flex items-center gap-2', !auDoigt && SANS_SOURIS, className)} role="group" aria-label={libelle}><span className={CLE}>{libelle}</span>{children}</div>
 );
 
 export function BarreOutilsPlanning(p: Props) {
@@ -54,7 +54,8 @@ export function BarreOutilsPlanning(p: Props) {
 	return (
 		<BarreOutils etalee>
 			<div className="flex min-w-0 flex-col gap-1">
-				<Surtitre id="g-resume">{p.resume}</Surtitre>
+				{/* Le résumé (« 23 périodes · semaine 15… ») cède sa place au Gantt sur un téléphone. */}
+				<div className="contents max-etroit:hidden"><Surtitre id="g-resume">{p.resume}</Surtitre></div>
 				<span aria-live="polite">
 					{p.nbSelection > 1 ? (
 						<span className="inline-flex flex-wrap items-center gap-2 rounded-sm bg-accent-soft py-1 pr-1.5 pl-2.5 text-13 whitespace-nowrap text-accent-2">
@@ -70,8 +71,9 @@ export function BarreOutilsPlanning(p: Props) {
 					)}
 				</span>
 			</div>
-			<div className="flex flex-wrap items-center gap-3">
-				<MenuDeroulant id="lots-vus" k="Lots affichés" multi largeur="large" className="self-stretch"
+			{/* En étroit : les lots affichés et « Aujourd'hui » sur une ligne, la densité sur la suivante. */}
+			<div className="flex flex-wrap items-center gap-3 max-etroit:w-full max-etroit:gap-2">
+				<MenuDeroulant id="lots-vus" k="Lots affichés" multi largeur="large" className="self-stretch max-etroit:flex-1"
 					valeurs={p.lots.filter((l) => !p.masques.includes(l.id)).map((l) => l.id)}
 					libelle={caches ? `${vus} lot${vus > 1 ? 's' : ''} sur ${p.lots.length}` : 'Tous les lots'}
 					options={[
@@ -85,7 +87,7 @@ export function BarreOutilsPlanning(p: Props) {
 					{outil('cible', 'Cible — tracer une période', <Icone.Cible />)}
 				</Groupe>
 				<Bouton taille="sm" onClick={p.onAujourdhui}>Aujourd&apos;hui</Bouton>
-				<Groupe libelle="Densité">
+				<Groupe libelle="Densité" className="max-etroit:basis-full">
 					{(Object.keys(DENSITES) as Densite[]).map((d) => (
 						<button key={d} type="button" className={segment(p.densite === d)} aria-pressed={p.densite === d} onClick={() => p.onDensite(d)}>
 							{LIBELLES_DENSITES[d]}

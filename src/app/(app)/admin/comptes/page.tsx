@@ -6,7 +6,7 @@ import { listerComptes } from '@/donnees/comptes';
 export default async function PageComptes() {
 	const moi = await exigerPage({ admin: true });
 	return (
-		<Ecran titre="Comptes" actions={<BoutonNouveauCompte />}>
+		<Ecran titre="Comptes" principale={<BoutonNouveauCompte />}>
 			<GestionComptes comptes={await listerComptes()} moiId={moi.id} />
 		</Ecran>
 	);

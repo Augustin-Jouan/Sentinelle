@@ -29,7 +29,7 @@ const OUVRIR_LOT = 'sentinelle:ouvrir-lot';
 export function BoutonAjouterLot({ chantierId }: { chantierId: string }) {
 	const [enCours, demarrer] = useTransition();
 	return (
-		<Bouton enCours={enCours} onClick={() => demarrer(async () => {
+		<Bouton variante="flottante" enCours={enCours} onClick={() => demarrer(async () => {
 			const r = await ajouterLotAction(chantierId);
 			if (!r.ok) { toast.error(r.erreur); return; }
 			window.dispatchEvent(new CustomEvent(OUVRIR_LOT, { detail: r.donnees.id }));
@@ -92,7 +92,7 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 							return (
 								<tr role="row" key={l.id} data-lot={l.designation} data-inactif={l.entreprise ? undefined : ''} data-ouvert={l.id === lotOuvert ? '' : undefined}
 									onClick={() => setLotOuvert(l.id)}>
-									<td role="cell" data-saisie className="w-18 min-w-16 font-mono text-12 text-muted max-etroit:w-16 max-etroit:flex-none" onClick={arreter}>
+									<td role="cell" data-saisie className="w-18 min-w-16 font-mono text-12 text-muted max-etroit:w-11 max-etroit:min-w-11 max-etroit:flex-none" onClick={arreter}>
 										<ChampEnLigne variante="texte-mini" libelle="Numéro du lot" placeholder="—" valeur={l.numero ?? ''} enregistrer={champ(l.id, 'numero')} />
 									</td>
 									<td role="cell" data-saisie className="min-w-64 font-medium whitespace-nowrap max-etroit:min-w-0 max-etroit:flex-1" onClick={arreter}>
@@ -106,7 +106,9 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 									</td>
 									{/* En carte : toute la largeur, et le chevron dit que toucher l'entreprise ouvre le lot. HT et TTC (plus bas) font
 									    8 rem au moins : côte à côte s'ils tiennent, l'un sous l'autre sinon (320 px), jamais rognés. */}
-									<td role="cell" className="whitespace-nowrap max-etroit:basis-full max-etroit:whitespace-normal">
+									{/* Le numéro tient une gouttière de 2,75 rem : l'entreprise s'aligne sur le texte de la désignation (gouttière,
+									    écart de la carte, marge du champ), l'œil ne zigzague plus. */}
+									<td role="cell" className="whitespace-nowrap max-etroit:ml-[calc(4.25rem-1px)] max-etroit:basis-full max-etroit:whitespace-normal">
 										<div className="max-etroit:flex max-etroit:items-center max-etroit:justify-between max-etroit:gap-3">
 											<div>
 												{l.entreprise

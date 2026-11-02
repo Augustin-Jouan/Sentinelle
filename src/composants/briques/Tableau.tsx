@@ -38,7 +38,7 @@ const VARIANTE = {
  * En étroit, chaque ligne devient une carte : l'en-tête n'est plus lu que par les lecteurs d'écran, les cellules s'enchaînent
  * et passent à la ligne. L'écran
  * place ses cellules (max-etroit:basis-full, max-etroit:flex-1…) ; data-cle pose un libellé au-dessus d'une valeur,
- * data-manque retire une cellule vide, data-hors-carte une cellule que la carte tait ; data-actions et data-premiere (le <th>
+ * data-manque retire une cellule vide, data-hors-carte une cellule que la carte tait (plus fort que data-actions) ; data-actions et data-premiere (le <th>
  * de ligne du tableau dm) prennent leur propre ligne. Le HTML ne change pas : un seul DOM.
  */
 const CARTES = 'max-etroit:block max-etroit:min-w-0 max-etroit:[&_thead]:sr-only max-etroit:[&_tbody]:block '
@@ -48,7 +48,7 @@ const CARTES = 'max-etroit:block max-etroit:min-w-0 max-etroit:[&_thead]:sr-only
 	+ 'max-etroit:[&_[data-droite]]:w-auto max-etroit:[&_[data-premiere]]:w-auto max-etroit:[&_[data-premiere]]:basis-full max-etroit:[&_[data-premiere]]:pl-0 '
 	+ 'max-etroit:[&_[data-cle]]:before:block max-etroit:[&_[data-cle]]:before:pb-0.5 max-etroit:[&_[data-cle]]:before:font-titre max-etroit:[&_[data-cle]]:before:text-10 '
 	+ 'max-etroit:[&_[data-cle]]:before:font-semibold max-etroit:[&_[data-cle]]:before:tracking-capitales max-etroit:[&_[data-cle]]:before:text-muted max-etroit:[&_[data-cle]]:before:uppercase '
-	+ 'max-etroit:[&_[data-cle]]:before:content-[attr(data-cle)] max-etroit:[&_[data-manque]]:hidden max-etroit:[&_[data-hors-carte]]:hidden '
+	+ 'max-etroit:[&_[data-cle]]:before:content-[attr(data-cle)] max-etroit:[&_[data-manque]]:hidden max-etroit:[&_td[data-hors-carte]]:hidden '
 	+ 'max-etroit:[&_[data-actions]]:flex max-etroit:[&_[data-actions]]:basis-full max-etroit:[&_[data-actions]]:flex-wrap max-etroit:[&_[data-actions]]:justify-end max-etroit:[&_[data-actions]]:gap-2 '
 	+ 'max-etroit:[&_[data-actions]]:pt-1.5 max-etroit:[&_[data-actions]>*+*]:ml-0 max-etroit:[&_[data-vide]]:basis-full';
 
