@@ -7,6 +7,7 @@ import { BarreOutils } from '@/composants/briques/BarreOutils';
 import { Bouton } from '@/composants/briques/Bouton';
 import { cx } from '@/composants/briques/cx';
 import { Etiquette } from '@/composants/briques/Etiquette';
+import { useEtroit } from '@/composants/briques/etroit';
 import * as Icone from '@/composants/briques/icones';
 import { MenuDeroulant } from '@/composants/briques/MenuDeroulant';
 import { usePreference } from '@/composants/briques/preference';
@@ -52,6 +53,7 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 	const [requete, setRequete] = useState('');
 	const [tri, setTri] = usePreference<TriLots>('sentinelle-tri-lots', 'saisie', estTri);
 	const [lotOuvert, setLotOuvert] = useState<string | null>(null);
+	const etroit = useEtroit();
 	useEffect(() => {
 		const ouvrir = (e: Event) => setLotOuvert((e as CustomEvent<string>).detail);
 		window.addEventListener(OUVRIR_LOT, ouvrir);
@@ -90,13 +92,14 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 							return (
 								<tr key={l.id} data-lot={l.designation} data-inactif={l.entreprise ? undefined : ''} data-ouvert={l.id === lotOuvert ? '' : undefined}
 									onClick={() => setLotOuvert(l.id)}>
-									<td data-saisie className="w-18 min-w-16 font-mono text-12 text-muted max-etroit:w-16 max-etroit:flex-none max-etroit:self-start" onClick={arreter}>
+									<td data-saisie className="w-18 min-w-16 font-mono text-12 text-muted max-etroit:w-16 max-etroit:flex-none" onClick={arreter}>
 										<ChampEnLigne variante="texte-mini" libelle="Numéro du lot" placeholder="—" valeur={l.numero ?? ''} enregistrer={champ(l.id, 'numero')} />
 									</td>
 									<td data-saisie className="min-w-64 font-medium whitespace-nowrap max-etroit:min-w-0 max-etroit:flex-1" onClick={arreter}>
 										{/* Le champ et ses étiquettes partagent un conteneur : la cellule reste une vraie cellule. */}
 										<div className="flex items-center max-etroit:flex-wrap max-etroit:gap-y-1">
-											<ChampEnLigne className="min-w-0 flex-1 max-etroit:basis-full" libelle="Désignation du lot" placeholder="Désignation du lot" valeur={l.designation} enregistrer={champ(l.id, 'designation')} />
+											{/* Sur un téléphone, la désignation passe à la ligne au lieu d'être coupée. */}
+											<ChampEnLigne className="min-w-0 flex-1 max-etroit:basis-full" multiligne={etroit && 'ajuste'} libelle="Désignation du lot" placeholder="Désignation du lot" valeur={l.designation} enregistrer={champ(l.id, 'designation')} />
 											{l.nature === 'SOUS_TRAITANCE' && <Etiquette ton="accent" className="mr-3 flex-none">Sous-traitance</Etiquette>}
 											{nbAv > 0 && <Etiquette className="mr-3 flex-none" title={`${nbAv} avenant(s) — le montant affiché les comprend`}>{nbAv} avenant{nbAv > 1 ? 's' : ''}</Etiquette>}
 										</div>

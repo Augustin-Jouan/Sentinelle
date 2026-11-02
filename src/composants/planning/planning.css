@@ -276,4 +276,31 @@ table.periodes tr.ligne-dep.est-vise td::before { color: var(--accent); }
 		display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
 	}
 	.g-sous { display: none; }
+
+	/* Le tableau des périodes en cartes : l'intitulé sur toute la largeur, puis semaine, année, durée et la corbeille
+	   sous leurs libellés (data-cle) ; « Commence après » dessous, comme sur ordinateur. */
+	table.periodes, table.periodes tbody { display: block; }
+	table.periodes thead { display: none; }
+	table.periodes tr.ligne-per {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+		align-items: end;
+		gap: 0.25rem 0.5rem;
+		padding: 0.625rem 0.75rem 0.375rem;
+	}
+	table.periodes tr.ligne-per td { display: block; width: auto; padding: 0; }
+	table.periodes tr.ligne-per td:first-child { grid-column: 1 / -1; }
+	table.periodes tr.ligne-per td[data-cle]::before {
+		content: attr(data-cle);
+		display: block;
+		padding-bottom: 0.125rem;
+		font-family: 'Outfit', sans-serif;
+		font-size: 0.625rem; font-weight: 600;
+		letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+	}
+	table.periodes tr.ligne-dep { display: block; }
+	table.periodes tr.ligne-dep td { display: block; }
+	/* la période visée : le fond et le filet passent des cellules au rang */
+	table.periodes tr.est-vise { background: var(--accent-soft); box-shadow: inset 2px 0 0 var(--accent); }
+	table.periodes tr.est-vise td:first-child { box-shadow: none; }
 }

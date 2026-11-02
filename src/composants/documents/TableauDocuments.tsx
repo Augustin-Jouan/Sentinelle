@@ -1,5 +1,6 @@
 import Decimal from 'decimal.js';
 import Link from 'next/link';
+import { Bouton } from '@/composants/briques/Bouton';
 import { cx } from '@/composants/briques/cx';
 import { Etiquette } from '@/composants/briques/Etiquette';
 import { LienAction } from '@/composants/briques/LienAction';
@@ -25,6 +26,8 @@ const MANQUES_CASE: Record<ManqueAvenant, string> = { entreprise: "pas d'entrepr
 const modifie = <Pastille className="ml-1">modifié</Pastille>;
 /** Des cases côte à côte, qui passent à la ligne (ex-.dm-pile). */
 const PILE = 'flex flex-wrap items-center gap-1';
+/** Une colonne de documents, en carte (étroit) : deux par rang. */
+const CASE_CARTE = 'max-etroit:flex-1 max-etroit:basis-[40%]';
 /** Les actions secondaires sous une case : Corriger, Nouveau PV, Réserves levées (ex-.dm-sous). */
 const SOUS = 'mt-0.75 flex gap-2';
 
@@ -105,7 +108,14 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 	const sansMarche = vue.lots.filter((l) => l.entreprise && l.marche.etat === 'a-produire').length;
 	return (
 		<CadreTableau>
-			<Tableau variante="dm">
+			{/* En carte (étroit), l'en-tête disparaît : ses deux actions passent au-dessus des lots. */}
+			{(sansMarche > 0 || attribues > 1) && (
+				<div className="hidden flex-wrap gap-2 border-b border-rule bg-surface px-4 py-3 max-etroit:flex">
+					{sansMarche > 0 && <BoutonMarchesManquants chantierId={vue.chantierId} />}
+					{attribues > 1 && <Bouton href="?pv=tous" scroll={false}>PV de tous les lots</Bouton>}
+				</div>
+			)}
+			<Tableau variante="dm" cartes>
 				<thead><tr>
 					<th scope="col" data-premiere>Lot et entreprise</th>
 					<th scope="col">Marché{sansMarche > 0 && <> <BoutonMarchesManquants chantierId={vue.chantierId} forme="entete" texte={`Générer les ${sansMarche} manquants`} /></>}</th>
@@ -130,19 +140,20 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 							</th>
 						);
 						if (inactif) {
-							return <tr key={l.lotId} data-lot={l.lotTexte}>{lot}<td colSpan={4} className="text-12 italic text-muted">Attribuez une entreprise depuis l&apos;écran Marchés pour produire ses documents.</td></tr>;
+							return <tr key={l.lotId} data-lot={l.lotTexte}>{lot}<td colSpan={4} className="text-12 italic text-muted max-etroit:basis-full">Attribuez une entreprise depuis l&apos;écran Marchés pour produire ses documents.</td></tr>;
 						}
 						return (
 							<tr key={l.lotId} data-lot={l.lotTexte}>
 								{lot}
-								<td><CaseMarche base={base} l={l} /></td>
-								<td><div className={PILE}>{l.avenants.length ? l.avenants.map((a) => <CaseAv key={a.avenantId} base={base} a={a} />) : <span className="text-faint" aria-label="aucun">—</span>}</div></td>
-								<td><CasesCertificats base={base} l={l} /></td>
-								<td><CaseReception l={l} /></td>
+								{/* En carte, deux documents par rang (au moins 40 % chacun) sous leur libellé. */}
+								<td data-cle="Marché" className={CASE_CARTE}><CaseMarche base={base} l={l} /></td>
+								<td data-cle="Avenants" className={CASE_CARTE}><div className={PILE}>{l.avenants.length ? l.avenants.map((a) => <CaseAv key={a.avenantId} base={base} a={a} />) : <span className="text-faint" aria-label="aucun">—</span>}</div></td>
+								<td data-cle="Certificats" className={CASE_CARTE}><CasesCertificats base={base} l={l} /></td>
+								<td data-cle="Réception" className={CASE_CARTE}><CaseReception l={l} /></td>
 							</tr>
 						);
 					})}
-					{!vue.lots.length && <tr><td colSpan={5} className="text-12 italic text-muted">Ce chantier n&apos;a pas encore de lot.</td></tr>}
+					{!vue.lots.length && <tr><td colSpan={5} className="text-12 italic text-muted max-etroit:basis-full">Ce chantier n&apos;a pas encore de lot.</td></tr>}
 				</tbody>
 			</Tableau>
 			<div className="flex flex-wrap justify-between gap-4 border-t border-rule bg-surface px-4 py-2.5 text-12 text-muted">

@@ -11,7 +11,8 @@ type Props = {
 	enregistrer: (valeur: string) => Promise<Resultat<unknown>>;
 	libelle: string;
 	type?: 'text' | 'date' | 'email' | 'tel';
-	multiligne?: boolean;
+	/** Un texte sur plusieurs lignes ; « ajuste » : un seul paragraphe dont la hauteur suit le texte (Entrée valide, pas de retour). */
+	multiligne?: boolean | 'ajuste';
 	/** Placement seulement. */
 	className?: string;
 	placeholder?: string;
@@ -62,6 +63,7 @@ export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', mult
 		});
 	}
 
+	const classes = cx(classesSaisie(variante, { gras, chiffres }), className);
 	const communs = {
 		id,
 		'aria-label': libelle,
@@ -70,8 +72,16 @@ export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', mult
 		placeholder,
 		value: texte,
 		onBlur: quitter,
-		className: cx(classesSaisie(variante, { gras, chiffres }), className),
+		className: classes,
 	};
+	if (multiligne === 'ajuste') {
+		// field-sizing-content : la hauteur suit le texte ; sans lui (navigateur ancien), deux lignes.
+		return (
+			<textarea {...communs} rows={2} className={cx(classes, 'field-sizing-content resize-none')}
+				onChange={(e) => saisir(e.target.value.replace(/\s*\n\s*/g, ' '))}
+				onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }} />
+		);
+	}
 	return multiligne ? (
 		<textarea {...communs} rows={3} onChange={(e) => saisir(e.target.value)} />
 	) : (
