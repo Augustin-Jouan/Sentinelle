@@ -66,7 +66,7 @@ pas de repli.
 - **Tableaux** (`<Tableau variante="plain" | "mini" | "lots" | "dm">`) : les cellules restent du HTML. Leurs
   écarts passent par des attributs : `data-droite`, `data-saisie`, `data-actions`, `data-vide`,
   `data-premiere` ; sur la ligne, `data-ouvert` et `data-inactif`. Un attribut absent s'écrit `undefined`,
-  jamais `false`. Avec `cartes`, chaque ligne devient une carte en étroit (Marchés, Artisans) : `data-cle` pose un
+  jamais `false`. Avec `cartes`, chaque ligne devient une carte en étroit (Marchés, Artisans, Documents, Fermetures) : `data-cle` pose un
   libellé au-dessus d'une valeur, `data-manque` retire une cellule vide, `data-hors-carte` une cellule que la
   carte tait ; l'écran place ses cellules par des utilitaires `max-etroit:`. Le HTML reste le même.
 - **Surcouches** : `data-surcouche="panneau" | "menu" | "confirmation" | "apercu"`, `data-ouvert`,
@@ -77,7 +77,10 @@ pas de repli.
   `Champ.tsx`, et la `Recherche`) : en dessous, Safari sur iPhone zoome la page à chaque saisie. Tout ce qui se
   touche fait au moins 44 px en étroit (`max-etroit:min-h-11` dans `Bouton`, les menus, les onglets, les saisies) ;
   une pastille plus petite à l'œil agrandit sa zone par un `after:` (l'avatar du compte). Ce qui ne sert qu'à la
-  souris (outils Main et Cible du planning, consigne « Maj + clic ») se cache par `pointer-coarse:`.
+  souris (outils Main et Cible du planning, consigne « Maj + clic ») se cache par `pointer-coarse:`. Quand le CSS ne
+  suffit pas, parce qu'il faut un autre élément et pas une autre apparence (la désignation d'un lot, un `<input>` qui
+  devient un `<textarea>` ajusté), `useEtroit()` (`briques/etroit.ts`) le dit au composant ; jamais deux éléments
+  rendus et l'un caché, qui doubleraient les libellés.
 - **Tests de bout en bout** : rôles, libellés, puis `data-testid`. Jamais une classe de style, sauf `g-*` (le
   Gantt) et les classes des feuilles imprimables.
 

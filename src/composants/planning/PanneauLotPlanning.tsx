@@ -78,9 +78,10 @@ function LignePeriode({ periode: x, vise, options, onModifier, onLier, onSupprim
 		<tbody data-periode={x.id}>
 			<tr className={vise ? 'ligne-per est-vise' : 'ligne-per'} data-vise={vise ? '1' : undefined}>
 				<td><ChampEnLigne gras={vise} libelle="Intitulé" placeholder="sans intitulé" valeur={x.intitule} enregistrer={(v) => onModifier(x.id, 'intitule', v)} /></td>
-				<td data-droite><ChampEnLigne variante="montant-etroit" libelle="Semaine" valeur={String(s.semaine)} enregistrer={(v) => onModifier(x.id, 'semaine', v)} /></td>
-				<td data-droite><ChampEnLigne variante="montant-etroit" libelle="Année" valeur={String(s.annee)} enregistrer={(v) => onModifier(x.id, 'annee', v)} /></td>
-				<td data-droite><ChampEnLigne variante="montant-etroit" libelle="Durée" valeur={String(x.duree)} enregistrer={(v) => onModifier(x.id, 'duree', v)} /></td>
+				{/* data-cle : le libellé que la carte (étroit) pose au-dessus du chiffre, l'en-tête étant caché. */}
+				<td data-droite data-cle="Semaine"><ChampEnLigne variante="montant-etroit" libelle="Semaine" valeur={String(s.semaine)} enregistrer={(v) => onModifier(x.id, 'semaine', v)} /></td>
+				<td data-droite data-cle="Année"><ChampEnLigne variante="montant-etroit" libelle="Année" valeur={String(s.annee)} enregistrer={(v) => onModifier(x.id, 'annee', v)} /></td>
+				<td data-droite data-cle="Durée"><ChampEnLigne variante="montant-etroit" libelle="Durée" valeur={String(x.duree)} enregistrer={(v) => onModifier(x.id, 'duree', v)} /></td>
 				<td data-droite data-actions>
 					<Bouton taille="sm" variante="danger" seulIcone onClick={() => onSupprimer(x.id)}
 						title="Supprimer cette période" aria-label={`Supprimer la période ${x.intitule || 'sans intitulé'}`}><Icone.Corbeille /></Bouton>
