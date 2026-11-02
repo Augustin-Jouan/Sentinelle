@@ -1,5 +1,6 @@
 import Decimal from 'decimal.js';
 import Link from 'next/link';
+import { Bouton } from '@/composants/briques/Bouton';
 import { cx } from '@/composants/briques/cx';
 import { Etiquette } from '@/composants/briques/Etiquette';
 import { LienAction } from '@/composants/briques/LienAction';
@@ -25,6 +26,8 @@ const MANQUES_CASE: Record<ManqueAvenant, string> = { entreprise: "pas d'entrepr
 const modifie = <Pastille className="ml-1">modifié</Pastille>;
 /** Des cases côte à côte, qui passent à la ligne (ex-.dm-pile). */
 const PILE = 'flex flex-wrap items-center gap-1';
+/** Une colonne de documents, en carte (étroit) : deux par rang. */
+const CASE_CARTE = 'max-etroit:flex-1 max-etroit:basis-[40%]';
 /** Les actions secondaires sous une case : Corriger, Nouveau PV, Réserves levées (ex-.dm-sous). */
 const SOUS = 'mt-0.75 flex gap-2';
 
@@ -59,7 +62,8 @@ function CaseAv({ base, a }: { base: string; a: CaseAvenant }) {
 }
 
 /** Le « + » d'un nouveau certificat (ex-.dm-ajout) : en ligne, la case suit la hauteur de son texte. */
-const AJOUT = 'rounded-[6px] border border-dashed border-rule-strong text-14 leading-none text-ink-2 no-underline hover:border-accent hover:text-accent-2';
+const AJOUT = 'rounded-[6px] border border-dashed border-rule-strong text-14 leading-none text-ink-2 no-underline hover:border-accent hover:text-accent-2 '
+	+ 'max-etroit:inline-flex max-etroit:min-h-11 max-etroit:min-w-11 max-etroit:items-center max-etroit:justify-center';
 
 function CasesCertificats({ base, l }: { base: string; l: LigneDocuments }) {
 	const visibles = l.certificats.slice(-2);
@@ -102,22 +106,34 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 	const base = `/chantiers/${vue.chantierId}`;
 	const attribues = vue.lots.filter((l) => l.entreprise).length;
 	const sansMarche = vue.lots.filter((l) => l.entreprise && l.marche.etat === 'a-produire').length;
+	// Les deux actions qui portent sur tous les lots, décidées ici une fois : dans l'en-tête des colonnes sur ordinateur,
+	// en boutons au-dessus des cartes en étroit (l'en-tête n'y est plus qu'à l'usage des lecteurs d'écran).
+	const manquants = (enCarte: boolean) => sansMarche > 0 && (enCarte
+		? <BoutonMarchesManquants chantierId={vue.chantierId} />
+		: <span className="max-etroit:hidden"> <BoutonMarchesManquants chantierId={vue.chantierId} forme="entete" texte={`Générer les ${sansMarche} manquants`} /></span>);
+	const pvTous = (enCarte: boolean) => attribues > 1 && (enCarte
+		? <Bouton href="?pv=tous" scroll={false}>PV de tous les lots</Bouton>
+		: <span className="max-etroit:hidden"> <LienAction className="ml-1.5" href="?pv=tous" scroll={false}>Tous les lots</LienAction></span>);
 	return (
 		<CadreTableau>
-			<Tableau variante="dm">
-				<thead><tr>
-					<th scope="col" data-premiere>Lot et entreprise</th>
-					<th scope="col">Marché{sansMarche > 0 && <> <BoutonMarchesManquants chantierId={vue.chantierId} forme="entete" texte={`Générer les ${sansMarche} manquants`} /></>}</th>
-					<th scope="col">Avenants</th>
-					<th scope="col">Certificats de paiement</th>
-					<th scope="col">Réception{attribues > 1 && <> <LienAction className="ml-1.5" href="?pv=tous" scroll={false}>Tous les lots</LienAction></>}</th>
+			{/* En carte (étroit), l'en-tête disparaît : ses deux actions passent au-dessus des lots. */}
+			{(sansMarche > 0 || attribues > 1) && (
+				<div className="hidden flex-wrap gap-2 border-b border-rule bg-surface px-4 py-3 max-etroit:flex">{manquants(true)}{pvTous(true)}</div>
+			)}
+			<Tableau variante="dm" cartes>
+				<thead><tr role="row">
+					<th scope="col" role="columnheader" data-premiere>Lot et entreprise</th>
+					<th scope="col" role="columnheader">Marché{manquants(false)}</th>
+					<th scope="col" role="columnheader">Avenants</th>
+					<th scope="col" role="columnheader">Certificats de paiement</th>
+					<th scope="col" role="columnheader">Réception{pvTous(false)}</th>
 				</tr></thead>
 				<tbody>
 					{vue.lots.map((l) => {
 						const st = l.nature === 'SOUS_TRAITANCE';
 						const inactif = !l.entreprise;
 						const lot = (
-							<th scope="row" data-premiere>
+							<th scope="row" role="rowheader" data-premiere>
 								{/* La grille vit dans un bloc intérieur : posée sur la cellule, elle la sortait du tableau. */}
 								<div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-1">
 									<span className="row-[1/3] pt-0.5 font-mono text-11 text-muted">{l.numero || (st ? 'ST' : '—')}</span>
@@ -129,19 +145,20 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 							</th>
 						);
 						if (inactif) {
-							return <tr key={l.lotId} data-lot={l.lotTexte}>{lot}<td colSpan={4} className="text-12 italic text-muted">Attribuez une entreprise depuis l&apos;écran Marchés pour produire ses documents.</td></tr>;
+							return <tr role="row" key={l.lotId} data-lot={l.lotTexte}>{lot}<td role="cell" colSpan={4} className="text-12 italic text-muted max-etroit:basis-full">Attribuez une entreprise depuis l&apos;écran Marchés pour produire ses documents.</td></tr>;
 						}
 						return (
-							<tr key={l.lotId} data-lot={l.lotTexte}>
+							<tr role="row" key={l.lotId} data-lot={l.lotTexte}>
 								{lot}
-								<td><CaseMarche base={base} l={l} /></td>
-								<td><div className={PILE}>{l.avenants.length ? l.avenants.map((a) => <CaseAv key={a.avenantId} base={base} a={a} />) : <span className="text-faint" aria-label="aucun">—</span>}</div></td>
-								<td><CasesCertificats base={base} l={l} /></td>
-								<td><CaseReception l={l} /></td>
+								{/* En carte, deux documents par rang (au moins 40 % chacun) sous leur libellé. */}
+								<td role="cell" data-cle="Marché" className={CASE_CARTE}><CaseMarche base={base} l={l} /></td>
+								<td role="cell" data-cle="Avenants" className={CASE_CARTE}><div className={PILE}>{l.avenants.length ? l.avenants.map((a) => <CaseAv key={a.avenantId} base={base} a={a} />) : <span className="text-faint" aria-label="aucun">—</span>}</div></td>
+								<td role="cell" data-cle="Certificats" className={CASE_CARTE}><CasesCertificats base={base} l={l} /></td>
+								<td role="cell" data-cle="Réception" className={CASE_CARTE}><CaseReception l={l} /></td>
 							</tr>
 						);
 					})}
-					{!vue.lots.length && <tr><td colSpan={5} className="text-12 italic text-muted">Ce chantier n&apos;a pas encore de lot.</td></tr>}
+					{!vue.lots.length && <tr role="row"><td role="cell" colSpan={5} className="text-12 italic text-muted max-etroit:basis-full">Ce chantier n&apos;a pas encore de lot.</td></tr>}
 				</tbody>
 			</Tableau>
 			<div className="flex flex-wrap justify-between gap-4 border-t border-rule bg-surface px-4 py-2.5 text-12 text-muted">

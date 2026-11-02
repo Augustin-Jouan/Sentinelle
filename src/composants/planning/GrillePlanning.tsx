@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, type CSSProperties, type PointerEvent, type RefObject } from 'react';
+import { Fragment, type CSSProperties, type MouseEvent, type PointerEvent, type RefObject } from 'react';
 import { Bouton } from '@/composants/briques/Bouton';
 import { CHIFFRES } from '@/composants/briques/typo';
 import { couleurDe } from '@/domaine/couleurs';
@@ -27,12 +27,14 @@ type Props = {
 	saisi?: boolean;
 	fantome?: { lotId: string; debut: number; duree: number } | null;
 	onPointerDown?: (e: PointerEvent<HTMLDivElement>) => void;
+	/** Au doigt : toucher une barre ou une piste ouvre le lot. */
+	onClick?: (e: MouseEvent<HTMLDivElement>) => void;
 };
 
 /** Grille du Gantt (maquette `renderPlanning`) : en-tête des mois et semaines, fermetures, pistes, flèches, légende. */
 export function GrillePlanning({
 	cadre, onScroll, planning, lotsAffiches, debutAxe: d0, nbSemaines, w, rangAujourdhui,
-	selection, outil, onOuvrirLot, onToutAfficher, saisi, fantome, onPointerDown,
+	selection, outil, onOuvrirLot, onToutAfficher, saisi, fantome, onPointerDown, onClick,
 }: Props) {
 	const largeur = nbSemaines * w;
 	const cols = colonnes({ debut: d0, fin: d0 + nbSemaines - 1, nb: nbSemaines });
@@ -62,6 +64,7 @@ export function GrillePlanning({
 				style={{ '--sem-w': `${w}px` } as CSSProperties}
 				onScroll={onScroll}
 				onPointerDown={onPointerDown}
+				onClick={onClick}
 			>
 				<div className="g-row g-head">
 					<div className="g-fixe"><span className="g-th">Lot et entreprise</span></div>

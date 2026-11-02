@@ -28,12 +28,18 @@ type Props = {
 
 /** Un bouton d'un groupe segmenté (ex-.zoom-b) : collé à son voisin, plein quand il est choisi. */
 const segment = (choisi: boolean, icone = false) => cx(
-	'-ml-px cursor-pointer rounded-xs border py-1.25 text-12 first-of-type:ml-0',
+	'-ml-px cursor-pointer rounded-xs border py-1.25 text-12 first-of-type:ml-0 max-etroit:min-h-11',
 	icone ? 'px-2 leading-[0] [&_svg]:size-3.75 [&_svg]:stroke-[1.4] [&_svg]:[stroke-linecap:round] [&_svg]:[stroke-linejoin:round]' : 'px-2.5',
 	choisi ? 'border-accent bg-accent font-medium text-on-accent' : 'border-rule-strong bg-raise text-muted hover:bg-idle-soft hover:text-ink');
+/**
+ * Au doigt seulement : un écran tactile sans aucun pointeur précis. Une tablette à laquelle on a branché une souris ou
+ * un trackpad (any-pointer: fine) garde les outils de la souris.
+ */
+const SANS_SOURIS = 'pointer-coarse:not-any-pointer-fine:hidden';
+const AU_DOIGT_SEUL = 'hidden pointer-coarse:not-any-pointer-fine:inline';
 /** Un groupe de boutons sous son libellé (ex-.zoom) : l'outil, la densité. */
-const Groupe = ({ libelle, children }: { libelle: string; children: React.ReactNode }) => (
-	<div className="inline-flex items-center gap-2" role="group" aria-label={libelle}><span className={CLE}>{libelle}</span>{children}</div>
+const Groupe = ({ libelle, auDoigt = true, children }: { libelle: string; auDoigt?: boolean; children: React.ReactNode }) => (
+	<div className={cx('inline-flex items-center gap-2', !auDoigt && SANS_SOURIS)} role="group" aria-label={libelle}><span className={CLE}>{libelle}</span>{children}</div>
 );
 
 export function BarreOutilsPlanning(p: Props) {
@@ -56,11 +62,15 @@ export function BarreOutilsPlanning(p: Props) {
 							<Bouton taille="sm" onClick={p.onDeselectionner}>Désélectionner</Bouton>
 						</span>
 					) : (
-						<span className="text-12 whitespace-nowrap text-muted">{texteSelection(p.nbSelection)}</span>
+						<>
+							{/* Au doigt, ni Maj ni flèches : la consigne dit ce qui marche. */}
+							<span className={cx('text-12 whitespace-nowrap text-muted', SANS_SOURIS)}>{texteSelection(p.nbSelection)}</span>
+							<span className={cx('text-12 text-muted', AU_DOIGT_SEUL)}>Touchez un lot ou une barre pour modifier ses périodes.</span>
+						</>
 					)}
 				</span>
 			</div>
-			<div className="flex items-center gap-3">
+			<div className="flex flex-wrap items-center gap-3">
 				<MenuDeroulant id="lots-vus" k="Lots affichés" multi largeur="large" className="self-stretch"
 					valeurs={p.lots.filter((l) => !p.masques.includes(l.id)).map((l) => l.id)}
 					libelle={caches ? `${vus} lot${vus > 1 ? 's' : ''} sur ${p.lots.length}` : 'Tous les lots'}
@@ -69,7 +79,8 @@ export function BarreOutilsPlanning(p: Props) {
 						...p.lots.map((l) => ({ v: l.id, t: l.designation || 'Lot sans désignation', meta: l.periodes.length ? `${l.periodes.length} pér.` : '—' })),
 					]}
 					onChoisir={(v) => (v === '*' ? p.onToutAfficher() : p.onBasculerLot(v))} />
-				<Groupe libelle="Outil">
+				{/* Main et Cible pilotent la souris ; au doigt, le planning défile et un toucher ouvre le lot. */}
+				<Groupe libelle="Outil" auDoigt={false}>
 					{outil('main', 'Main — faire glisser le planning', <Icone.Main />)}
 					{outil('cible', 'Cible — tracer une période', <Icone.Cible />)}
 				</Groupe>

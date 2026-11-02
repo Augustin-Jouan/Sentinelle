@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as PointerEventReact, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent as MouseEventReact, type PointerEvent as PointerEventReact, type RefObject } from 'react';
 import type { PeriodePlan } from '@/domaine/planning';
 import { isoRang, type PlanningVue } from '@/domaine/planningVue';
 import { pastille, pastilleGroupe } from './geometrie';
@@ -186,8 +186,12 @@ export function useGestes(options: OptionsGestes) {
 		};
 	}, []);
 
+	/** Le dernier appui venait d'un doigt : le défilement reste natif, et un toucher net ouvre le lot (onClick). */
+	const auDoigt = useRef(false);
+
 	function onPointerDown(e: PointerEventReact<HTMLDivElement>) {
-		if (e.button !== 0 || e.pointerType === 'touch') return;
+		auDoigt.current = e.pointerType === 'touch';
+		if (e.button !== 0 || auDoigt.current) return;
 		const o = courantes.current;
 		const cible = e.target as HTMLElement;
 		const bar = cible.closest<HTMLElement>('.g-bar');
@@ -243,5 +247,13 @@ export function useGestes(options: OptionsGestes) {
 		e.preventDefault();
 	}
 
-	return { rendu, onPointerDown };
+	/** Au doigt, ni tracé ni glisser : toucher une barre ou la piste d'un lot ouvre son panneau (périodes, couleur). */
+	function onClick(e: MouseEventReact<HTMLDivElement>) {
+		if (!auDoigt.current) return;
+		const cible = e.target as HTMLElement;
+		const lotId = cible.closest<HTMLElement>('.g-bar')?.dataset.lot ?? cible.closest<HTMLElement>('.g-piste[data-lot]')?.dataset.lot;
+		if (lotId) courantes.current.onOuvrirLot(lotId);
+	}
+
+	return { rendu, onPointerDown, onClick };
 }

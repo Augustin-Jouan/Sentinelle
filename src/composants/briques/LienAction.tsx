@@ -3,7 +3,7 @@ import type { ComponentProps, ComponentPropsWithRef } from 'react';
 import { cx } from './cx';
 
 /** Une action discrète, soulignée au survol, même dans un en-tête en capitales (ex-.dm-th-action). */
-const CLASSES = 'cursor-pointer border-0 bg-transparent p-0 font-sans text-11 font-medium tracking-normal normal-case text-accent-2 no-underline hover:underline';
+const CLASSES = 'cursor-pointer border-0 bg-transparent p-0 max-etroit:inline-flex max-etroit:min-h-11 max-etroit:items-center font-sans text-11 font-medium tracking-normal normal-case text-accent-2 no-underline hover:underline';
 
 type Props =
 	| (Omit<ComponentPropsWithRef<'button'>, 'className'> & { href?: undefined; className?: string })
