@@ -46,3 +46,12 @@
 		* { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 	}
 }
+
+/*
+ * Les saisies posées sur une feuille d'aperçu (certificat, compte rendu, PV) : 16 px sur un téléphone, sinon Safari
+ * sur iPhone zoome la page à chaque saisie. Hors couche, comme la feuille de CSS_DOCUMENTS injectée par l'aperçu,
+ * et plus précis que ses règles (.cr-saisie…) : c'est l'écran qui l'emporte, le PDF ne voit jamais cette feuille.
+ */
+@media (width < 60rem) {
+	[data-surcouche='apercu'] .sheet :is(input, textarea, select) { font-size: 1rem; }
+}

@@ -11,7 +11,8 @@ type Props = {
 	enregistrer: (valeur: string) => Promise<Resultat<unknown>>;
 	libelle: string;
 	type?: 'text' | 'date' | 'email' | 'tel';
-	multiligne?: boolean;
+	/** Un texte sur plusieurs lignes ; « ajuste » : un seul paragraphe dont la hauteur suit le texte (Entrée valide, pas de retour). */
+	multiligne?: boolean | 'ajuste';
 	/** Placement seulement. */
 	className?: string;
 	placeholder?: string;
@@ -62,16 +63,44 @@ export function ChampEnLigne({ valeur, enregistrer, libelle, type = 'text', mult
 		});
 	}
 
+	// Le champ peut changer d'élément (la désignation d'un lot, <input> ou <textarea> selon useEtroit) : l'ancien est
+	// retiré sans blur, sa saisie n'est donc pas encore partie. S'il avait le focus, le nouveau le reprend, curseur à la
+	// même place, et la saisie s'enregistre au prochain blur, comme d'habitude.
+	const focalise = useRef(false);
+	const curseur = useRef<[number, number] | null>(null);
+	const reprendre = (el: HTMLInputElement | HTMLTextAreaElement | null) => {
+		if (!el || !focalise.current || document.activeElement === el) return;
+		el.focus();
+		const [debut, fin] = curseur.current ?? [el.value.length, el.value.length];
+		// Une date ou une adresse e-mail n'a pas de sélection de texte : setSelectionRange y lève une erreur.
+		try { el.setSelectionRange(debut, fin); } catch { /* rien à replacer */ }
+	};
+	const noterCurseur = (e: { currentTarget: HTMLInputElement | HTMLTextAreaElement }) => {
+		try { curseur.current = [e.currentTarget.selectionStart ?? 0, e.currentTarget.selectionEnd ?? 0]; } catch { curseur.current = null; }
+	};
+
+	const classes = cx(classesSaisie(variante, { gras, chiffres }), className);
 	const communs = {
+		ref: reprendre,
 		id,
 		'aria-label': libelle,
 		'aria-invalid': enErreur,
 		'aria-busy': enCours || undefined,
 		placeholder,
 		value: texte,
-		onBlur: quitter,
-		className: cx(classesSaisie(variante, { gras, chiffres }), className),
+		onFocus: () => { focalise.current = true; },
+		onBlur: () => { focalise.current = false; curseur.current = null; quitter(); },
+		onSelect: noterCurseur,
+		className: classes,
 	};
+	if (multiligne === 'ajuste') {
+		// field-sizing-content : la hauteur suit le texte ; sans lui (navigateur ancien), deux lignes.
+		return (
+			<textarea {...communs} rows={2} className={cx(classes, 'field-sizing-content resize-none')}
+				onChange={(e) => saisir(e.target.value.replace(/\s*\n\s*/g, ' '))}
+				onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }} />
+		);
+	}
 	return multiligne ? (
 		<textarea {...communs} rows={3} onChange={(e) => saisir(e.target.value)} />
 	) : (

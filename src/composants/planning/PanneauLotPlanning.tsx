@@ -40,15 +40,15 @@ export function PanneauLotPlanning({ lot, planning, principale, onFermer, onCoul
 						<div className="flex flex-wrap gap-1.5">
 							{COULEURS.map((c) => (
 								<button key={c.cle} type="button" style={{ background: c.fond }} title={c.nom} aria-label={c.nom} aria-pressed={c.cle === lot.couleur} onClick={() => onCouleur(c.cle)}
-									className={cx('size-7 cursor-pointer rounded-xs border p-0', c.cle === lot.couleur ? 'border-accent ring-2 ring-accent' : 'border-rule-strong')} />
+									className={cx('size-7 cursor-pointer rounded-xs border p-0 max-etroit:size-11', c.cle === lot.couleur ? 'border-accent ring-2 ring-accent' : 'border-rule-strong')} />
 							))}
 						</div>
 						<p className="mt-2.5 text-12 text-muted">Donnez la même couleur à des lots d&apos;une même famille — les fluides, les menuiseries — comme dans votre planning actuel.</p>
 					</Bloc>
 					<Bloc titre="Périodes" corps="nu" action={<Bouton taille="sm" onClick={onAjouter}>Ajouter</Bouton>}>
 						{lot.periodes.length ? (
-							<table className="periodes">
-								<thead><tr><th>Intitulé</th><th data-droite>Sem.</th><th data-droite>Année</th><th data-droite>Durée</th><th /></tr></thead>
+							<table className="periodes" role="table">
+								<thead><tr role="row"><th role="columnheader">Intitulé</th><th role="columnheader" data-droite>Sem.</th><th role="columnheader" data-droite>Année</th><th role="columnheader" data-droite>Durée</th><th role="columnheader" /></tr></thead>
 								{lot.periodes.map((x) => (
 									<LignePeriode key={x.id} periode={x} vise={x.id === principale} options={optionsGroupees(planning, x.id)}
 										onModifier={onModifier} onLier={onLier} onSupprimer={onSupprimer} />
@@ -76,18 +76,19 @@ function LignePeriode({ periode: x, vise, options, onModifier, onLier, onSupprim
 	const s = semaineDuRang(rangIso(x.debut));
 	return (
 		<tbody data-periode={x.id}>
-			<tr className={vise ? 'ligne-per est-vise' : 'ligne-per'} data-vise={vise ? '1' : undefined}>
-				<td><ChampEnLigne gras={vise} libelle="Intitulé" placeholder="sans intitulé" valeur={x.intitule} enregistrer={(v) => onModifier(x.id, 'intitule', v)} /></td>
-				<td data-droite><ChampEnLigne variante="montant-etroit" libelle="Semaine" valeur={String(s.semaine)} enregistrer={(v) => onModifier(x.id, 'semaine', v)} /></td>
-				<td data-droite><ChampEnLigne variante="montant-etroit" libelle="Année" valeur={String(s.annee)} enregistrer={(v) => onModifier(x.id, 'annee', v)} /></td>
-				<td data-droite><ChampEnLigne variante="montant-etroit" libelle="Durée" valeur={String(x.duree)} enregistrer={(v) => onModifier(x.id, 'duree', v)} /></td>
-				<td data-droite data-actions>
+			<tr role="row" className={vise ? 'ligne-per est-vise' : 'ligne-per'} data-vise={vise ? '1' : undefined}>
+				<td role="cell"><ChampEnLigne gras={vise} libelle="Intitulé" placeholder="sans intitulé" valeur={x.intitule} enregistrer={(v) => onModifier(x.id, 'intitule', v)} /></td>
+				{/* data-cle : le libellé que la carte (étroit) pose au-dessus du chiffre, l'en-tête étant caché. */}
+				<td role="cell" data-droite data-cle="Semaine"><ChampEnLigne variante="montant-etroit" libelle="Semaine" valeur={String(s.semaine)} enregistrer={(v) => onModifier(x.id, 'semaine', v)} /></td>
+				<td role="cell" data-droite data-cle="Année"><ChampEnLigne variante="montant-etroit" libelle="Année" valeur={String(s.annee)} enregistrer={(v) => onModifier(x.id, 'annee', v)} /></td>
+				<td role="cell" data-droite data-cle="Durée"><ChampEnLigne variante="montant-etroit" libelle="Durée" valeur={String(x.duree)} enregistrer={(v) => onModifier(x.id, 'duree', v)} /></td>
+				<td role="cell" data-droite data-actions>
 					<Bouton taille="sm" variante="danger" seulIcone onClick={() => onSupprimer(x.id)}
 						title="Supprimer cette période" aria-label={`Supprimer la période ${x.intitule || 'sans intitulé'}`}><Icone.Corbeille /></Bouton>
 				</td>
 			</tr>
-			<tr className={vise ? 'ligne-dep est-vise' : 'ligne-dep'}>
-				<td colSpan={5}>
+			<tr role="row" className={vise ? 'ligne-dep est-vise' : 'ligne-dep'}>
+				<td role="cell" colSpan={5}>
 					<MenuDeroulant id={`dd-dep-${x.id}`} k="Commence après" largeur="large" className="max-w-full" valeur={x.dependDeId ?? ''}
 						options={[
 							{ v: '', t: '— rien, date libre —' },

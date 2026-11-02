@@ -37,6 +37,8 @@ const CHAMPS: { champ: ChampArtisan; id: string; libelle: string; placeholder: s
 	{ champ: 'email', id: 'e-mail', libelle: 'Courriel (optionnel)', placeholder: 'contact@entreprise.fr', span: true, type: 'email' },
 ];
 const vide = (v: string, texte = '—') => v || <span className="text-faint">{texte}</span>;
+/** data-manque d'une cellule vide : la carte (étroit) la retire. */
+const manque = (v: string) => (v ? undefined : '');
 
 export function ReferentielArtisans({ artisans, ficheInitiale }: { artisans: ArtisanFiche[]; ficheInitiale: string | null }) {
 	const router = useRouter();
@@ -118,20 +120,21 @@ export function ReferentielArtisans({ artisans, ficheInitiale }: { artisans: Art
 				</Surtitre>
 			</BarreOutils>
 			<CadreTableau>
-				<Tableau variante="plain">
-					<thead><tr><th>Entreprise</th><th>Adresse</th><th>CP</th><th>Commune</th><th>Interlocuteur</th><th>Téléphone</th><th data-droite>Actions</th></tr></thead>
+				<Tableau variante="plain" cartes>
+					<thead><tr role="row"><th role="columnheader">Entreprise</th><th role="columnheader">Adresse</th><th role="columnheader">CP</th><th role="columnheader">Commune</th><th role="columnheader">Interlocuteur</th><th role="columnheader">Téléphone</th><th role="columnheader" data-droite>Actions</th></tr></thead>
 					<tbody>
 						{vues.map((a) => (
-							<tr key={a.id} data-inactif={a.actif ? undefined : ''} className="cursor-pointer" onClick={() => ouvrir(a)}>
-								<td className={cx('font-medium', !a.actif && 'line-through decoration-1')}>
+							<tr role="row" key={a.id} data-inactif={a.actif ? undefined : ''} className="cursor-pointer" onClick={() => ouvrir(a)}>
+								<td role="cell" className={cx('font-medium max-etroit:basis-full max-etroit:text-15', !a.actif && 'line-through decoration-1')}>
 									{a.nom}{!a.actif && <> <Pastille ton="neutre" className="ml-1.5 align-[1px]">Archivée</Pastille></>}
 								</td>
-								<td>{vide(a.adresse)}</td>
-								<td className={cx(CHIFFRES, 'text-12')}>{vide(a.cp)}</td>
-								<td>{vide(a.commune)}</td>
-								<td>{vide(a.interlocuteur, 'non renseigné')}</td>
-								<td className={cx(CHIFFRES, 'text-12')}>{vide(a.telephone)}</td>
-								<td data-droite data-actions>
+								{/* En carte : « adresse CP commune » sur une ligne, l'interlocuteur et le téléphone dessous ; une case vide disparaît. */}
+								<td role="cell" data-manque={manque(a.adresse)} className="max-etroit:-mr-1.5">{vide(a.adresse)}</td>
+								<td role="cell" data-manque={manque(a.cp)} className={cx(CHIFFRES, 'text-12 max-etroit:-mr-1.5')}>{vide(a.cp)}</td>
+								<td role="cell" data-manque={manque(a.commune)}>{vide(a.commune)}</td>
+								<td role="cell" data-manque={manque(a.interlocuteur)} className="max-etroit:basis-full">{vide(a.interlocuteur, 'non renseigné')}</td>
+								<td role="cell" data-manque={manque(a.telephone)} className={cx(CHIFFRES, 'text-12 max-etroit:basis-full')}>{vide(a.telephone)}</td>
+								<td role="cell" data-droite data-actions>
 									<Bouton taille="sm" title="Modifier cette entreprise" onClick={(e) => { e.stopPropagation(); ouvrir(a); }}><Icone.Crayon />Modifier</Bouton>
 									{' '}
 									{a.actif
@@ -140,7 +143,7 @@ export function ReferentielArtisans({ artisans, ficheInitiale }: { artisans: Art
 								</td>
 							</tr>
 						))}
-						{!vues.length && <tr><td data-vide colSpan={7}>Aucune entreprise ne correspond.</td></tr>}
+						{!vues.length && <tr role="row"><td role="cell" data-vide colSpan={7}>Aucune entreprise ne correspond.</td></tr>}
 					</tbody>
 				</Tableau>
 			</CadreTableau>

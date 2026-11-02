@@ -18,7 +18,7 @@ type Carte = { k: string; n: string; v: React.ReactNode; vide: boolean; ouvrir?:
 
 /** Une carte de série (ex-.dm-carte) : le nom, la dernière version, ce qu'elle contient, son bouton. */
 function DmCarte(c: Carte) {
-	const valeur = cx('font-titre text-17 font-semibold', c.vide ? 'cursor-default text-muted' : 'cursor-pointer text-accent-2 hover:underline');
+	const valeur = cx('font-titre text-17 font-semibold max-etroit:inline-flex max-etroit:min-h-11 max-etroit:items-center', c.vide ? 'cursor-default text-muted' : 'cursor-pointer text-accent-2 hover:underline');
 	return (
 		<CarteBrique variante={c.vide ? 'compacteVide' : 'compacte'} data-serie={c.serie}>
 			<div className="flex justify-between self-stretch">

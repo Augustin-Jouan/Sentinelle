@@ -39,7 +39,7 @@ export function Panneau({ ouvert, surtitre, titre, onFermer, pied, libelle, sans
 			<aside role="dialog" aria-label={nomAccessible(libelle, titre)} aria-hidden={!ouvert}
 				data-surcouche="panneau" data-ouvert={ouverture} data-verrou-defilement={ouverture} data-bloque-clavier={ouverture}
 				className={cx('fixed inset-y-0 right-0 z-50 flex w-[min(31rem,100vw)] flex-col overflow-hidden rounded-l-lg border-l border-rule-strong bg-paper shadow-ombre-h',
-					'transition-transform duration-200 ease-[ease]', !ouvert && 'translate-x-full')}>
+					'transition-transform duration-200 ease-[ease]', !ouvert && 'translate-x-full max-etroit:shadow-none')}>
 				<div className="flex items-start justify-between gap-4 border-b border-rule bg-surface px-5 pt-4 pb-3.5">
 					{/* En colonne : le surtitre (un span) prend sa propre hauteur de ligne, pas celle du corps. */}
 					<div className="flex flex-col">

@@ -6,6 +6,7 @@ import { deconnexionAction } from '@/actions/session';
 import type { UtilisateurConnecte } from '@/auth/session';
 import { cx } from '@/composants/briques/cx';
 import { MENU } from '@/composants/briques/MenuDeroulant';
+import { basculerTheme } from '@/composants/briques/theme';
 
 /** « Augustin Jouan » → « AJ » (initiales() de la maquette). */
 export function initiales(nom: string): string {
@@ -15,7 +16,7 @@ export function initiales(nom: string): string {
 }
 
 /** Une entrée du menu ; le lien la pose en bloc (flow-root), le bouton de déconnexion garde son flux. */
-const ITEM = 'w-full cursor-pointer rounded-[4px] px-2.25 py-1.75 text-left text-13 text-ink-2 no-underline hover:bg-idle-soft hover:text-ink';
+const ITEM = 'w-full cursor-pointer rounded-[4px] px-2.25 py-1.75 max-etroit:py-3 text-left text-13 text-ink-2 no-underline hover:bg-idle-soft hover:text-ink';
 
 /** Le compte (ex-.compte) : ce qui n'a pas sa place dans la navigation. */
 export function MenuCompte({ utilisateur }: { utilisateur: UtilisateurConnecte }) {
@@ -36,7 +37,7 @@ export function MenuCompte({ utilisateur }: { utilisateur: UtilisateurConnecte }
 	return (
 		<div ref={racine} className="relative ml-1 flex-none">
 			<button type="button" aria-label="Mon compte" aria-haspopup="menu" aria-expanded={ouvert} title={`${utilisateur.nom} — ${role}`}
-				className="grid size-7.5 cursor-pointer place-items-center rounded-full bg-accent-soft font-titre text-11 font-semibold tracking-[0.02em] text-accent-2 hover:bg-accent hover:text-on-accent"
+				className="relative grid size-7.5 cursor-pointer place-items-center rounded-full max-etroit:after:absolute max-etroit:after:-inset-1.75 max-etroit:after:content-[''] bg-accent-soft font-titre text-11 font-semibold tracking-[0.02em] text-accent-2 hover:bg-accent hover:text-on-accent"
 				onClick={(e) => { e.stopPropagation(); setOuvert((o) => !o); }}>
 				{initiales(utilisateur.nom)}
 			</button>
@@ -55,6 +56,8 @@ export function MenuCompte({ utilisateur }: { utilisateur: UtilisateurConnecte }
 						<Link className={cx(ITEM, 'flow-root')} role="menuitem" href="/admin/comptes" onClick={fermer}>Comptes</Link>
 					</>
 				)}
+				{/* Sur un téléphone, l'interrupteur de la barre laisse sa place : le thème se bascule ici. */}
+				<button type="button" className={cx(ITEM, 'hidden max-etroit:block')} role="menuitem" onClick={() => { basculerTheme(); fermer(); }}>Thème clair / sombre</button>
 				<form action={deconnexionAction}>
 					<button type="submit" className={ITEM} role="menuitem">Se déconnecter</button>
 				</form>
