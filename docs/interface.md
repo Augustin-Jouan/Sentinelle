@@ -101,8 +101,9 @@ pas de repli.
     sur ordinateur, lien souligné de 44 px sur un téléphone ; une fiche propose « Appeler » et « Écrire » en tête.
   - Les actions destructrices (supprimer un chantier, un lot) se tiennent en bout de carte ou de pied, à l'écart.
   - Le fac-similé d'un formulaire (Nouveau chantier, Paramètres) se replie sous le formulaire (`FeuilleRepliable`).
-  - Un aperçu de document propose « Taille réelle » sur un téléphone : la feuille, réduite pour tenir, se lit et se
-    remplit à 100 % en la faisant glisser. Le compte rendu, écrit sur le chantier, se saisit dans un formulaire
+  - Un aperçu de document propose « Agrandir » et « Taille réelle » sur un téléphone. Agrandie, la feuille occupe tout
+    l'écran : l'en-tête et les champs s'effacent (montés, cachés) jusqu'à « Réduire » ou Échap. En taille réelle, la
+    feuille, réduite pour tenir, se lit et se remplit à 100 % en la faisant glisser. Le compte rendu, écrit sur le chantier, se saisit dans un formulaire
     (`FormulaireCompteRendu`, disposition `formulaire` de `CadreApercu`) ; sa feuille, en lecture, en est l'aperçu.
   - Le clavier suit le champ : `ChampEnLigne` ouvre le pavé décimal pour un montant ou un taux, numérique pour une
     semaine ou une durée (`clavier` pour l'imposer) ; un code postal prend `inputMode="numeric"`, un téléphone `type="tel"`.

@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { CSS_DOCUMENTS } from '@/documents/styles';
 import { Bouton } from './Bouton';
 import { cx } from './cx';
+import { useEtroit } from './etroit';
 import { Surtitre } from './Surtitre';
 import { AU_DESSUS_DE_L_APERCU } from './surcouches';
 
@@ -37,6 +38,8 @@ export function NoteApercu({ info = false, children }: { info?: boolean; childre
 const SPLIT = {
 	champs: 'grid min-h-0 grid-cols-[minmax(0,22rem)_minmax(0,1fr)] max-etroit:grid-cols-1 max-etroit:grid-rows-[auto_minmax(0,1fr)]',
 	solo: 'grid min-h-0 grid-cols-[minmax(0,1fr)] max-etroit:grid-rows-[auto_minmax(0,1fr)]',
+	/** La feuille agrandie : les champs sont cachés, elle prend toute la hauteur. */
+	seule: 'grid min-h-0 grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)]',
 } as const;
 
 /**
@@ -47,7 +50,7 @@ const SPLIT = {
  * le transform se contente de réduire l'image d'une page mise en page à taille réelle. Le bloc qui la porte prend la
  * taille réduite, pour que le défilement et le centrage restent justes.
  */
-function Feuille({ children }: { children: React.ReactNode }) {
+function Feuille({ agrandie, surAgrandir, children }: { agrandie: boolean; surAgrandir: () => void; children: React.ReactNode }) {
 	const cadre = useRef<HTMLDivElement>(null);
 	const bloc = useRef<HTMLDivElement>(null);
 	const page = useRef<HTMLDivElement>(null);
@@ -83,9 +86,13 @@ function Feuille({ children }: { children: React.ReactNode }) {
 	return (
 		<div className="flex min-h-0 flex-col">
 			{/* Sur un téléphone seulement : sur ordinateur la feuille tient à sa taille. */}
-			<div className="hidden items-center justify-between gap-3 px-3.5 pt-3 max-etroit:flex">
-				<span className="text-12 text-muted">{reelle ? 'Faites glisser la feuille pour la parcourir.' : 'La feuille est réduite pour tenir dans l\'écran.'}</span>
-				<Bouton taille="sm" aria-pressed={reelle} onClick={() => setReelle((r) => !r)}>{reelle ? 'Ajuster à l\'écran' : 'Taille réelle'}</Bouton>
+			<div className="hidden flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3.5 pt-3 max-etroit:flex">
+				<span className="min-w-0 flex-1 basis-32 text-12 text-muted">{reelle ? 'Faites glisser la feuille pour la parcourir.' : 'La feuille est réduite pour tenir dans l\'écran.'}</span>
+				<div className="flex gap-2">
+					{/* « Agrandir » : la feuille prend tout l'écran (l'en-tête et les champs s'effacent) ; « Réduire » les rend. */}
+					<Bouton taille="sm" aria-pressed={agrandie} onClick={surAgrandir}>{agrandie ? 'Réduire' : 'Agrandir'}</Bouton>
+					<Bouton taille="sm" aria-pressed={reelle} onClick={() => setReelle((r) => !r)}>{reelle ? 'Ajuster à l\'écran' : 'Taille réelle'}</Bouton>
+				</div>
 			</div>
 			<div ref={cadre} className="flex min-h-0 flex-1 items-start justify-center-safe overflow-auto overscroll-contain p-7 max-etroit:p-3.5" data-testid="cadre-feuille">
 				<div ref={bloc} className="min-w-0">
@@ -102,22 +109,35 @@ function Feuille({ children }: { children: React.ReactNode }) {
  * Échap le ferme sauf si un menu, une confirmation ou un panneau ouvert au-dessus le garde (AU_DESSUS_DE_L_APERCU).
  */
 export function CadreApercu({ libelle, surtitre, titre, aide, notes, actions, disposition, champs, onFermer, children }: Props) {
+	// La feuille agrandie (téléphone) : seule à l'écran, l'en-tête et les champs restent montés mais cachés (une saisie en
+	// cours n'est pas perdue). Sur un écran large, il n'y a rien à agrandir : la demande retombe d'elle-même.
+	const etroit = useEtroit();
+	const [agrandieDemandee, setAgrandie] = useState(false);
+	const agrandie = agrandieDemandee && etroit;
 	const fermer = useRef(onFermer);
-	useEffect(() => { fermer.current = onFermer; });
+	const reduire = useRef(agrandie);
+	useEffect(() => { fermer.current = onFermer; reduire.current = agrandie; });
 	useEffect(() => {
-		const touche = (e: KeyboardEvent) => { if (e.key === 'Escape' && !document.querySelector(AU_DESSUS_DE_L_APERCU)) fermer.current(); };
+		// Échap réduit d'abord une feuille agrandie, puis ferme l'aperçu.
+		const touche = (e: KeyboardEvent) => {
+			if (e.key !== 'Escape' || document.querySelector(AU_DESSUS_DE_L_APERCU)) return;
+			if (reduire.current) setAgrandie(false); else fermer.current();
+		};
 		window.addEventListener('keydown', touche);
 		return () => window.removeEventListener('keydown', touche);
 	}, []);
-	const feuille = <Feuille>{children}</Feuille>;
+	const feuille = <Feuille agrandie={agrandie} surAgrandir={() => setAgrandie((a) => !a)}>{children}</Feuille>;
+	const cache = agrandie && 'hidden';
 	return (
 		<div role="dialog" aria-label={libelle} data-surcouche="apercu" data-ouvert="" data-verrou-defilement="" data-bloque-clavier=""
 			// paysage: l'aperçu défile d'un bloc ; son en-tête (titre, actions) ne reste pas collé au-dessus de la feuille.
 			className={cx('fixed inset-0 z-60 bg-paper',
 				// 'formulaire' : tout défile d'un bloc (en-tête, formulaire, feuille) ; sinon la feuille défile sous l'en-tête.
-				disposition === 'formulaire' ? 'block overflow-y-auto' : 'grid grid-rows-[auto_minmax(0,1fr)] paysage:block paysage:overflow-y-auto')}>
+				// Agrandie : la feuille, seule, occupe toute la hauteur et défile en elle-même.
+				agrandie ? 'grid grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)]'
+					: disposition === 'formulaire' ? 'block overflow-y-auto' : 'grid grid-rows-[auto_minmax(0,1fr)] paysage:block paysage:overflow-y-auto')}>
 			<style dangerouslySetInnerHTML={{ __html: CSS_DOCUMENTS }} />
-			<div className="flex flex-wrap items-center justify-between gap-4 border-b border-rule bg-surface px-5 py-3.5">
+			<div className={cx('flex flex-wrap items-center justify-between gap-4 border-b border-rule bg-surface px-5 py-3.5', cache)}>
 				{/* En colonne : le surtitre (un span) prend sa propre hauteur de ligne. */}
 				<div className="flex flex-col">
 					<Surtitre>{surtitre}</Surtitre>
@@ -129,15 +149,15 @@ export function CadreApercu({ libelle, surtitre, titre, aide, notes, actions, di
 				<div className="flex flex-wrap items-center gap-2">{actions}</div>
 			</div>
 			{disposition === 'champs' ? (
-				<div className={SPLIT.champs}>
-					<div className="flex flex-col gap-4.5 overflow-y-auto overscroll-contain border-r border-rule bg-surface p-4.5 max-etroit:max-h-[40vh] max-etroit:border-r-0 max-etroit:border-b">{champs}</div>
+				<div className={agrandie ? SPLIT.seule : SPLIT.champs}>
+					<div className={cx('flex flex-col gap-4.5 overflow-y-auto overscroll-contain border-r border-rule bg-surface p-4.5 max-etroit:max-h-[40vh] max-etroit:border-r-0 max-etroit:border-b', cache)}>{champs}</div>
 					{feuille}
 				</div>
-			) : disposition === 'solo' ? <div className={SPLIT.solo}>{feuille}</div>
+			) : disposition === 'solo' ? <div className={agrandie ? SPLIT.seule : SPLIT.solo}>{feuille}</div>
 				: disposition === 'formulaire' ? (
 					<>
-						<div className="flex flex-col gap-4.5 border-b border-rule bg-surface p-4.5">{champs}</div>
-						<div className="px-4.5 pt-4"><Surtitre>La feuille imprimée</Surtitre></div>
+						<div className={cx('flex flex-col gap-4.5 border-b border-rule bg-surface p-4.5', cache)}>{champs}</div>
+						<div className={cx('px-4.5 pt-4', cache)}><Surtitre>La feuille imprimée</Surtitre></div>
 						{feuille}
 					</>
 				) : feuille}
