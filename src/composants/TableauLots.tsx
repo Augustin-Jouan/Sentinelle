@@ -84,18 +84,18 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 			<CadreTableau>
 				<Tableau variante="lots" cartes>
 					<thead>
-						<tr><th>N°</th><th>Lot</th><th>Entreprise</th><th data-droite>Montant HT</th><th data-droite>TVA</th><th data-droite>Montant TTC</th></tr>
+						<tr role="row"><th role="columnheader">N°</th><th role="columnheader">Lot</th><th role="columnheader">Entreprise</th><th role="columnheader" data-droite>Montant HT</th><th role="columnheader" data-droite>TVA</th><th role="columnheader" data-droite>Montant TTC</th></tr>
 					</thead>
 					<tbody>
 						{vus.map((l) => {
 							const nbAv = l.avenants.length;
 							return (
-								<tr key={l.id} data-lot={l.designation} data-inactif={l.entreprise ? undefined : ''} data-ouvert={l.id === lotOuvert ? '' : undefined}
+								<tr role="row" key={l.id} data-lot={l.designation} data-inactif={l.entreprise ? undefined : ''} data-ouvert={l.id === lotOuvert ? '' : undefined}
 									onClick={() => setLotOuvert(l.id)}>
-									<td data-saisie className="w-18 min-w-16 font-mono text-12 text-muted max-etroit:w-16 max-etroit:flex-none" onClick={arreter}>
+									<td role="cell" data-saisie className="w-18 min-w-16 font-mono text-12 text-muted max-etroit:w-16 max-etroit:flex-none" onClick={arreter}>
 										<ChampEnLigne variante="texte-mini" libelle="Numéro du lot" placeholder="—" valeur={l.numero ?? ''} enregistrer={champ(l.id, 'numero')} />
 									</td>
-									<td data-saisie className="min-w-64 font-medium whitespace-nowrap max-etroit:min-w-0 max-etroit:flex-1" onClick={arreter}>
+									<td role="cell" data-saisie className="min-w-64 font-medium whitespace-nowrap max-etroit:min-w-0 max-etroit:flex-1" onClick={arreter}>
 										{/* Le champ et ses étiquettes partagent un conteneur : la cellule reste une vraie cellule. */}
 										<div className="flex items-center max-etroit:flex-wrap max-etroit:gap-y-1">
 											{/* Sur un téléphone, la désignation passe à la ligne au lieu d'être coupée. */}
@@ -105,7 +105,7 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 										</div>
 									</td>
 									{/* En carte : toute la largeur, et le chevron dit que toucher l'entreprise ouvre le lot. */}
-									<td className="whitespace-nowrap max-etroit:basis-full max-etroit:whitespace-normal">
+									<td role="cell" className="whitespace-nowrap max-etroit:basis-full max-etroit:whitespace-normal">
 										<div className="max-etroit:flex max-etroit:items-center max-etroit:justify-between max-etroit:gap-3">
 											<div>
 												{l.entreprise
@@ -115,21 +115,21 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 											<span className="hidden text-faint max-etroit:inline-flex [&_svg]:size-4 [&_svg]:-rotate-90" aria-hidden="true"><Icone.Chevron /></span>
 										</div>
 									</td>
-									<td data-droite data-saisie data-cle="Montant HT" className="w-42 max-etroit:w-auto max-etroit:flex-1" onClick={arreter}>
+									<td role="cell" data-droite data-saisie data-cle="Montant HT" className="w-42 max-etroit:w-auto max-etroit:flex-1" onClick={arreter}>
 										<ChampEnLigne variante="montant" libelle="Montant HT" valeur={formatMontantSaisie(l.htInitial)} enregistrer={champ(l.id, 'montantHt')} />
 									</td>
-									<td data-droite data-saisie data-hors-carte className="w-26" onClick={arreter}>
+									<td role="cell" data-droite data-saisie data-hors-carte className="w-26" onClick={arreter}>
 										<ChampEnLigne variante="montant-mini" libelle="Taux de TVA" valeur={formatTauxPoint(l.tauxTva)} enregistrer={champ(l.id, 'tauxTva')} />
 									</td>
-									<td data-droite data-saisie data-cle="Montant TTC" className="w-42 max-etroit:w-auto max-etroit:flex-1" onClick={arreter} title={nbAv ? 'Avenants compris — le montant initial HT est recalculé' : undefined}>
+									<td role="cell" data-droite data-saisie data-cle="Montant TTC" className="w-42 max-etroit:w-auto max-etroit:flex-1" onClick={arreter} title={nbAv ? 'Avenants compris — le montant initial HT est recalculé' : undefined}>
 										<ChampEnLigne variante="montant" libelle="Montant TTC" valeur={formatMontantSaisie(l.ttcEngage)} enregistrer={champ(l.id, 'montantTtc')} />
 									</td>
 								</tr>
 							);
 						})}
 						{!vus.length && (
-							<tr>
-								<td data-vide colSpan={6}>
+							<tr role="row">
+								<td role="cell" data-vide colSpan={6}>
 									{q ? <>Aucun lot ne correspond à « {q} ». <Bouton taille="sm" className="ml-3" onClick={() => setRequete('')}>Effacer la recherche</Bouton></>
 										: <>Aucun lot pour l&apos;instant. <Bouton taille="sm" variante="primaire" className="ml-3" onClick={ajouter}>Ajouter le premier lot</Bouton></>}
 								</td>
