@@ -69,7 +69,7 @@ export function FormulaireChantier({ chargesAffaire, moi, entete }: Props) {
 
 	const champ = (id: string, nom: keyof Valeurs, libelle: string, o: { placeholder?: string; aide?: React.ReactNode; type?: string; num?: boolean; valeur?: string; lecture?: boolean } = {}) => (
 		<Champ libelle={libelle} pour={id} aide={o.aide} erreur={erreurs[nom]}>
-			<Saisie id={id} type={o.type ?? 'text'} placeholder={o.placeholder} value={o.valeur ?? s[nom]} onChange={maj(nom)} readOnly={o.lecture}
+			<Saisie id={id} type={o.type ?? 'text'} inputMode={nom === 'cp' ? 'numeric' : undefined} placeholder={o.placeholder} value={o.valeur ?? s[nom]} onChange={maj(nom)} readOnly={o.lecture}
 				chiffres={o.num} erreur={erreurs[nom]} />
 		</Champ>
 	);

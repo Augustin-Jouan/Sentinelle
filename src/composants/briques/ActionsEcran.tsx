@@ -11,10 +11,12 @@ import { cx } from './cx';
  * - avec « replier », les autres actions passent derrière un bouton « ⋯ » qui les montre en liste.
  * Chaque action n'est rendue qu'une fois : seule sa place change.
  */
-export function ActionsEcran({ principale, actions, replier = false }: {
+export function ActionsEcran({ principale, actions, replier = false, principaleALaFin = false }: {
 	principale?: React.ReactNode;
 	actions?: React.ReactNode;
 	replier?: boolean;
+	/** Sur ordinateur, l'action principale vient après les autres (« Enregistrer » au bout de la barre d'un aperçu). */
+	principaleALaFin?: boolean;
 }) {
 	const [ouvert, setOuvert] = useState(false);
 	const racine = useRef<HTMLDivElement>(null);
@@ -30,13 +32,15 @@ export function ActionsEcran({ principale, actions, replier = false }: {
 		return () => { document.removeEventListener('click', dehors); document.removeEventListener('keydown', touche); };
 	}, [ouvert]);
 
+	const flottante = principale && (
+		<div className="contents max-etroit:fixed max-etroit:right-4 max-etroit:bottom-4 max-etroit:z-20 max-etroit:flex max-etroit:rounded-sm max-etroit:shadow-ombre-h">
+			{principale}
+		</div>
+	);
+
 	return (
 		<div ref={racine} className="relative flex flex-wrap items-center gap-2">
-			{principale && (
-				<div className="contents max-etroit:fixed max-etroit:right-4 max-etroit:bottom-4 max-etroit:z-20 max-etroit:flex max-etroit:rounded-sm max-etroit:shadow-ombre-h">
-					{principale}
-				</div>
-			)}
+			{!principaleALaFin && flottante}
 			{replie ? (
 				<>
 					<div className="hidden max-etroit:flex">
@@ -52,6 +56,7 @@ export function ActionsEcran({ principale, actions, replier = false }: {
 					</div>
 				</>
 			) : autres}
+			{principaleALaFin && flottante}
 		</div>
 	);
 }

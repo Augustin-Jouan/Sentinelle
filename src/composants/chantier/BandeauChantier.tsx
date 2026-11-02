@@ -71,7 +71,7 @@ export function BandeauChantier({ chantier: c, chargesAffaire }: { chantier: EnT
 				<GrilleChamps>
 					{CHAMPS.map((f) => (
 						<Champ key={f.champ} libelle={f.libelle} pour={`e-${f.champ}`} pleineLargeur={f.span}>
-							<ChampEnLigne id={`e-${f.champ}`} variante="champ" chiffres={f.num} libelle={f.libelle} type={f.type}
+							<ChampEnLigne id={`e-${f.champ}`} variante="champ" chiffres={f.num} clavier={f.champ === 'cp' ? 'numeric' : undefined} libelle={f.libelle} type={f.type}
 								valeur={c[f.champ] as string} enregistrer={modifierChampChantierAction.bind(null, c.id, f.champ)} />
 						</Champ>
 					))}
