@@ -10,9 +10,9 @@ const VARIANTE = {
 	/** La carte d'ajout, en pointillés, contenu centré (ex-.chantier-new). */
 	ajout: `items-start justify-center gap-1.5 border-dashed border-rule bg-surface px-5.5 pt-5 pb-4.5 shadow-ombre ${SOULEVE}`,
 	/** Une carte de série (ex-.dm-carte). */
-	compacte: 'items-start gap-1 border-rule bg-raise px-4 py-3.5 shadow-ombre',
+	compacte: 'items-start gap-1 border-rule bg-raise px-4 py-3.5 shadow-ombre max-etroit:px-3 max-etroit:py-3',
 	/** La même, encore vide (ex-.dm-carte.est-vide). */
-	compacteVide: 'items-start gap-1 border-dashed border-rule-strong bg-surface px-4 py-3.5',
+	compacteVide: 'items-start gap-1 border-dashed border-rule-strong bg-surface px-4 py-3.5 max-etroit:px-3 max-etroit:py-3',
 } as const;
 
 type Apparence = {

@@ -51,10 +51,12 @@ export function CarteChantier({ c, ouvert }: { c: DonneesCarte; ouvert: boolean 
 	return (
 		<Carte variante="cliquable" estompee={c.termine} role="button" tabIndex={0} data-testid="carte-chantier" onClick={ouvrir}
 			onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ouvrir(); } }}>
-			<div className="flex items-start justify-between gap-3 max-etroit:flex-wrap">
+			{/* En étroit, l'en-tête s'efface (contents) : le nom reste en tête, Terminer et la corbeille passent en bas de la
+			    carte, à l'écart de là où le pouce tombe en premier. */}
+			<div className="flex items-start justify-between gap-3 max-etroit:contents">
 				{/* Un chantier terminé est barré. */}
 				<span className={cx('font-titre text-17 font-semibold', c.termine && 'line-through decoration-1')}>{c.reference}</span>
-				<span className="flex flex-none items-center gap-1.5">
+				<span className="flex flex-none items-center gap-1.5 max-etroit:order-last max-etroit:justify-end max-etroit:border-t max-etroit:border-rule max-etroit:pt-3">
 					{c.termine ? <Pastille ton="neutre">Terminé</Pastille> : ouvert && <Pastille>Ouvert</Pastille>}
 					<Bouton variante="surCarte" taille="sm" onClick={(e) => { sansOuvrirLaCarte(e); terminer(); }}
 						onKeyDown={sansOuvrirLaCarte} title={c.termine ? 'Rouvrir ce chantier' : 'Marquer ce chantier terminé'}>

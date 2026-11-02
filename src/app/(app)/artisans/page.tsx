@@ -7,7 +7,7 @@ export default async function PageArtisans({ searchParams }: { searchParams: Pro
 	await exigerPage();
 	const { fiche } = await searchParams;
 	return (
-		<Ecran titre="Artisans" actions={<BoutonAjouterEntreprise />}>
+		<Ecran titre="Artisans" principale={<BoutonAjouterEntreprise />}>
 			<ReferentielArtisans artisans={await listerArtisans()} ficheInitiale={fiche ?? null} />
 		</Ecran>
 	);
