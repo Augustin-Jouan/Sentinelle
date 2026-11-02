@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { genererPlanningAction, genererVisaAction } from '@/actions/documents';
 import { Bouton } from '@/composants/briques/Bouton';
 import { CadreApercu, NoteApercu } from '@/composants/briques/CadreApercu';
+import { ConseilPaysage } from '@/composants/briques/ConseilPaysage';
 import { telecharger } from '@/composants/telecharger';
 import { Gabarit } from '@/documents/gabarits/Gabarit';
 import { TITRES_TYPES } from '@/documents/libelles';
@@ -59,6 +60,8 @@ export function ApercuPlanning(props: Props) {
 				{erreur && <NoteApercu info>{erreur}</NoteApercu>}
 				{planning?.modifie && <NoteApercu info>Le planning a changé depuis la v{planning.version} : ce visa portera sur la v{planning.version}.</NoteApercu>}
 				{tropDeLots && <NoteApercu>{TROP_DE_LOTS}</NoteApercu>}
+				{/* La feuille est en A4 paysage : en largeur, elle se lit presque à sa taille. */}
+				<ConseilPaysage className="mt-2">Tournez votre téléphone : la feuille s&apos;affiche en plus grand.</ConseilPaysage>
 			</>}
 			actions={<>
 				<Bouton variante="fantome" onClick={() => router.replace(chemin, { scroll: false })}>Fermer</Bouton>

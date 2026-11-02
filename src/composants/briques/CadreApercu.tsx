@@ -135,11 +135,12 @@ export function CadreApercu({ libelle, surtitre, titre, aide, notes, actions, di
 				// 'formulaire' : tout défile d'un bloc (en-tête, formulaire, feuille) ; sinon la feuille défile sous l'en-tête.
 				// Agrandie : la feuille, seule, occupe toute la hauteur et défile en elle-même.
 				agrandie ? 'grid grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)]'
-					: disposition === 'formulaire' ? 'block overflow-y-auto' : 'grid grid-rows-[auto_minmax(0,1fr)] paysage:block paysage:overflow-y-auto')}>
+					: disposition === 'formulaire' ? 'block overflow-y-auto' : 'grid grid-cols-[minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)] paysage:block paysage:overflow-y-auto')}>
 			<style dangerouslySetInnerHTML={{ __html: CSS_DOCUMENTS }} />
 			<div className={cx('flex flex-wrap items-center justify-between gap-4 border-b border-rule bg-surface px-5 py-3.5', cache)}>
 				{/* En colonne : le surtitre (un span) prend sa propre hauteur de ligne. */}
-				<div className="flex flex-col">
+				{/* min-w-0 : une note longue passe à la ligne au lieu d'élargir l'en-tête (et la feuille avec lui). */}
+				<div className="flex min-w-0 flex-col">
 					<Surtitre>{surtitre}</Surtitre>
 					<h2 className="text-17">{titre}</h2>
 					{aide && <p className="mt-0.5 text-12 text-muted">{aide}</p>}
