@@ -276,6 +276,9 @@ table.periodes tr.ligne-dep.est-vise td::before { color: var(--accent); }
 		display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
 	}
 	.g-sous { display: none; }
+	/* les petites tailles du Gantt remontent comme les jetons --t-* (jetons.css) */
+	.g-th, .g-sems span, .g-ferm-lbl { font-size: 0.75rem; }
+	.g-fixe-lbl { font-size: 0.6875rem; }
 
 	/* Le tableau des périodes en cartes : l'intitulé sur toute la largeur, puis semaine, année, durée et la corbeille
 	   sous leurs libellés (data-cle) ; « Commence après » dessous, comme sur ordinateur. */

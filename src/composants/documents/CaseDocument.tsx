@@ -33,7 +33,8 @@ export function CaseDocument({ ton, taille = 'normale', href, titre, cas, etat, 
 	children: React.ReactNode;
 }) {
 	const inerte = taille === 'legende' || ton === 'hors';
-	const classes = cx('inline-flex items-center rounded-[6px] border leading-[1.35] whitespace-nowrap no-underline', TAILLE[taille], TON[ton],
+	// En étroit, une case passe à la ligne : « n° 01 · + 3 720 € à éditer » ne tient pas dans une demi-carte à 320 px.
+	const classes = cx('inline-flex items-center rounded-[6px] border leading-[1.35] whitespace-nowrap no-underline max-etroit:whitespace-normal', TAILLE[taille], TON[ton],
 		inerte ? 'cursor-default' : 'cursor-pointer');
 	return href
 		? <Link className={classes} href={href} scroll={false} title={titre} data-case={cas} data-etat={etat}>{children}</Link>
