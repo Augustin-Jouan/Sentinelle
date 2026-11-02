@@ -91,6 +91,16 @@ pas de repli.
   `zoom`, qui recalcule la mise en page et déplace des lignes). Ses saisies et ses cases rapetissent avec elle : sur un
   téléphone, on pince pour zoomer, et Safari zoome de lui-même sur la saisie touchée. Aucune règle d'écran ne
   modifie le dessin d'une feuille ; seules les actions de l'aperçu (au-dessus) suivent les règles du téléphone.
+- **Placement sur un téléphone** : le contenu de l'écran passe avant ses outils.
+  - `Ecran` prend `principale` (l'action qu'on vient faire) : sur un téléphone, elle flotte en bas à droite, sous le
+    pouce (`ActionsEcran`, `basColle` la pose au-dessus d'une barre déjà collée) ; `replier` range les autres actions
+    derrière « ⋯ ». Chaque action n'est rendue qu'une fois : sur ordinateur, ses conteneurs sont en `display: contents`.
+    Une action principale normale sur ordinateur prend `variante="flottante"` pour être pleine sous le pouce.
+  - Le bandeau du chantier tient sur une ligne (« client · adresse › ») ; le toucher ouvre l'en-tête entier.
+  - Un numéro ou un courriel est un lien (`LienTelephone`, `LienCourriel`, `briques/Contact.tsx`) : texte ordinaire
+    sur ordinateur, lien souligné de 44 px sur un téléphone ; une fiche propose « Appeler » et « Écrire » en tête.
+  - Les actions destructrices (supprimer un chantier, un lot) se tiennent en bout de carte ou de pied, à l'écart.
+  - Le fac-similé d'un formulaire (Nouveau chantier, Paramètres) se replie sous le formulaire (`FeuilleRepliable`).
 - **Un élément ou deux ?** Une saisie n'existe qu'une fois : quand il lui faut un autre élément en étroit (la
   désignation d'un lot, `<input>` qui devient un `<textarea>` ajusté), `useEtroit()` (`briques/etroit.ts`) le dit au
   composant, et `ChampEnLigne` garde le focus si l'élément change pendant la saisie. Une action, elle, peut être rendue

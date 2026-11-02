@@ -18,7 +18,7 @@ type Carte = { k: string; n: string; v: React.ReactNode; vide: boolean; ouvrir?:
 
 /** Une carte de série (ex-.dm-carte) : le nom, la dernière version, ce qu'elle contient, son bouton. */
 function DmCarte(c: Carte) {
-	const valeur = cx('font-titre text-17 font-semibold max-etroit:inline-flex max-etroit:min-h-11 max-etroit:items-center', c.vide ? 'cursor-default text-muted' : 'cursor-pointer text-accent-2 hover:underline');
+	const valeur = cx('font-titre text-17 font-semibold max-etroit:inline-flex max-etroit:min-h-11 max-etroit:items-center max-etroit:text-15', c.vide ? 'cursor-default text-muted' : 'cursor-pointer text-accent-2 hover:underline');
 	return (
 		<CarteBrique variante={c.vide ? 'compacteVide' : 'compacte'} data-serie={c.serie}>
 			<div className="flex justify-between self-stretch">
@@ -56,7 +56,8 @@ export function CartesDocuments({ vue, etendue, attribues }: { vue: VueDocuments
 	}
 
 	return (
-		<div className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-3">
+		// Sur un téléphone, deux colonnes serrées : les documents par lot, qu'on vient chercher, remontent.
+		<div className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-3 max-etroit:grid-cols-2 max-etroit:gap-2">
 			<DmCarte serie="comptes-rendus" idSuite="suite-comptes-rendus" k="Comptes rendus" n={cr.liste.length ? String(cr.liste.length) : ''} vide={!dernier}
 				v={dernier ? `n° ${numeroTexte(dernier.numero)} · ${dernier.date.replace(/\//g, '.')}` : "Aucun pour l'instant"}
 				ouvrir={dernier ? `?cr=${dernier.id}` : undefined}

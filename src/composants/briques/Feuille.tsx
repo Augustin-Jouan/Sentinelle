@@ -1,4 +1,5 @@
 import { cx } from './cx';
+import { FeuilleRepliable } from './FeuilleRepliable';
 
 /**
  * Le fac-similé d'un document à côté d'un formulaire : du papier dans les deux thèmes, aux angles vifs,
@@ -15,7 +16,7 @@ export function Feuille({ legende, children }: { legende?: React.ReactNode; chil
 
 /**
  * Un formulaire et son fac-similé, moitié-moitié (Nouveau chantier, Paramètres) : les sections à gauche,
- * la feuille à droite, qui reste en vue au défilement ; sous 60 rem, la feuille passe dessous.
+ * la feuille à droite, qui reste en vue au défilement ; sous 60 rem, la feuille passe dessous, repliée (FeuilleRepliable).
  * onFocus / onBlur suivent le champ actif de la colonne des sections, pour allumer son blanc.
  */
 export function FormulaireEtFeuille({ feuille, onFocus, onBlur, children }: {
@@ -27,7 +28,7 @@ export function FormulaireEtFeuille({ feuille, onFocus, onBlur, children }: {
 	return (
 		<div className="grid grid-cols-2 items-start gap-x-10 gap-y-10 max-etroit:grid-cols-1">
 			<div className="flex min-w-0 flex-col gap-7" onFocus={onFocus} onBlur={onBlur}>{children}</div>
-			<div className="sticky top-22 min-w-0 max-etroit:static">{feuille}</div>
+			<div className="sticky top-22 min-w-0 max-etroit:static"><FeuilleRepliable>{feuille}</FeuilleRepliable></div>
 		</div>
 	);
 }

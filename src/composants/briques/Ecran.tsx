@@ -1,11 +1,18 @@
 import { Children } from 'react';
+import { ActionsEcran } from './ActionsEcran';
 
 /** Un écran : sa barre de titre et son corps (ex-section.screen, .topbar, .body-pad). */
-export function Ecran({ titre, sousTitre, actions, contexte, children }: {
+export function Ecran({ titre, sousTitre, principale, actions, replier, basColle, contexte, children }: {
 	titre: string;
 	/** Sous le titre : le surtitre « 6 documents produits… » de l'écran Documents. */
 	sousTitre?: React.ReactNode;
+	/** L'action principale, avant les autres ; sur un téléphone, elle flotte en bas à droite (ActionsEcran). */
+	principale?: React.ReactNode;
 	actions?: React.ReactNode;
+	/** Sur un téléphone, les actions autres que la principale se replient derrière « ⋯ ». */
+	replier?: boolean;
+	/** Hauteur de ce qui colle déjà au bas de l'écran : l'action principale se pose au-dessus. */
+	basColle?: string;
 	/** Le bandeau du chantier (Marchés, Planning). */
 	contexte?: React.ReactNode;
 	children: React.ReactNode;
@@ -18,11 +25,12 @@ export function Ecran({ titre, sousTitre, actions, contexte, children }: {
 						<h1 className="text-22">{titre}</h1>
 						{sousTitre}
 					</div>
-					{actions ? <div className="flex flex-wrap items-center gap-2">{Children.toArray(actions)}</div> : null}
+					{actions || principale ? <ActionsEcran principale={principale} actions={actions} replier={replier} basColle={basColle} /> : null}
 				</div>
 				{contexte ? <div className="w-full">{contexte}</div> : null}
 			</div>
-			<div className="p-6">{Children.toArray(children)}</div>
+			{/* L'action principale flotte sur un téléphone : le corps garde de quoi faire défiler sa dernière ligne au-dessus. */}
+			<div className={principale ? 'p-6 max-etroit:pb-24' : 'p-6'}>{Children.toArray(children)}</div>
 		</section>
 	);
 }

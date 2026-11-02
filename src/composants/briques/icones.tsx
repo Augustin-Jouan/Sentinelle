@@ -24,3 +24,6 @@ export const Reactiver = svg(<><path d="M2.5 8a5.5 5.5 0 1 0 1.9-4.2" /><path d=
 export const Main = svg(<><path d="M5 7.5V3.2a1.1 1.1 0 0 1 2.2 0v3.6" /><path d="M7.2 6.8V2.6a1.1 1.1 0 0 1 2.2 0v4.2" /><path d="M9.4 7V4.1a1.1 1.1 0 0 1 2.2 0v4.6" /><path d="M11.6 8.7V6.9a1.1 1.1 0 0 1 2.2 0v3.2c0 2.4-1.8 4.4-4.2 4.4H8.2c-1 0-1.8-.4-2.4-1.1L2.6 9.9a1.1 1.1 0 0 1 1.6-1.5L5 9.2" /></>); // l. 2424
 export const Cible = svg(<><circle cx="8" cy="8" r="5" /><circle cx="8" cy="8" r="1.4" /><path d="M8 .8v2.4M8 12.8v2.4M.8 8h2.4M12.8 8h2.4" /></>); // l. 2428
 export const Chevron = svg(<path d="m4 6 4 4 4-4" />);                                                                      // l. 2142
+/* Hors maquette : appeler et écrire depuis une fiche, sur un téléphone. */
+export const Telephone = svg(<path d="M5.6 2.5 4 2.5c-.8 0-1.5.7-1.4 1.5.5 5 4.4 8.9 9.4 9.4.8.1 1.5-.6 1.5-1.4v-1.6l-2.6-1-1.3 1.3a7.5 7.5 0 0 1-3.8-3.8L7.1 5.6z" />);
+export const Courriel = svg(<><path d="M2 3.5h12v9H2z" /><path d="m2 4 6 5 6-5" /></>);
