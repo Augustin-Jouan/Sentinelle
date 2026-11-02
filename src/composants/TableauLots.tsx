@@ -104,7 +104,8 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 											{nbAv > 0 && <Etiquette className="mr-3 flex-none" title={`${nbAv} avenant(s) — le montant affiché les comprend`}>{nbAv} avenant{nbAv > 1 ? 's' : ''}</Etiquette>}
 										</div>
 									</td>
-									{/* En carte : toute la largeur, et le chevron dit que toucher l'entreprise ouvre le lot. */}
+									{/* En carte : toute la largeur, et le chevron dit que toucher l'entreprise ouvre le lot. HT et TTC (plus bas) font
+									    8 rem au moins : côte à côte s'ils tiennent, l'un sous l'autre sinon (320 px), jamais rognés. */}
 									<td role="cell" className="whitespace-nowrap max-etroit:basis-full max-etroit:whitespace-normal">
 										<div className="max-etroit:flex max-etroit:items-center max-etroit:justify-between max-etroit:gap-3">
 											<div>
@@ -115,13 +116,13 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 											<span className="hidden text-faint max-etroit:inline-flex [&_svg]:size-4 [&_svg]:-rotate-90" aria-hidden="true"><Icone.Chevron /></span>
 										</div>
 									</td>
-									<td role="cell" data-droite data-saisie data-cle="Montant HT" className="w-42 max-etroit:w-auto max-etroit:flex-1" onClick={arreter}>
+									<td role="cell" data-droite data-saisie data-cle="Montant HT" className="w-42 max-etroit:w-auto max-etroit:grow max-etroit:basis-32" onClick={arreter}>
 										<ChampEnLigne variante="montant" libelle="Montant HT" valeur={formatMontantSaisie(l.htInitial)} enregistrer={champ(l.id, 'montantHt')} />
 									</td>
 									<td role="cell" data-droite data-saisie data-hors-carte className="w-26" onClick={arreter}>
 										<ChampEnLigne variante="montant-mini" libelle="Taux de TVA" valeur={formatTauxPoint(l.tauxTva)} enregistrer={champ(l.id, 'tauxTva')} />
 									</td>
-									<td role="cell" data-droite data-saisie data-cle="Montant TTC" className="w-42 max-etroit:w-auto max-etroit:flex-1" onClick={arreter} title={nbAv ? 'Avenants compris — le montant initial HT est recalculé' : undefined}>
+									<td role="cell" data-droite data-saisie data-cle="Montant TTC" className="w-42 max-etroit:w-auto max-etroit:grow max-etroit:basis-32" onClick={arreter} title={nbAv ? 'Avenants compris — le montant initial HT est recalculé' : undefined}>
 										<ChampEnLigne variante="montant" libelle="Montant TTC" valeur={formatMontantSaisie(l.ttcEngage)} enregistrer={champ(l.id, 'montantTtc')} />
 									</td>
 								</tr>

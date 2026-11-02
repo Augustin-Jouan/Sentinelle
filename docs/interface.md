@@ -29,11 +29,11 @@ n'importe jamais de CSS.
 | Accent | `accent`, `accent-2` (survol, texte sur fond pâle), `accent-soft`, `on-accent` (texte sur aplat), `focus` |
 | Danger, alerte | `danger`, `danger-soft` ; `alerte`, `alerte-soft`, `alerte-trait` (réserves à suivre) |
 | Divers | `idle-soft` (survol neutre), `band`, `bar-ring` (Gantt), `voile` (avec une opacité : `bg-voile/42`) |
-| Tailles de texte | `text-9`, `10`, `11`, `12`, `13`, `14`, `15`, `16`, `17`, `18`, `22`, `24`, `40` : la taille en pixels. L'interligne s'hérite. |
+| Tailles de texte | `text-9`, `10`, `11`, `12`, `13`, `14`, `15`, `16`, `17`, `18`, `22`, `24`, `40` : la taille en pixels. L'interligne s'hérite. Sur un téléphone, `9`, `10` et `11` valent 11, 11 et 12 px (jetons `--t-*` de `jetons.css`). |
 | Rondeurs | `rounded-xs` (5 px), `rounded-sm` (9 px), `rounded-md` (14 px), `rounded-lg` (18 px) |
 | Ombres | `shadow-ombre`, `shadow-ombre-h` (menus, panneaux), `shadow-ombre-toast` |
 | Polices | `font-sans` (Figtree), `font-titre` (Outfit), `font-mono` (Spline Sans Mono) |
-| Divers | `tracking-capitales`, `animate-monte`, point de rupture `max-etroit:` (60 rem) |
+| Divers | `tracking-capitales`, `animate-monte`, point de rupture `max-etroit:` (60 rem), `paysage:` (moins de 30 rem de haut : un téléphone couché) |
 
 `src/composants/briques/typo.ts` nomme les trois assemblages qui reviennent partout : `CHIFFRES`
 (`font-mono tabular-nums`), `SURTITRE` (petites capitales), `CLE` (clé discrète d'un couple clé-valeur).
@@ -82,7 +82,9 @@ pas de repli.
   touche fait au moins 44 px en étroit (`max-etroit:min-h-11` dans `Bouton`, les menus, les onglets, les saisies) ;
   une pastille plus petite à l'œil agrandit sa zone par un `after:` (l'avatar du compte). Ce qui ne sert qu'à la
   souris (outils Main et Cible du planning, consigne « Maj + clic ») se cache par
-  `pointer-coarse:not-any-pointer-fine:` : un écran tactile sans souris ni trackpad branché.
+  `pointer-coarse:not-any-pointer-fine:` : un écran tactile sans souris ni trackpad branché. Les onglets du chantier se
+  partagent la largeur, sans icône. Couché (`paysage:`), rien ne colle : l'en-tête part avec la page, un panneau et un
+  aperçu défilent d'un bloc.
 - **Une feuille d'aperçu n'est jamais mise en page pour l'écran** : on doit y voir ce qui sortira de l'imprimante.
   Elle garde sa largeur réelle (`base.css` lève le `max-width: 100 %` de `CSS_DOCUMENTS` et l'empêche de se serrer
   en élément flex) et, plus large que le cadre, `CadreApercu` la réduit d'un bloc par `transform: scale` (jamais par
