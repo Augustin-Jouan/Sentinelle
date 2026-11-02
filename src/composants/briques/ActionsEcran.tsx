@@ -11,12 +11,10 @@ import { cx } from './cx';
  * - avec « replier », les autres actions passent derrière un bouton « ⋯ » qui les montre en liste.
  * Chaque action n'est rendue qu'une fois : seule sa place change.
  */
-export function ActionsEcran({ principale, actions, replier = false, basColle }: {
+export function ActionsEcran({ principale, actions, replier = false }: {
 	principale?: React.ReactNode;
 	actions?: React.ReactNode;
 	replier?: boolean;
-	/** Ce qui colle déjà au bas de l'écran (la barre des totaux de Marchés) : l'action flottante se pose au-dessus. */
-	basColle?: string;
 }) {
 	const [ouvert, setOuvert] = useState(false);
 	const racine = useRef<HTMLDivElement>(null);
@@ -35,8 +33,7 @@ export function ActionsEcran({ principale, actions, replier = false, basColle }:
 	return (
 		<div ref={racine} className="relative flex flex-wrap items-center gap-2">
 			{principale && (
-				<div style={{ '--bas-action': basColle ? `calc(1rem + ${basColle})` : '1rem' } as React.CSSProperties}
-					className="contents max-etroit:fixed max-etroit:right-4 max-etroit:bottom-(--bas-action) max-etroit:z-20 max-etroit:flex max-etroit:rounded-sm max-etroit:shadow-ombre-h">
+				<div className="contents max-etroit:fixed max-etroit:right-4 max-etroit:bottom-4 max-etroit:z-20 max-etroit:flex max-etroit:rounded-sm max-etroit:shadow-ombre-h">
 					{principale}
 				</div>
 			)}

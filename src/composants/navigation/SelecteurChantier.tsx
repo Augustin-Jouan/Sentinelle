@@ -19,9 +19,17 @@ export function SelecteurChantier({ chantiers, courant }: { chantiers: ChantierN
 		if (!ouvert) return;
 		const dehors = (e: MouseEvent) => { if (!racine.current?.contains(e.target as Node)) setOuvert(false); };
 		const touche = (e: KeyboardEvent) => { if (e.key === 'Escape') setOuvert(false); };
+		// En étroit, la liste est fixe et l'en-tête qui porte le bouton défile avec la page : elle se ferme au défilement
+		// plutôt que de rester suspendue sans lui.
+		const defile = () => { if (window.matchMedia('(width < 60rem)').matches) setOuvert(false); };
 		document.addEventListener('click', dehors);
 		document.addEventListener('keydown', touche);
-		return () => { document.removeEventListener('click', dehors); document.removeEventListener('keydown', touche); };
+		window.addEventListener('scroll', defile, { passive: true });
+		return () => {
+			document.removeEventListener('click', dehors);
+			document.removeEventListener('keydown', touche);
+			window.removeEventListener('scroll', defile);
+		};
 	}, [ouvert]);
 
 	function aller(href: string) {

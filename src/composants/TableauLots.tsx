@@ -141,8 +141,9 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 					</tbody>
 				</Tableau>
 			</CadreTableau>
-			{/* Les totaux restent collés en bas de la fenêtre pendant que le tableau défile. */}
-			<div className="sticky bottom-0 z-15 mt-3 flex items-stretch overflow-hidden max-etroit:flex-wrap rounded-md border border-rule-strong bg-surface shadow-ombre">
+			{/* Les totaux restent collés en bas de la fenêtre pendant que le tableau défile ; sur un téléphone, ils prennent
+			    leur place sous les lots, sans manger l'écran. */}
+			<div className="sticky bottom-0 z-15 mt-3 flex items-stretch overflow-hidden max-etroit:static max-etroit:flex-wrap rounded-md border border-rule-strong bg-surface shadow-ombre">
 				<Total cle="Total marchés HT" valeur={vue.totalHtTexte} testid="total-ht" />
 				<Total cle="TVA" valeur={vue.totalTvaTexte} horsCarte />
 				<Total cle="Total marchés TTC" valeur={vue.totalTtcTexte} testid="total-ttc" grand />

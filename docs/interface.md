@@ -83,8 +83,8 @@ pas de repli.
   une pastille plus petite à l'œil agrandit sa zone par un `after:` (l'avatar du compte). Ce qui ne sert qu'à la
   souris (outils Main et Cible du planning, consigne « Maj + clic ») se cache par
   `pointer-coarse:not-any-pointer-fine:` : un écran tactile sans souris ni trackpad branché. Les onglets du chantier se
-  partagent la largeur, sans icône. Couché (`paysage:`), rien ne colle : l'en-tête part avec la page, un panneau et un
-  aperçu défilent d'un bloc.
+  partagent la largeur, sans icône. Sur un téléphone, rien ne colle à la page : l'en-tête (`max-etroit:static`) et la barre des totaux de
+  Marchés défilent avec elle, l'écran reste au contenu. Couché (`paysage:`), un panneau et un aperçu défilent aussi d'un bloc.
 - **Une feuille d'aperçu n'est jamais mise en page pour l'écran** : on doit y voir ce qui sortira de l'imprimante.
   Elle garde sa largeur réelle (`base.css` lève le `max-width: 100 %` de `CSS_DOCUMENTS` et l'empêche de se serrer
   en élément flex) et, plus large que le cadre, `CadreApercu` la réduit d'un bloc par `transform: scale` (jamais par
@@ -93,7 +93,7 @@ pas de repli.
   modifie le dessin d'une feuille ; seules les actions de l'aperçu (au-dessus) suivent les règles du téléphone.
 - **Placement sur un téléphone** : le contenu de l'écran passe avant ses outils.
   - `Ecran` prend `principale` (l'action qu'on vient faire) : sur un téléphone, elle flotte en bas à droite, sous le
-    pouce (`ActionsEcran`, `basColle` la pose au-dessus d'une barre déjà collée) ; `replier` range les autres actions
+    pouce (`ActionsEcran`) ; `replier` range les autres actions
     derrière « ⋯ ». Chaque action n'est rendue qu'une fois : sur ordinateur, ses conteneurs sont en `display: contents`.
     Une action principale normale sur ordinateur prend `variante="flottante"` pour être pleine sous le pouce.
   - Le bandeau du chantier tient sur une ligne (« client · adresse › ») ; le toucher ouvre l'en-tête entier.
