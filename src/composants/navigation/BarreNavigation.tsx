@@ -38,19 +38,20 @@ export function BarreNavigation({ utilisateur, navigation, children }: { utilisa
 			{/* Deux étages : au-dessus du filet ce qui vaut partout, en dessous ce qui appartient au chantier ouvert. */}
 			<header className="sticky top-0 z-25 border-b border-rule bg-surface">
 				<div className="flex min-h-13 items-center gap-3.5 px-6 py-1.5 max-etroit:gap-2 max-etroit:px-3.5 max-etroit:py-2">
-					<Link className="group inline-flex flex-none items-center rounded-sm px-1 py-0.5 hover:bg-idle-soft" href="/chantiers"
+					<Link className="group inline-flex flex-none items-center justify-center rounded-sm px-1 py-0.5 hover:bg-idle-soft max-etroit:min-h-11 max-etroit:min-w-11" href="/chantiers"
 						title="Sentinelle — revenir à l'accueil" aria-label="Sentinelle — revenir à l'accueil"><Sigle survol /></Link>
 					{/* En étroit, le sigle suffit pour revenir à l'accueil : la maison laisse sa place au sélecteur. */}
 					<Link className={cx(ICONE, accueil ? ICONE_ACTIVE : ICONE_AU_REPOS, 'max-etroit:hidden')} href="/chantiers" title="Tous les chantiers" aria-label="Tous les chantiers"><Icone.Maison /></Link>
 					<SelecteurChantier chantiers={navigation.chantiers} courant={surChantier ? courant : null} />
 					<div className="ml-auto flex items-center gap-0.75">
 						<Link href="/artisans" className={cx('inline-flex items-center gap-1.75 rounded-full px-3 py-1.75 text-13 whitespace-nowrap transition-[background-color,color] duration-120',
-							'[&_svg]:size-4 [&_svg]:flex-none [&_svg]:stroke-[1.5] [&_svg]:opacity-80 max-etroit:px-2',
+							'[&_svg]:size-4 [&_svg]:flex-none [&_svg]:stroke-[1.5] [&_svg]:opacity-80 max-etroit:min-h-11 max-etroit:px-2.5',
 							artisans ? 'bg-accent-soft font-semibold text-accent-2' : 'text-ink-2 hover:bg-idle-soft hover:text-ink')}>
 							<Icone.Artisans /><span className="max-etroit:hidden">Artisans</span>
 							<span className={cx('font-mono text-11', artisans ? 'text-accent-2 opacity-75' : 'text-faint')}>{navigation.artisans}</span>
 						</Link>
-						<button type="button" className={cx(ICONE, ICONE_AU_REPOS, 'cursor-pointer')} onClick={basculerTheme} title="Basculer clair / sombre" aria-label="Basculer clair / sombre"><Icone.Soleil /></button>
+						{/* En étroit, le thème passe dans le menu du compte : la barre garde ses cibles de 44 px. */}
+						<button type="button" className={cx(ICONE, ICONE_AU_REPOS, 'cursor-pointer max-etroit:hidden')} onClick={basculerTheme} title="Basculer clair / sombre" aria-label="Basculer clair / sombre"><Icone.Soleil /></button>
 						<MenuCompte utilisateur={utilisateur} />
 					</div>
 				</div>

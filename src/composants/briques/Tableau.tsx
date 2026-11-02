@@ -34,7 +34,27 @@ const VARIANTE = {
 		+ '[&_tbody_tr:last-child>*]:border-b-0 [&_tbody_tr:hover]:bg-surface [&_[data-premiere]]:w-[34%] [&_[data-premiere]]:pl-4',
 } as const;
 
+/**
+ * En étroit, chaque ligne devient une carte : plus d'en-tête, les cellules s'enchaînent et passent à la ligne. L'écran
+ * place ses cellules (max-etroit:basis-full, max-etroit:flex-1…) ; data-cle pose un libellé au-dessus d'une valeur,
+ * data-manque retire une cellule vide, data-hors-carte une cellule que la carte tait, data-actions passe sur sa propre ligne. Le HTML ne change pas : un seul DOM.
+ */
+const CARTES = 'max-etroit:block max-etroit:min-w-0 max-etroit:[&_thead]:hidden max-etroit:[&_tbody]:block '
+	+ 'max-etroit:[&_tbody_tr]:flex max-etroit:[&_tbody_tr]:flex-wrap max-etroit:[&_tbody_tr]:items-end max-etroit:[&_tbody_tr]:gap-x-3 max-etroit:[&_tbody_tr]:gap-y-1.5 '
+	+ 'max-etroit:[&_tbody_tr]:border-b max-etroit:[&_tbody_tr]:border-rule max-etroit:[&_tbody_tr]:px-4 max-etroit:[&_tbody_tr]:py-3.5 max-etroit:[&_tbody_tr:last-child]:border-b-0 '
+	+ 'max-etroit:[&_tbody_td]:block max-etroit:[&_tbody_td]:min-w-0 max-etroit:[&_tbody_td]:border-0 max-etroit:[&_tbody_td]:p-0 '
+	+ 'max-etroit:[&_[data-cle]]:before:block max-etroit:[&_[data-cle]]:before:pb-0.5 max-etroit:[&_[data-cle]]:before:font-titre max-etroit:[&_[data-cle]]:before:text-10 '
+	+ 'max-etroit:[&_[data-cle]]:before:font-semibold max-etroit:[&_[data-cle]]:before:tracking-capitales max-etroit:[&_[data-cle]]:before:text-muted max-etroit:[&_[data-cle]]:before:uppercase '
+	+ 'max-etroit:[&_[data-cle]]:before:content-[attr(data-cle)] max-etroit:[&_[data-manque]]:hidden max-etroit:[&_[data-hors-carte]]:hidden '
+	+ 'max-etroit:[&_[data-actions]]:flex max-etroit:[&_[data-actions]]:basis-full max-etroit:[&_[data-actions]]:justify-end max-etroit:[&_[data-actions]]:gap-2 '
+	+ 'max-etroit:[&_[data-actions]]:pt-1.5 max-etroit:[&_[data-actions]>*+*]:ml-0 max-etroit:[&_[data-vide]]:basis-full';
+
 /** Un tableau de la maquette. Les cellules restent du HTML ; leurs écarts passent par des attributs data-* (CELLULES). */
-export function Tableau({ variante, className, ...reste }: { variante: keyof typeof VARIANTE; className?: string } & Omit<ComponentProps<'table'>, 'className'>) {
-	return <table {...reste} className={cx('w-full border-collapse', CELLULES, VARIANTE[variante], className)} />;
+export function Tableau({ variante, cartes = false, className, ...reste }: {
+	variante: keyof typeof VARIANTE;
+	/** En étroit, une carte par ligne (CARTES) plutôt qu'un tableau qui défile à l'horizontale. */
+	cartes?: boolean;
+	className?: string;
+} & Omit<ComponentProps<'table'>, 'className'>) {
+	return <table {...reste} className={cx('w-full border-collapse', CELLULES, VARIANTE[variante], cartes && CARTES, className)} />;
 }

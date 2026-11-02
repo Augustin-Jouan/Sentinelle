@@ -59,7 +59,8 @@ function CaseAv({ base, a }: { base: string; a: CaseAvenant }) {
 }
 
 /** Le « + » d'un nouveau certificat (ex-.dm-ajout) : en ligne, la case suit la hauteur de son texte. */
-const AJOUT = 'rounded-[6px] border border-dashed border-rule-strong text-14 leading-none text-ink-2 no-underline hover:border-accent hover:text-accent-2';
+const AJOUT = 'rounded-[6px] border border-dashed border-rule-strong text-14 leading-none text-ink-2 no-underline hover:border-accent hover:text-accent-2 '
+	+ 'max-etroit:inline-flex max-etroit:min-h-11 max-etroit:min-w-11 max-etroit:items-center max-etroit:justify-center';
 
 function CasesCertificats({ base, l }: { base: string; l: LigneDocuments }) {
 	const visibles = l.certificats.slice(-2);

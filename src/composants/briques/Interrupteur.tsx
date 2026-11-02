@@ -20,7 +20,7 @@ export function Interrupteur({ coche, onChange, children, id, variante = 'normal
 	variante?: keyof typeof TEXTE;
 }) {
 	return (
-		<label className={cx('inline-flex cursor-pointer items-center gap-2 select-none', TEXTE[variante])}>
+		<label className={cx('inline-flex cursor-pointer items-center gap-2 select-none max-etroit:min-h-11', TEXTE[variante])}>
 			<input type="checkbox" id={id} checked={coche} onChange={(e) => onChange(e.target.checked)} className="peer absolute size-0 opacity-0" />
 			<span aria-hidden="true" className={BOITE} />
 			{children}

@@ -2,7 +2,8 @@ import Link from 'next/link';
 import type { ComponentProps, ComponentPropsWithRef } from 'react';
 import { cx } from './cx';
 
-const BASE = 'inline-flex items-center rounded-sm border leading-[1.3] whitespace-nowrap not-italic no-underline cursor-pointer '
+/** max-etroit:min-h-11 : sur un téléphone, 44 px au moins sous le doigt (le seuil d'Apple et de WCAG 2.5.5). */
+const BASE = 'inline-flex items-center rounded-sm border leading-[1.3] whitespace-nowrap not-italic no-underline cursor-pointer max-etroit:min-h-11 '
 	+ 'transition-[background-color,border-color] duration-120 [&_svg]:size-3.5 '
 	+ 'disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50';
 
@@ -14,7 +15,7 @@ const TAILLE = {
 } as const;
 
 /** Réduit à l'icône (ex-.btn-ico) : remplace la taille. */
-const SEUL_ICONE = 'gap-0 p-1 text-12';
+const SEUL_ICONE = 'justify-center gap-0 p-1 text-12 max-etroit:min-w-11';
 
 const VARIANTE = {
 	normal: 'border-rule-strong bg-raise text-ink hover:border-muted hover:bg-idle-soft',
