@@ -10,12 +10,16 @@ export function BarreOnglets({ libelle, children }: { libelle: string; children:
 	);
 }
 
-/** Un onglet (ex-.nav-o) : son icône, son libellé, son compteur ; l'onglet courant porte aria-current. */
+/**
+ * Un onglet (ex-.nav-o) : son icône, son libellé, son compteur ; l'onglet courant porte aria-current. En étroit, les
+ * onglets se partagent la largeur, sans icône : les trois tiennent à 320 px, aucun n'est coupé.
+ */
 export function Onglet({ href, actif, icone, compteur, children }: { href: string; actif: boolean; icone: React.ReactNode; compteur?: number; children: React.ReactNode }) {
 	return (
 		<Link href={href} aria-current={actif ? 'page' : undefined}
 			className={cx('inline-flex flex-none items-center gap-2 border-b-2 px-3.5 pt-2.75 pb-2.25 max-etroit:min-h-11 text-14 whitespace-nowrap no-underline transition-[color,border-color] duration-120',
-				'[&_svg]:size-4 [&_svg]:flex-none [&_svg]:stroke-[1.5] [&_svg]:opacity-80',
+				'max-etroit:flex-1 max-etroit:justify-center max-etroit:gap-1.5 max-etroit:px-2 max-etroit:text-13',
+				'[&_svg]:size-4 [&_svg]:flex-none [&_svg]:stroke-[1.5] [&_svg]:opacity-80 max-etroit:[&_svg]:hidden',
 				actif ? 'border-accent font-semibold text-accent' : 'border-transparent text-muted hover:text-ink')}>
 			{icone}{children}
 			{compteur !== undefined && (

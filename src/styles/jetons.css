@@ -57,3 +57,19 @@
 	/* planning : largeur d'une semaine (le Gantt la redéfinit selon la densité) */
 	--sem-w: 26px;
 }
+
+/* Les trois plus petites tailles de texte (text-9, text-10, text-11). Sur un téléphone, lues dehors sur un chantier,
+   elles remontent : 11 px au moins pour les petites capitales, 12 px pour le reste. Les feuilles d'aperçu n'en
+   dépendent pas (CSS_DOCUMENTS) : elles restent identiques à l'impression. */
+:root {
+	--t-9: 0.5625rem;
+	--t-10: 0.625rem;
+	--t-11: 0.6875rem;
+}
+@media (width < 60rem) {
+	:root {
+		--t-9: 0.6875rem;
+		--t-10: 0.6875rem;
+		--t-11: 0.75rem;
+	}
+}
