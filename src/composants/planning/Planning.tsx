@@ -218,6 +218,8 @@ export function Planning({ planningInitial, aujourdhui, contexte }: { planningIn
 				<Bouton href="?apercu=visa" scroll={false}><Icone.Visa />Feuille de visa</Bouton>
 				<Bouton variante="primaire" href="?apercu=planning" scroll={false}><Icone.Imprimer />Planning imprimable</Bouton>
 			</>}
+			// Sur un téléphone, ces trois actions passent derrière « ⋯ » : le Gantt remonte.
+			replier
 			contexte={contexte}
 		>
 			<BarreOutilsPlanning

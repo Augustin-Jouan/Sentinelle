@@ -86,11 +86,14 @@ export default async function PageMarches({ params, searchParams }: Props) {
 	return (
 		<Ecran
 			titre="Marchés & récapitulatif"
+			principale={<BoutonAjouterLot chantierId={id} />}
 			actions={<>
-				<BoutonAjouterLot chantierId={id} />
 				<Bouton href="?apercu=recap" scroll={false}><Icone.Telecharger />Exporter le récap</Bouton>
 				<BoutonMarchesManquants chantierId={id} forme="barre" />
 			</>}
+			// Sur un téléphone : « Ajouter un lot » flotte au-dessus de la barre des totaux, le reste derrière « ⋯ ».
+			replier
+			basColle="4.75rem"
 			contexte={<BandeauChantier chantier={chantier} chargesAffaire={chargesAffaire} />}
 		>
 			<TableauLots vue={vue} />

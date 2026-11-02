@@ -23,6 +23,9 @@ const VARIANTE = {
 	fantome: 'border-transparent bg-transparent text-muted hover:bg-idle-soft hover:text-ink',
 	/** Action destructrice : elle ne se confond jamais avec sa voisine. */
 	danger: 'border-rule-strong bg-raise text-danger hover:border-danger hover:bg-danger-soft [&_svg]:opacity-85',
+	/** L'action principale d'un écran qui flotte sous le pouce (ActionsEcran) : normale sur ordinateur, pleine sur un téléphone. */
+	flottante: 'border-rule-strong bg-raise text-ink hover:border-muted hover:bg-idle-soft '
+		+ 'max-etroit:border-accent max-etroit:bg-accent max-etroit:font-medium max-etroit:text-on-accent max-etroit:hover:border-accent-2 max-etroit:hover:bg-accent-2',
 	/** Posé sur une carte cliquable, où un bouton fantôme passerait pour du texte (ex-.chantier-actions .btn). */
 	surCarte: 'border-rule-strong bg-surface text-ink-2 hover:border-muted hover:bg-idle-soft hover:text-ink [&_svg]:opacity-70',
 } as const;

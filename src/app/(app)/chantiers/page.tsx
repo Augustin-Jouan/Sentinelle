@@ -8,7 +8,7 @@ import { lireAccueil } from '@/donnees/accueil';
 export default async function PageChantiers() {
 	await exigerPage();
 	return (
-		<Ecran titre="Mes chantiers" actions={<Bouton variante="primaire" href="/chantiers/nouveau"><Icone.Plus />Nouveau chantier</Bouton>}>
+		<Ecran titre="Mes chantiers" principale={<Bouton variante="primaire" href="/chantiers/nouveau"><Icone.Plus />Nouveau chantier</Bouton>}>
 			<AccueilChantiers cartes={await lireAccueil()} />
 		</Ecran>
 	);
