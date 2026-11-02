@@ -68,19 +68,27 @@ pas de repli.
   `data-premiere` ; sur la ligne, `data-ouvert` et `data-inactif`. Un attribut absent s'écrit `undefined`,
   jamais `false`. Avec `cartes`, chaque ligne devient une carte en étroit (Marchés, Artisans, Documents, Fermetures) : `data-cle` pose un
   libellé au-dessus d'une valeur, `data-manque` retire une cellule vide, `data-hors-carte` une cellule que la
-  carte tait ; l'écran place ses cellules par des utilitaires `max-etroit:`. Le HTML reste le même.
+  carte tait ; l'écran place ses cellules par des utilitaires `max-etroit:`. Le HTML reste le même. L'en-tête n'y
+  est plus lu que par les lecteurs d'écran : une action posée dans un `<th>` doit avoir sa place visible en étroit
+  (Documents). WebKit (VoiceOver) retire la sémantique d'un tableau dont on change le `display` : en cartes, les
+  lignes et cellules portent `role="row"`, `"cell"`, `"columnheader"`, `"rowheader"` (`role="table"` vient de la brique).
 - **Surcouches** : `data-surcouche="panneau" | "menu" | "confirmation" | "apercu"`, `data-ouvert`,
   `data-verrou-defilement` (fige la page), `data-bloque-clavier`. Échap ne ferme que la plus haute ; les
   sélecteurs sont dans `src/composants/briques/surcouches.ts`.
 - **Téléphone (`max-etroit:`)** : rien ne déborde de l'écran à 320 px (une rangée d'actions passe à la ligne, une
   grille s'écrit `minmax(min(24rem,100%),1fr)`). Une saisie fait au moins 16 px en étroit (`TACTILE` dans
-  `Champ.tsx`, et la `Recherche`) : en dessous, Safari sur iPhone zoome la page à chaque saisie. Tout ce qui se
+  `Champ.tsx`, la `Recherche`, celle des menus, et les saisies d'une feuille d'aperçu par `base.css`) : en dessous,
+  Safari sur iPhone zoome la page à chaque saisie. Tout ce qui se
   touche fait au moins 44 px en étroit (`max-etroit:min-h-11` dans `Bouton`, les menus, les onglets, les saisies) ;
   une pastille plus petite à l'œil agrandit sa zone par un `after:` (l'avatar du compte). Ce qui ne sert qu'à la
-  souris (outils Main et Cible du planning, consigne « Maj + clic ») se cache par `pointer-coarse:`. Quand le CSS ne
-  suffit pas, parce qu'il faut un autre élément et pas une autre apparence (la désignation d'un lot, un `<input>` qui
-  devient un `<textarea>` ajusté), `useEtroit()` (`briques/etroit.ts`) le dit au composant ; jamais deux éléments
-  rendus et l'un caché, qui doubleraient les libellés.
+  souris (outils Main et Cible du planning, consigne « Maj + clic ») se cache par
+  `pointer-coarse:not-any-pointer-fine:` : un écran tactile sans souris ni trackpad branché.
+- **Un élément ou deux ?** Une saisie n'existe qu'une fois : quand il lui faut un autre élément en étroit (la
+  désignation d'un lot, `<input>` qui devient un `<textarea>` ajusté), `useEtroit()` (`briques/etroit.ts`) le dit au
+  composant, et `ChampEnLigne` garde le focus si l'élément change pendant la saisie. Une action, elle, peut être rendue
+  à deux endroits quand la mise en page la déplace (le thème : la barre sur ordinateur, le menu du compte en étroit ;
+  les actions de Documents) : une seule place est affichée à la fois, les deux libellés diffèrent, et ce qui la décide
+  (condition, texte) n'est écrit qu'une fois.
 - **Tests de bout en bout** : rôles, libellés, puis `data-testid`. Jamais une classe de style, sauf `g-*` (le
   Gantt) et les classes des feuilles imprimables.
 

@@ -136,7 +136,7 @@ export function MenuDeroulant(p: Props) {
 						<div className="sticky -top-0.75 z-1 -mx-0.75 -mt-0.75 mb-0.75 border-b border-rule bg-raise p-1.5">
 							<input ref={champ} type="search" placeholder={p.recherche === true ? 'Rechercher…' : p.recherche} aria-label={`Rechercher dans ${p.k}`}
 								autoComplete="off" value={requete} onChange={(e) => setRequete(e.target.value)}
-								className="w-full rounded-xs border border-rule-strong bg-surface px-2.5 py-1.75 text-13 text-ink focus:border-accent focus:bg-raise focus:outline-none"
+								className="w-full rounded-xs border border-rule-strong bg-surface px-2.5 py-1.75 text-13 text-ink focus:border-accent focus:bg-raise focus:outline-none max-etroit:py-2.5 max-etroit:text-16"
 								onKeyDown={(e) => {
 									if (e.key === 'Enter') { e.preventDefault(); if (choix[0]) choisir(choix[0].v); }
 									else if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); items()[0]?.focus(); }

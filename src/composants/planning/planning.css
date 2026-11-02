@@ -280,7 +280,8 @@ table.periodes tr.ligne-dep.est-vise td::before { color: var(--accent); }
 	/* Le tableau des périodes en cartes : l'intitulé sur toute la largeur, puis semaine, année, durée et la corbeille
 	   sous leurs libellés (data-cle) ; « Commence après » dessous, comme sur ordinateur. */
 	table.periodes, table.periodes tbody { display: block; }
-	table.periodes thead { display: none; }
+	/* l'en-tête ne sert plus qu'aux lecteurs d'écran (rôles posés dans PanneauLotPlanning : WebKit les perd sinon) */
+	table.periodes thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 	table.periodes tr.ligne-per {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr)) auto;

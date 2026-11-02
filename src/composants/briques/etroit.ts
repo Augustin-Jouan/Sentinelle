@@ -5,8 +5,12 @@ import { useSyncExternalStore } from 'react';
 /** Le point de rupture max-etroit: (theme.css), en requête média. */
 const ETROIT = '(width < 60rem)';
 
+/** Une seule requête pour toute la page, créée au premier besoin (jamais côté serveur). */
+let requete: MediaQueryList | null = null;
+const etroit = () => (requete ??= window.matchMedia(ETROIT));
+
 function abonner(prevenir: () => void) {
-	const m = window.matchMedia(ETROIT);
+	const m = etroit();
 	m.addEventListener('change', prevenir);
 	return () => m.removeEventListener('change', prevenir);
 }
@@ -17,5 +21,5 @@ function abonner(prevenir: () => void) {
  * téléphone bascule juste après l'hydratation.
  */
 export function useEtroit(): boolean {
-	return useSyncExternalStore(abonner, () => window.matchMedia(ETROIT).matches, () => false);
+	return useSyncExternalStore(abonner, () => etroit().matches, () => false);
 }

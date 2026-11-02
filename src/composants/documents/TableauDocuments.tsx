@@ -106,29 +106,34 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 	const base = `/chantiers/${vue.chantierId}`;
 	const attribues = vue.lots.filter((l) => l.entreprise).length;
 	const sansMarche = vue.lots.filter((l) => l.entreprise && l.marche.etat === 'a-produire').length;
+	// Les deux actions qui portent sur tous les lots, décidées ici une fois : dans l'en-tête des colonnes sur ordinateur,
+	// en boutons au-dessus des cartes en étroit (l'en-tête n'y est plus qu'à l'usage des lecteurs d'écran).
+	const manquants = (enCarte: boolean) => sansMarche > 0 && (enCarte
+		? <BoutonMarchesManquants chantierId={vue.chantierId} />
+		: <span className="max-etroit:hidden"> <BoutonMarchesManquants chantierId={vue.chantierId} forme="entete" texte={`Générer les ${sansMarche} manquants`} /></span>);
+	const pvTous = (enCarte: boolean) => attribues > 1 && (enCarte
+		? <Bouton href="?pv=tous" scroll={false}>PV de tous les lots</Bouton>
+		: <span className="max-etroit:hidden"> <LienAction className="ml-1.5" href="?pv=tous" scroll={false}>Tous les lots</LienAction></span>);
 	return (
 		<CadreTableau>
 			{/* En carte (étroit), l'en-tête disparaît : ses deux actions passent au-dessus des lots. */}
 			{(sansMarche > 0 || attribues > 1) && (
-				<div className="hidden flex-wrap gap-2 border-b border-rule bg-surface px-4 py-3 max-etroit:flex">
-					{sansMarche > 0 && <BoutonMarchesManquants chantierId={vue.chantierId} />}
-					{attribues > 1 && <Bouton href="?pv=tous" scroll={false}>PV de tous les lots</Bouton>}
-				</div>
+				<div className="hidden flex-wrap gap-2 border-b border-rule bg-surface px-4 py-3 max-etroit:flex">{manquants(true)}{pvTous(true)}</div>
 			)}
 			<Tableau variante="dm" cartes>
-				<thead><tr>
-					<th scope="col" data-premiere>Lot et entreprise</th>
-					<th scope="col">Marché{sansMarche > 0 && <> <BoutonMarchesManquants chantierId={vue.chantierId} forme="entete" texte={`Générer les ${sansMarche} manquants`} /></>}</th>
-					<th scope="col">Avenants</th>
-					<th scope="col">Certificats de paiement</th>
-					<th scope="col">Réception{attribues > 1 && <> <LienAction className="ml-1.5" href="?pv=tous" scroll={false}>Tous les lots</LienAction></>}</th>
+				<thead><tr role="row">
+					<th scope="col" role="columnheader" data-premiere>Lot et entreprise</th>
+					<th scope="col" role="columnheader">Marché{manquants(false)}</th>
+					<th scope="col" role="columnheader">Avenants</th>
+					<th scope="col" role="columnheader">Certificats de paiement</th>
+					<th scope="col" role="columnheader">Réception{pvTous(false)}</th>
 				</tr></thead>
 				<tbody>
 					{vue.lots.map((l) => {
 						const st = l.nature === 'SOUS_TRAITANCE';
 						const inactif = !l.entreprise;
 						const lot = (
-							<th scope="row" data-premiere>
+							<th scope="row" role="rowheader" data-premiere>
 								{/* La grille vit dans un bloc intérieur : posée sur la cellule, elle la sortait du tableau. */}
 								<div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-1">
 									<span className="row-[1/3] pt-0.5 font-mono text-11 text-muted">{l.numero || (st ? 'ST' : '—')}</span>
@@ -140,20 +145,20 @@ export function TableauDocuments({ vue }: { vue: VueDocuments }) {
 							</th>
 						);
 						if (inactif) {
-							return <tr key={l.lotId} data-lot={l.lotTexte}>{lot}<td colSpan={4} className="text-12 italic text-muted max-etroit:basis-full">Attribuez une entreprise depuis l&apos;écran Marchés pour produire ses documents.</td></tr>;
+							return <tr role="row" key={l.lotId} data-lot={l.lotTexte}>{lot}<td role="cell" colSpan={4} className="text-12 italic text-muted max-etroit:basis-full">Attribuez une entreprise depuis l&apos;écran Marchés pour produire ses documents.</td></tr>;
 						}
 						return (
-							<tr key={l.lotId} data-lot={l.lotTexte}>
+							<tr role="row" key={l.lotId} data-lot={l.lotTexte}>
 								{lot}
 								{/* En carte, deux documents par rang (au moins 40 % chacun) sous leur libellé. */}
-								<td data-cle="Marché" className={CASE_CARTE}><CaseMarche base={base} l={l} /></td>
-								<td data-cle="Avenants" className={CASE_CARTE}><div className={PILE}>{l.avenants.length ? l.avenants.map((a) => <CaseAv key={a.avenantId} base={base} a={a} />) : <span className="text-faint" aria-label="aucun">—</span>}</div></td>
-								<td data-cle="Certificats" className={CASE_CARTE}><CasesCertificats base={base} l={l} /></td>
-								<td data-cle="Réception" className={CASE_CARTE}><CaseReception l={l} /></td>
+								<td role="cell" data-cle="Marché" className={CASE_CARTE}><CaseMarche base={base} l={l} /></td>
+								<td role="cell" data-cle="Avenants" className={CASE_CARTE}><div className={PILE}>{l.avenants.length ? l.avenants.map((a) => <CaseAv key={a.avenantId} base={base} a={a} />) : <span className="text-faint" aria-label="aucun">—</span>}</div></td>
+								<td role="cell" data-cle="Certificats" className={CASE_CARTE}><CasesCertificats base={base} l={l} /></td>
+								<td role="cell" data-cle="Réception" className={CASE_CARTE}><CaseReception l={l} /></td>
 							</tr>
 						);
 					})}
-					{!vue.lots.length && <tr><td colSpan={5} className="text-12 italic text-muted max-etroit:basis-full">Ce chantier n&apos;a pas encore de lot.</td></tr>}
+					{!vue.lots.length && <tr role="row"><td role="cell" colSpan={5} className="text-12 italic text-muted max-etroit:basis-full">Ce chantier n&apos;a pas encore de lot.</td></tr>}
 				</tbody>
 			</Tableau>
 			<div className="flex flex-wrap justify-between gap-4 border-t border-rule bg-surface px-4 py-2.5 text-12 text-muted">

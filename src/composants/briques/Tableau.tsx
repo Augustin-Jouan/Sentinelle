@@ -35,12 +35,13 @@ const VARIANTE = {
 } as const;
 
 /**
- * En étroit, chaque ligne devient une carte : plus d'en-tête, les cellules s'enchaînent et passent à la ligne. L'écran
+ * En étroit, chaque ligne devient une carte : l'en-tête n'est plus lu que par les lecteurs d'écran, les cellules s'enchaînent
+ * et passent à la ligne. L'écran
  * place ses cellules (max-etroit:basis-full, max-etroit:flex-1…) ; data-cle pose un libellé au-dessus d'une valeur,
  * data-manque retire une cellule vide, data-hors-carte une cellule que la carte tait ; data-actions et data-premiere (le <th>
  * de ligne du tableau dm) prennent leur propre ligne. Le HTML ne change pas : un seul DOM.
  */
-const CARTES = 'max-etroit:block max-etroit:min-w-0 max-etroit:[&_thead]:hidden max-etroit:[&_tbody]:block '
+const CARTES = 'max-etroit:block max-etroit:min-w-0 max-etroit:[&_thead]:sr-only max-etroit:[&_tbody]:block '
 	+ 'max-etroit:[&_tbody_tr]:flex max-etroit:[&_tbody_tr]:flex-wrap max-etroit:[&_tbody_tr]:items-start max-etroit:[&_tbody_tr]:gap-x-3 max-etroit:[&_tbody_tr]:gap-y-1.5 '
 	+ 'max-etroit:[&_tbody_tr]:border-b max-etroit:[&_tbody_tr]:border-rule max-etroit:[&_tbody_tr]:px-4 max-etroit:[&_tbody_tr]:py-3.5 max-etroit:[&_tbody_tr:last-child]:border-b-0 '
 	+ 'max-etroit:[&_tbody_tr>*]:block max-etroit:[&_tbody_tr>*]:min-w-0 max-etroit:[&_tbody_tr>*]:border-0 max-etroit:[&_tbody_tr>*]:p-0 '
@@ -58,5 +59,7 @@ export function Tableau({ variante, cartes = false, className, ...reste }: {
 	cartes?: boolean;
 	className?: string;
 } & Omit<ComponentProps<'table'>, 'className'>) {
-	return <table {...reste} className={cx('w-full border-collapse', CELLULES, VARIANTE[variante], cartes && CARTES, className)} />;
+	// role="table" : WebKit (VoiceOver) retire la sémantique d'un tableau dont on change le display ; en cartes, l'écran
+	// pose aussi role="row", "cell", "columnheader", "rowheader" sur ses lignes et cellules.
+	return <table role={cartes ? 'table' : undefined} {...reste} className={cx('w-full border-collapse', CELLULES, VARIANTE[variante], cartes && CARTES, className)} />;
 }

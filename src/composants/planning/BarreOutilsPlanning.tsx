@@ -31,9 +31,15 @@ const segment = (choisi: boolean, icone = false) => cx(
 	'-ml-px cursor-pointer rounded-xs border py-1.25 text-12 first-of-type:ml-0 max-etroit:min-h-11',
 	icone ? 'px-2 leading-[0] [&_svg]:size-3.75 [&_svg]:stroke-[1.4] [&_svg]:[stroke-linecap:round] [&_svg]:[stroke-linejoin:round]' : 'px-2.5',
 	choisi ? 'border-accent bg-accent font-medium text-on-accent' : 'border-rule-strong bg-raise text-muted hover:bg-idle-soft hover:text-ink');
+/**
+ * Au doigt seulement : un écran tactile sans aucun pointeur précis. Une tablette à laquelle on a branché une souris ou
+ * un trackpad (any-pointer: fine) garde les outils de la souris.
+ */
+const SANS_SOURIS = 'pointer-coarse:not-any-pointer-fine:hidden';
+const AU_DOIGT_SEUL = 'hidden pointer-coarse:not-any-pointer-fine:inline';
 /** Un groupe de boutons sous son libellé (ex-.zoom) : l'outil, la densité. */
 const Groupe = ({ libelle, auDoigt = true, children }: { libelle: string; auDoigt?: boolean; children: React.ReactNode }) => (
-	<div className={cx('inline-flex items-center gap-2', !auDoigt && 'pointer-coarse:hidden')} role="group" aria-label={libelle}><span className={CLE}>{libelle}</span>{children}</div>
+	<div className={cx('inline-flex items-center gap-2', !auDoigt && SANS_SOURIS)} role="group" aria-label={libelle}><span className={CLE}>{libelle}</span>{children}</div>
 );
 
 export function BarreOutilsPlanning(p: Props) {
@@ -58,8 +64,8 @@ export function BarreOutilsPlanning(p: Props) {
 					) : (
 						<>
 							{/* Au doigt, ni Maj ni flèches : la consigne dit ce qui marche. */}
-							<span className="text-12 whitespace-nowrap text-muted pointer-coarse:hidden">{texteSelection(p.nbSelection)}</span>
-							<span className="hidden text-12 text-muted pointer-coarse:inline">Touchez un lot ou une barre pour modifier ses périodes.</span>
+							<span className={cx('text-12 whitespace-nowrap text-muted', SANS_SOURIS)}>{texteSelection(p.nbSelection)}</span>
+							<span className={cx('text-12 text-muted', AU_DOIGT_SEUL)}>Touchez un lot ou une barre pour modifier ses périodes.</span>
 						</>
 					)}
 				</span>
