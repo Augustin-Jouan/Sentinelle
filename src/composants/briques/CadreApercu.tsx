@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { CSS_DOCUMENTS } from '@/documents/styles';
 import { cx } from './cx';
 import { Surtitre } from './Surtitre';
@@ -35,6 +35,53 @@ const SPLIT = {
 } as const;
 
 /**
+ * Le cadre de la feuille : elle y garde la mise en page de l'impression (sa largeur réelle, voir base.css) et, plus
+ * large que le cadre (un téléphone, une fenêtre étroite), elle est réduite d'un bloc pour tenir en largeur, comme une
+ * visionneuse de PDF : ce qu'on voit est ce qui sortira de l'imprimante. La réduction est un transform: scale, pas un
+ * zoom CSS : le zoom recalcule la mise en page à petite échelle (arrondis des polices, lignes qui tombent autrement),
+ * le transform se contente de réduire l'image d'une page mise en page à taille réelle. Le bloc qui la porte prend la
+ * taille réduite, pour que le défilement et le centrage restent justes.
+ */
+function Feuille({ children }: { children: React.ReactNode }) {
+	const cadre = useRef<HTMLDivElement>(null);
+	const bloc = useRef<HTMLDivElement>(null);
+	const page = useRef<HTMLDivElement>(null);
+	useLayoutEffect(() => {
+		const c = cadre.current, b = bloc.current, p = page.current;
+		if (!c || !b || !p) return;
+		const ajuster = () => {
+			// Mesure à taille réelle (avant peinture : rien ne clignote).
+			p.style.transform = ''; p.style.width = '';
+			b.style.width = ''; b.style.height = ''; b.style.overflow = '';
+			const s = getComputedStyle(c);
+			const dispo = c.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight);
+			const naturelle = p.scrollWidth;
+			if (naturelle <= dispo + 0.5) return;
+			const echelle = dispo / naturelle;
+			p.style.width = `${naturelle}px`;
+			p.style.transform = `scale(${echelle})`;
+			b.style.width = `${dispo}px`;
+			b.style.height = `${p.offsetHeight * echelle}px`;
+			b.style.overflow = 'hidden';
+		};
+		ajuster();
+		// Le cadre change de taille (rotation, fenêtre) ou la page de hauteur (saisie, feuille unique mesurée après coup).
+		const observateur = new ResizeObserver(() => ajuster());
+		observateur.observe(c);
+		observateur.observe(p);
+		return () => observateur.disconnect();
+	}, []);
+	return (
+		<div ref={cadre} className="flex items-start justify-center-safe overflow-auto overscroll-contain p-7 max-etroit:p-3.5" data-testid="cadre-feuille">
+			<div ref={bloc} className="min-w-0">
+				{/* La page reprend la disposition du cadre (feuille et notes côte à côte) ; elle se réduit depuis son coin haut gauche. */}
+				<div ref={page} className="flex origin-top-left items-start">{children}</div>
+			</div>
+		</div>
+	);
+}
+
+/**
  * L'aperçu plein écran d'un document (ex-.gen) : la page de derrière ne défile plus (data-verrou-defilement),
  * Échap le ferme sauf si un menu, une confirmation ou un panneau ouvert au-dessus le garde (AU_DESSUS_DE_L_APERCU).
  */
@@ -46,7 +93,7 @@ export function CadreApercu({ libelle, surtitre, titre, aide, notes, actions, di
 		window.addEventListener('keydown', touche);
 		return () => window.removeEventListener('keydown', touche);
 	}, []);
-	const feuille = <div className="flex items-start justify-center overflow-auto overscroll-contain p-7">{children}</div>;
+	const feuille = <Feuille>{children}</Feuille>;
 	return (
 		<div role="dialog" aria-label={libelle} data-surcouche="apercu" data-ouvert="" data-verrou-defilement="" data-bloque-clavier=""
 			className="fixed inset-0 z-60 grid grid-rows-[auto_minmax(0,1fr)] bg-paper">
@@ -59,7 +106,8 @@ export function CadreApercu({ libelle, surtitre, titre, aide, notes, actions, di
 					{aide && <p className="mt-0.5 text-12 text-muted">{aide}</p>}
 					{notes}
 				</div>
-				<div className="flex items-center gap-2">{actions}</div>
+				{/* flex-wrap : sur un téléphone, l'action principale (Générer, Enregistrer) passe à la ligne au lieu de sortir de l'écran. */}
+				<div className="flex flex-wrap items-center gap-2">{actions}</div>
 			</div>
 			{disposition === 'champs' ? (
 				<div className={SPLIT.champs}>
