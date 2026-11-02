@@ -10,6 +10,7 @@ import {
 } from '@/actions/planning';
 import { Bouton } from '@/composants/briques/Bouton';
 import { useConfirmation } from '@/composants/briques/Confirmation';
+import { ConseilPaysage } from '@/composants/briques/ConseilPaysage';
 import { Ecran } from '@/composants/briques/Ecran';
 import * as Icone from '@/composants/briques/icones';
 import * as regles from '@/domaine/planning';
@@ -222,6 +223,7 @@ export function Planning({ planningInitial, aujourdhui, contexte }: { planningIn
 			replier
 			contexte={contexte}
 		>
+			<ConseilPaysage className="mb-3">Tournez votre téléphone : le planning s&apos;affiche en plus grand.</ConseilPaysage>
 			<BarreOutilsPlanning
 				resume={resume(nbAffichees, periodes.length, e.debut, e.fin)}
 				nbSelection={choisies.length}

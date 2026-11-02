@@ -27,3 +27,5 @@ export const Chevron = svg(<path d="m4 6 4 4 4-4" />);                          
 /* Hors maquette : appeler et écrire depuis une fiche, sur un téléphone. */
 export const Telephone = svg(<path d="M5.6 2.5 4 2.5c-.8 0-1.5.7-1.4 1.5.5 5 4.4 8.9 9.4 9.4.8.1 1.5-.6 1.5-1.4v-1.6l-2.6-1-1.3 1.3a7.5 7.5 0 0 1-3.8-3.8L7.1 5.6z" />);
 export const Courriel = svg(<><path d="M2 3.5h12v9H2z" /><path d="m2 4 6 5 6-5" /></>);
+/* Hors maquette : tourner le téléphone (un appareil en hauteur, une flèche qui le couche). */
+export const Pivoter = svg(<><path d="M3.5 1.5h5v9h-5z" /><path d="M5.5 8.5h1" /><path d="M10.5 5.5a4 4 0 0 1 3 4.5" /><path d="m12 9 1.5 1.5L15 9" /></>);

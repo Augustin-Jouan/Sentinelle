@@ -101,6 +101,8 @@ pas de repli.
     sur ordinateur, lien souligné de 44 px sur un téléphone ; une fiche propose « Appeler » et « Écrire » en tête.
   - Les actions destructrices (supprimer un chantier, un lot) se tiennent en bout de carte ou de pied, à l'écart.
   - Le fac-similé d'un formulaire (Nouveau chantier, Paramètres) se replie sous le formulaire (`FeuilleRepliable`).
+  - Le planning et sa feuille (A4 paysage) conseillent de tourner le téléphone (`ConseilPaysage`) : visible seulement
+    sur un téléphone tenu debout (étroit, portrait, au doigt seul) ; « Compris » le range pour de bon sur l'appareil.
   - Un aperçu de document propose « Agrandir » et « Taille réelle » sur un téléphone. Agrandie, la feuille occupe tout
     l'écran : l'en-tête et les champs s'effacent (montés, cachés) jusqu'à « Réduire » ou Échap. En taille réelle, la
     feuille, réduite pour tenir, se lit et se remplit à 100 % en la faisant glisser. Le compte rendu, écrit sur le chantier, se saisit dans un formulaire
