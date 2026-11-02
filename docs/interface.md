@@ -82,7 +82,10 @@ pas de repli.
   touche fait au moins 44 px en étroit (`max-etroit:min-h-11` dans `Bouton`, les menus, les onglets, les saisies) ;
   une pastille plus petite à l'œil agrandit sa zone par un `after:` (l'avatar du compte). Ce qui ne sert qu'à la
   souris (outils Main et Cible du planning, consigne « Maj + clic ») se cache par
-  `pointer-coarse:not-any-pointer-fine:` : un écran tactile sans souris ni trackpad branché.
+  `pointer-coarse:not-any-pointer-fine:` : un écran tactile sans souris ni trackpad branché. Dans un aperçu de
+  document, les actions passent à la ligne et une feuille plus large que l'écran part du bord gauche
+  (`justify-center-safe`) ; `base.css` agrandit les saisies et les cases de la feuille et resserre ses grilles fixes,
+  pour l'écran seulement (le PDF ne charge pas cette feuille).
 - **Un élément ou deux ?** Une saisie n'existe qu'une fois : quand il lui faut un autre élément en étroit (la
   désignation d'un lot, `<input>` qui devient un `<textarea>` ajusté), `useEtroit()` (`briques/etroit.ts`) le dit au
   composant, et `ChampEnLigne` garde le focus si l'élément change pendant la saisie. Une action, elle, peut être rendue
