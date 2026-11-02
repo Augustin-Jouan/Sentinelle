@@ -70,28 +70,29 @@ export function GestionComptes({ comptes, moiId }: { comptes: CompteListe[]; moi
 	return (
 		<>
 			<CadreTableau>
-				<Tableau variante="plain">
+				<Tableau variante="plain" cartes>
 					<thead>
-						<tr>
-							<th>Nom</th><th>E-mail</th><th>Portable</th><th>Rôle</th><th>État</th><th data-droite />
+						<tr role="row">
+							<th role="columnheader">Nom</th><th role="columnheader">E-mail</th><th role="columnheader">Portable</th><th role="columnheader">Rôle</th><th role="columnheader">État</th><th role="columnheader" data-droite />
 						</tr>
 					</thead>
 					<tbody>
 						{comptes.map((c) => (
-							<tr key={c.id}>
-								<td>{c.nom}</td>
-								<td>{c.email}</td>
-								<td>
+							<tr role="row" key={c.id}>
+								{/* En carte (étroit) : nom et e-mail sur leur ligne, puis portable, rôle et état sous leur libellé, puis les actions. */}
+								<td role="cell" className="font-medium max-etroit:basis-full max-etroit:text-15">{c.nom}</td>
+								<td role="cell" className="max-etroit:basis-full max-etroit:break-all max-etroit:text-muted">{c.email}</td>
+								<td role="cell" data-cle="Portable" className="max-etroit:basis-full">
 									<ChampEnLigne variante="texte" libelle={`Portable de ${c.nom}`} type="tel" placeholder="06 …" valeur={c.telephone}
 										enregistrer={modifierTelephoneAction.bind(null, c.id)} />
 								</td>
-								<td>{c.role === 'admin' ? 'Administrateur' : 'Utilisateur'}</td>
-								<td>
+								<td role="cell" data-cle="Rôle" className="max-etroit:flex-1">{c.role === 'admin' ? 'Administrateur' : 'Utilisateur'}</td>
+								<td role="cell" data-cle="État" className="max-etroit:flex-1">
 									{c.bloque ? <Pastille ton="neutre">Bloqué</Pastille>
 										: c.doitChangerMotDePasse ? <Pastille className="ml-1">Mot de passe provisoire</Pastille>
 										: <Pastille>Actif</Pastille>}
 								</td>
-								<td data-droite data-actions>
+								<td role="cell" data-droite data-actions>
 									<Bouton taille="sm" desactive={enCours} onClick={() => reinitialiser(c)}>Réinitialiser le mot de passe</Bouton>
 									{c.id !== moiId && (
 										<>

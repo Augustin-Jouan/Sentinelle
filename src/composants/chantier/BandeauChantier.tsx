@@ -37,22 +37,24 @@ export function BandeauChantier({ chantier: c, chargesAffaire }: { chantier: EnT
 		else if (succes) toast(succes);
 	});
 	const situee = [c.adresse, [c.cp, c.commune].filter(Boolean).join(' ')].filter(Boolean).join(', ') || '—';
-	const cellules: [string, string, boolean][] = [
-		['Client', c.maitreOuvrage || '—', false],
-		['Construction', c.natureTravaux || '—', false],
-		['Située', situee, false],
-		['Mission', c.mission === 'COMPLETE' ? 'Complète' : 'Partielle', false],
-		['Signature', c.dateSignaturePrevue ? dateFr(c.dateSignaturePrevue) : 'non fixée', Boolean(c.dateSignaturePrevue)],
+	// En étroit (téléphone), le bandeau ne défile plus à l'horizontale : client et adresse côte à côte, la construction
+	// dessous sur toute la largeur ; mission et signature restent dans le panneau qu'ouvre un toucher.
+	const cellules: [string, string, boolean, string][] = [
+		['Client', c.maitreOuvrage || '—', false, ''],
+		['Construction', c.natureTravaux || '—', false, 'max-etroit:order-1 max-etroit:col-span-2 max-etroit:border-t max-etroit:border-r-0'],
+		['Située', situee, false, 'max-etroit:border-r-0'],
+		['Mission', c.mission === 'COMPLETE' ? 'Complète' : 'Partielle', false, 'max-etroit:hidden'],
+		['Signature', c.dateSignaturePrevue ? dateFr(c.dateSignaturePrevue) : 'non fixée', Boolean(c.dateSignaturePrevue), 'max-etroit:hidden'],
 	];
 	return (
 		<div className="w-full">
 			{/* Le bandeau du chantier (ex-.context) : un clic ouvre l'en-tête à modifier. */}
-			<button type="button" className="flex w-full cursor-pointer overflow-x-auto border-t border-rule bg-surface text-left hover:bg-idle-soft"
+			<button type="button" className="flex w-full cursor-pointer overflow-x-auto border-t border-rule bg-surface text-left hover:bg-idle-soft max-etroit:grid max-etroit:grid-cols-2 max-etroit:overflow-x-visible"
 				title="Modifier l'en-tête du chantier" onClick={() => setOuvert(true)}>
-				{cellules.map(([k, v, mono]) => (
-					<div key={k} className="min-w-0 flex-none border-r border-rule px-6 pt-2.5 pb-2.75 last:border-r-0">
+				{cellules.map(([k, v, mono, etroit]) => (
+					<div key={k} className={cx('min-w-0 flex-none border-r border-rule px-6 pt-2.5 pb-2.75 last:border-r-0 max-etroit:px-4', etroit)}>
 						<span className={cx(CLE, 'mb-0.25 flow-root')}>{k}</span>
-						<span className={cx('text-13 whitespace-nowrap', mono && CHIFFRES)}>{v}</span>
+						<span className={cx('text-13 whitespace-nowrap max-etroit:whitespace-normal', mono && CHIFFRES)}>{v}</span>
 					</div>
 				))}
 			</button>

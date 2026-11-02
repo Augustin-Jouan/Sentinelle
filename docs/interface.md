@@ -77,12 +77,18 @@ pas de repli.
   sélecteurs sont dans `src/composants/briques/surcouches.ts`.
 - **Téléphone (`max-etroit:`)** : rien ne déborde de l'écran à 320 px (une rangée d'actions passe à la ligne, une
   grille s'écrit `minmax(min(24rem,100%),1fr)`). Une saisie fait au moins 16 px en étroit (`TACTILE` dans
-  `Champ.tsx`, la `Recherche`, celle des menus, et les saisies d'une feuille d'aperçu par `base.css`) : en dessous,
+  `Champ.tsx`, la `Recherche`, celle des menus) : en dessous,
   Safari sur iPhone zoome la page à chaque saisie. Tout ce qui se
   touche fait au moins 44 px en étroit (`max-etroit:min-h-11` dans `Bouton`, les menus, les onglets, les saisies) ;
   une pastille plus petite à l'œil agrandit sa zone par un `after:` (l'avatar du compte). Ce qui ne sert qu'à la
   souris (outils Main et Cible du planning, consigne « Maj + clic ») se cache par
   `pointer-coarse:not-any-pointer-fine:` : un écran tactile sans souris ni trackpad branché.
+- **Une feuille d'aperçu n'est jamais mise en page pour l'écran** : on doit y voir ce qui sortira de l'imprimante.
+  Elle garde sa largeur réelle (`base.css` lève le `max-width: 100 %` de `CSS_DOCUMENTS` et l'empêche de se serrer
+  en élément flex) et, plus large que le cadre, `CadreApercu` la réduit d'un bloc par `transform: scale` (jamais par
+  `zoom`, qui recalcule la mise en page et déplace des lignes). Ses saisies et ses cases rapetissent avec elle : sur un
+  téléphone, on pince pour zoomer, et Safari zoome de lui-même sur la saisie touchée. Aucune règle d'écran ne
+  modifie le dessin d'une feuille ; seules les actions de l'aperçu (au-dessus) suivent les règles du téléphone.
 - **Un élément ou deux ?** Une saisie n'existe qu'une fois : quand il lui faut un autre élément en étroit (la
   désignation d'un lot, `<input>` qui devient un `<textarea>` ajusté), `useEtroit()` (`briques/etroit.ts`) le dit au
   composant, et `ChampEnLigne` garde le focus si l'élément change pendant la saisie. Une action, elle, peut être rendue

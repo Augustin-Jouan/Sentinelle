@@ -49,7 +49,7 @@ const CARTES = 'max-etroit:block max-etroit:min-w-0 max-etroit:[&_thead]:sr-only
 	+ 'max-etroit:[&_[data-cle]]:before:block max-etroit:[&_[data-cle]]:before:pb-0.5 max-etroit:[&_[data-cle]]:before:font-titre max-etroit:[&_[data-cle]]:before:text-10 '
 	+ 'max-etroit:[&_[data-cle]]:before:font-semibold max-etroit:[&_[data-cle]]:before:tracking-capitales max-etroit:[&_[data-cle]]:before:text-muted max-etroit:[&_[data-cle]]:before:uppercase '
 	+ 'max-etroit:[&_[data-cle]]:before:content-[attr(data-cle)] max-etroit:[&_[data-manque]]:hidden max-etroit:[&_[data-hors-carte]]:hidden '
-	+ 'max-etroit:[&_[data-actions]]:flex max-etroit:[&_[data-actions]]:basis-full max-etroit:[&_[data-actions]]:justify-end max-etroit:[&_[data-actions]]:gap-2 '
+	+ 'max-etroit:[&_[data-actions]]:flex max-etroit:[&_[data-actions]]:basis-full max-etroit:[&_[data-actions]]:flex-wrap max-etroit:[&_[data-actions]]:justify-end max-etroit:[&_[data-actions]]:gap-2 '
 	+ 'max-etroit:[&_[data-actions]]:pt-1.5 max-etroit:[&_[data-actions]>*+*]:ml-0 max-etroit:[&_[data-vide]]:basis-full';
 
 /** Un tableau de la maquette. Les cellules restent du HTML ; leurs écarts passent par des attributs data-* (CELLULES). */
