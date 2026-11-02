@@ -14,7 +14,7 @@ const TON = {
 } as const;
 
 const TAILLE = {
-	normale: 'px-2 py-0.75 text-12',
+	normale: 'px-2 py-0.75 text-12 max-etroit:min-h-11',
 	/** Dans la légende du pied de tableau (ex-.dm-legende .dm-case). */
 	legende: 'px-1.5 py-0 text-11',
 } as const;

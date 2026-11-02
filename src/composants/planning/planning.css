@@ -19,6 +19,8 @@
 	scroll-behavior: smooth;
 	user-select: none;
 	--sem-w: 46px;
+	/* la colonne figée des lots ; la nappe des liens part de son bord droit */
+	--fixe-w: 21rem;
 }
 /* L'outil courant se lit au curseur : la cible vise une semaine, la main saisit la nappe. */
 .gantt.outil-main .g-piste { cursor: grab; }
@@ -49,7 +51,7 @@
 	left: 0;
 	z-index: 6;
 	flex: none;
-	width: 21rem;
+	width: var(--fixe-w);
 	display: grid;
 	grid-template-columns: 0.625rem minmax(0, 1fr);
 	align-content: center;
@@ -111,7 +113,7 @@
 .g-corps { position: relative; }
 /* la nappe des liens couvre les pistes, décalée de la colonne figée */
 .g-liens {
-	position: absolute; top: 0; left: 21rem;
+	position: absolute; top: 0; left: var(--fixe-w);
 	pointer-events: none;
 	z-index: 4;
 	overflow: visible;
@@ -262,3 +264,16 @@ table.periodes tr.ligne-dep td::before {
 table.periodes tr.est-vise td { background: var(--accent-soft); }
 table.periodes tr.est-vise td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
 table.periodes tr.ligne-dep.est-vise td::before { color: var(--accent); }
+
+/* ---------- téléphone (max-etroit) ---------- */
+/* La colonne des lots laisse la place aux semaines : le nom sur deux lignes, l'entreprise est dans le panneau du lot. */
+@media (width < 60rem) {
+	.gantt { --fixe-w: 9rem; }
+	.g-fixe { padding: 0.5rem 0.625rem; gap: 0.125rem 0.4375rem; }
+	.g-nom {
+		font-size: 0.75rem; line-height: 1.25;
+		white-space: normal; hyphens: auto;
+		display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+	}
+	.g-sous { display: none; }
+}

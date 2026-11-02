@@ -30,7 +30,7 @@ export function ChoixSegmente<V extends string>({ libelle, options, valeur, onCh
 				return (
 					<button key={o.v} type="button" role="radio" aria-checked={choisi} tabIndex={choisi ? 0 : -1}
 						onClick={() => { if (!choisi) onChoisir(o.v); }}
-						className={cx('flex-1 cursor-pointer rounded-sm border px-2.5 py-2 text-left text-13',
+						className={cx('flex-1 cursor-pointer rounded-sm border px-2.5 py-2 text-left text-13 max-etroit:min-h-11',
 							choisi ? 'border-accent bg-accent-soft font-medium text-accent-2' : 'border-rule-strong bg-surface text-ink')}>
 						{o.t}
 					</button>

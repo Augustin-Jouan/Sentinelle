@@ -14,7 +14,7 @@ export function BarreOnglets({ libelle, children }: { libelle: string; children:
 export function Onglet({ href, actif, icone, compteur, children }: { href: string; actif: boolean; icone: React.ReactNode; compteur?: number; children: React.ReactNode }) {
 	return (
 		<Link href={href} aria-current={actif ? 'page' : undefined}
-			className={cx('inline-flex flex-none items-center gap-2 border-b-2 px-3.5 pt-2.75 pb-2.25 text-14 whitespace-nowrap no-underline transition-[color,border-color] duration-120',
+			className={cx('inline-flex flex-none items-center gap-2 border-b-2 px-3.5 pt-2.75 pb-2.25 max-etroit:min-h-11 text-14 whitespace-nowrap no-underline transition-[color,border-color] duration-120',
 				'[&_svg]:size-4 [&_svg]:flex-none [&_svg]:stroke-[1.5] [&_svg]:opacity-80',
 				actif ? 'border-accent font-semibold text-accent' : 'border-transparent text-muted hover:text-ink')}>
 			{icone}{children}

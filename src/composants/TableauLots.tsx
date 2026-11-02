@@ -38,10 +38,10 @@ export function BoutonAjouterLot({ chantierId }: { chantierId: string }) {
 	);
 }
 
-/** Une case de la barre des totaux (ex-.total-cell) ; la dernière, le TTC, en grand sur fond d'encre. */
-function Total({ cle, valeur, grand = false, testid }: { cle: string; valeur: string; grand?: boolean; testid?: string }) {
+/** Une case de la barre des totaux (ex-.total-cell) ; la dernière, le TTC, en grand sur fond d'encre. En étroit, la TVA se tait (horsCarte) : HT et TTC tiennent sur une ligne. */
+function Total({ cle, valeur, grand = false, horsCarte = false, testid }: { cle: string; valeur: string; grand?: boolean; horsCarte?: boolean; testid?: string }) {
 	return (
-		<div className={cx('flex-none px-4.5 pt-2.5 pb-2.75', grand ? 'ml-auto bg-ink text-paper' : 'border-r border-rule')}>
+		<div className={cx('flex-none px-4.5 pt-2.5 pb-2.75 max-etroit:flex-1 max-etroit:px-3.5', grand ? 'ml-auto bg-ink text-paper' : 'border-r border-rule', horsCarte && 'max-etroit:hidden')}>
 			<div className={CLE}>{cle}</div>
 			<span data-testid={testid} className={cx(CHIFFRES, 'whitespace-nowrap', grand ? 'text-18 font-semibold' : 'text-15 font-medium')}>{valeur}</span>
 		</div>
@@ -80,7 +80,7 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 				<Surtitre>{q ? `${vus.length} lot${vus.length > 1 ? 's' : ''} sur ${vue.lots.length} · les totaux portent sur le chantier entier` : ''}</Surtitre>
 			</BarreOutils>
 			<CadreTableau>
-				<Tableau variante="lots">
+				<Tableau variante="lots" cartes>
 					<thead>
 						<tr><th>N°</th><th>Lot</th><th>Entreprise</th><th data-droite>Montant HT</th><th data-droite>TVA</th><th data-droite>Montant TTC</th></tr>
 					</thead>
@@ -90,29 +90,35 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 							return (
 								<tr key={l.id} data-lot={l.designation} data-inactif={l.entreprise ? undefined : ''} data-ouvert={l.id === lotOuvert ? '' : undefined}
 									onClick={() => setLotOuvert(l.id)}>
-									<td data-saisie className="w-18 min-w-16 font-mono text-12 text-muted" onClick={arreter}>
+									<td data-saisie className="w-18 min-w-16 font-mono text-12 text-muted max-etroit:w-16 max-etroit:flex-none max-etroit:self-start" onClick={arreter}>
 										<ChampEnLigne variante="texte-mini" libelle="Numéro du lot" placeholder="—" valeur={l.numero ?? ''} enregistrer={champ(l.id, 'numero')} />
 									</td>
-									<td data-saisie className="min-w-64 font-medium whitespace-nowrap" onClick={arreter}>
+									<td data-saisie className="min-w-64 font-medium whitespace-nowrap max-etroit:min-w-0 max-etroit:flex-1" onClick={arreter}>
 										{/* Le champ et ses étiquettes partagent un conteneur : la cellule reste une vraie cellule. */}
-										<div className="flex items-center">
-											<ChampEnLigne className="min-w-0 flex-1" libelle="Désignation du lot" placeholder="Désignation du lot" valeur={l.designation} enregistrer={champ(l.id, 'designation')} />
+										<div className="flex items-center max-etroit:flex-wrap max-etroit:gap-y-1">
+											<ChampEnLigne className="min-w-0 flex-1 max-etroit:basis-full" libelle="Désignation du lot" placeholder="Désignation du lot" valeur={l.designation} enregistrer={champ(l.id, 'designation')} />
 											{l.nature === 'SOUS_TRAITANCE' && <Etiquette ton="accent" className="mr-3 flex-none">Sous-traitance</Etiquette>}
 											{nbAv > 0 && <Etiquette className="mr-3 flex-none" title={`${nbAv} avenant(s) — le montant affiché les comprend`}>{nbAv} avenant{nbAv > 1 ? 's' : ''}</Etiquette>}
 										</div>
 									</td>
-									<td className="whitespace-nowrap">
-										{l.entreprise
-											? <>{l.entreprise}{l.artisanArchive && ' (archivée)'}{l.commune && <div className="text-11 text-muted">{l.commune}</div>}</>
-											: <span className="text-faint italic">à attribuer</span>}
+									{/* En carte : toute la largeur, et le chevron dit que toucher l'entreprise ouvre le lot. */}
+									<td className="whitespace-nowrap max-etroit:basis-full max-etroit:whitespace-normal">
+										<div className="max-etroit:flex max-etroit:items-center max-etroit:justify-between max-etroit:gap-3">
+											<div>
+												{l.entreprise
+													? <>{l.entreprise}{l.artisanArchive && ' (archivée)'}{l.commune && <div className="text-11 text-muted">{l.commune}</div>}</>
+													: <span className="text-faint italic">à attribuer</span>}
+											</div>
+											<span className="hidden text-faint max-etroit:inline-flex [&_svg]:size-4 [&_svg]:-rotate-90" aria-hidden="true"><Icone.Chevron /></span>
+										</div>
 									</td>
-									<td data-droite data-saisie className="w-42" onClick={arreter}>
+									<td data-droite data-saisie data-cle="Montant HT" className="w-42 max-etroit:w-auto max-etroit:flex-1" onClick={arreter}>
 										<ChampEnLigne variante="montant" libelle="Montant HT" valeur={formatMontantSaisie(l.htInitial)} enregistrer={champ(l.id, 'montantHt')} />
 									</td>
-									<td data-droite data-saisie className="w-26" onClick={arreter}>
+									<td data-droite data-saisie data-hors-carte className="w-26" onClick={arreter}>
 										<ChampEnLigne variante="montant-mini" libelle="Taux de TVA" valeur={formatTauxPoint(l.tauxTva)} enregistrer={champ(l.id, 'tauxTva')} />
 									</td>
-									<td data-droite data-saisie className="w-42" onClick={arreter} title={nbAv ? 'Avenants compris — le montant initial HT est recalculé' : undefined}>
+									<td data-droite data-saisie data-cle="Montant TTC" className="w-42 max-etroit:w-auto max-etroit:flex-1" onClick={arreter} title={nbAv ? 'Avenants compris — le montant initial HT est recalculé' : undefined}>
 										<ChampEnLigne variante="montant" libelle="Montant TTC" valeur={formatMontantSaisie(l.ttcEngage)} enregistrer={champ(l.id, 'montantTtc')} />
 									</td>
 								</tr>
@@ -130,9 +136,9 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 				</Tableau>
 			</CadreTableau>
 			{/* Les totaux restent collés en bas de la fenêtre pendant que le tableau défile. */}
-			<div className="sticky bottom-0 z-15 mt-3 flex items-stretch overflow-hidden rounded-md border border-rule-strong bg-surface shadow-ombre">
+			<div className="sticky bottom-0 z-15 mt-3 flex items-stretch overflow-hidden max-etroit:flex-wrap rounded-md border border-rule-strong bg-surface shadow-ombre">
 				<Total cle="Total marchés HT" valeur={vue.totalHtTexte} testid="total-ht" />
-				<Total cle="TVA" valeur={vue.totalTvaTexte} />
+				<Total cle="TVA" valeur={vue.totalTvaTexte} horsCarte />
 				<Total cle="Total marchés TTC" valeur={vue.totalTtcTexte} testid="total-ttc" grand />
 			</div>
 			{ouvert && <PanneauLot lot={ouvert} vue={vue} onFermer={() => setLotOuvert(null)} />}

@@ -12,7 +12,7 @@ export const MENU = {
 	valeur: 'col-start-1 row-start-2 truncate font-titre text-15 leading-[1.15] font-semibold',
 	fleche: 'col-start-2 row-[1/3] size-3.5 stroke-muted transition-transform duration-140',
 	liste: 'max-h-88 overflow-y-auto rounded-sm border border-rule-strong bg-raise p-0.75 shadow-ombre-h',
-	item: 'flex w-full cursor-pointer items-baseline gap-2 rounded-[4px] px-2 py-1.5 text-left',
+	item: 'flex w-full cursor-pointer items-baseline gap-2 rounded-[4px] px-2 py-1.5 text-left max-etroit:py-3',
 	itemCourant: 'bg-accent-soft font-semibold text-accent-2',
 	itemAutre: 'text-ink hover:bg-idle-soft',
 	nom: 'min-w-0 flex-1 truncate text-13',

@@ -40,7 +40,7 @@ export function PanneauLotPlanning({ lot, planning, principale, onFermer, onCoul
 						<div className="flex flex-wrap gap-1.5">
 							{COULEURS.map((c) => (
 								<button key={c.cle} type="button" style={{ background: c.fond }} title={c.nom} aria-label={c.nom} aria-pressed={c.cle === lot.couleur} onClick={() => onCouleur(c.cle)}
-									className={cx('size-7 cursor-pointer rounded-xs border p-0', c.cle === lot.couleur ? 'border-accent ring-2 ring-accent' : 'border-rule-strong')} />
+									className={cx('size-7 cursor-pointer rounded-xs border p-0 max-etroit:size-11', c.cle === lot.couleur ? 'border-accent ring-2 ring-accent' : 'border-rule-strong')} />
 							))}
 						</div>
 						<p className="mt-2.5 text-12 text-muted">Donnez la même couleur à des lots d&apos;une même famille — les fluides, les menuiseries — comme dans votre planning actuel.</p>

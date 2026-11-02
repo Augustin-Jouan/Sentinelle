@@ -27,6 +27,9 @@ import { appliquerPositions, useGestes } from './useGestes';
 
 type Appel = () => Promise<Resultat<ReponsePlanning>>;
 
+/** Ce qu'on laisse voir avant la semaine visée : 200 px, ou le quart du cadre sur un téléphone où il n'en tient pas autant. */
+const marge = (g: HTMLElement) => Math.min(200, g.clientWidth / 4);
+
 /**
  * Écran Planning. Un geste s'affiche aussitôt, calculé par les règles du domaine, puis part au serveur
  * comme une intention ; la réponse (le planning relu en base) remplace l'état, changements des collègues compris.
@@ -158,7 +161,7 @@ export function Planning({ planningInitial, aujourdhui, contexte }: { planningIn
 		if (!g) return;
 		const premiere = periodes.length ? Math.min(...periodes.map((x) => x.debut)) : null;
 		const cible = rangAujourdhui >= e.debut && rangAujourdhui <= e.fin ? rangAujourdhui : premiere;
-		if (cible !== null) g.scrollLeft = Math.max(0, (cible - e.debut) * w - 200);
+		if (cible !== null) g.scrollLeft = Math.max(0, (cible - e.debut) * w - marge(g));
 		ancre.current = e.debut + g.scrollLeft / w;
 		// Une seule fois, à l'ouverture de l'écran.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -179,10 +182,10 @@ export function Planning({ planningInitial, aujourdhui, contexte }: { planningIn
 			toast('La semaine en cours est hors du planning.');
 			return;
 		}
-		if (cadre.current) cadre.current.scrollLeft = Math.max(0, (rangAujourdhui - e.debut) * w - 200);
+		if (cadre.current) cadre.current.scrollLeft = Math.max(0, (rangAujourdhui - e.debut) * w - marge(cadre.current));
 	}
 
-	const { rendu, onPointerDown } = useGestes({
+	const { rendu, onPointerDown, onClick } = useGestes({
 		outil: preferences.outil, debutAxe: e.debut, w,
 		periodes: periodes.filter((x) => x.id !== ID_PERIODE_TEMPORAIRE),
 		selection: choisies.filter((id) => id !== ID_PERIODE_TEMPORAIRE), cadre,
@@ -247,6 +250,7 @@ export function Planning({ planningInitial, aujourdhui, contexte }: { planningIn
 				saisi={rendu.saisi}
 				fantome={rendu.fantome}
 				onPointerDown={onPointerDown}
+				onClick={onClick}
 			/>
 			{rendu.lasso && <div className="g-lasso" style={rendu.lasso} />}
 			{rendu.pastille && <div className="g-chip" style={{ left: rendu.pastille.x, top: rendu.pastille.y }}>{rendu.pastille.texte}</div>}
