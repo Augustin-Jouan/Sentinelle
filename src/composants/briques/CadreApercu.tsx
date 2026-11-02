@@ -46,7 +46,8 @@ export function CadreApercu({ libelle, surtitre, titre, aide, notes, actions, di
 		window.addEventListener('keydown', touche);
 		return () => window.removeEventListener('keydown', touche);
 	}, []);
-	const feuille = <div className="flex items-start justify-center overflow-auto overscroll-contain p-7">{children}</div>;
+	// justify-center-safe : une feuille plus large que l'écran (téléphone) part du bord gauche au lieu d'y être rognée.
+	const feuille = <div className="flex items-start justify-center-safe overflow-auto overscroll-contain p-7 max-etroit:p-3.5">{children}</div>;
 	return (
 		<div role="dialog" aria-label={libelle} data-surcouche="apercu" data-ouvert="" data-verrou-defilement="" data-bloque-clavier=""
 			className="fixed inset-0 z-60 grid grid-rows-[auto_minmax(0,1fr)] bg-paper">
@@ -59,7 +60,8 @@ export function CadreApercu({ libelle, surtitre, titre, aide, notes, actions, di
 					{aide && <p className="mt-0.5 text-12 text-muted">{aide}</p>}
 					{notes}
 				</div>
-				<div className="flex items-center gap-2">{actions}</div>
+				{/* flex-wrap : sur un téléphone, l'action principale (Générer, Enregistrer) passe à la ligne au lieu de sortir de l'écran. */}
+				<div className="flex flex-wrap items-center gap-2">{actions}</div>
 			</div>
 			{disposition === 'champs' ? (
 				<div className={SPLIT.champs}>

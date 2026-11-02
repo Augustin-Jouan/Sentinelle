@@ -55,3 +55,19 @@
 @media (width < 60rem) {
 	[data-surcouche='apercu'] .sheet :is(input, textarea, select) { font-size: 1rem; }
 }
+
+/*
+ * Une feuille d'aperçu sous le doigt (même périmètre que la règle précédente : l'écran seulement, jamais le PDF) :
+ * chaque saisie et chaque case à toucher (décision d'un PV, convocation d'un compte rendu, caution d'un certificat)
+ * fait au moins 44 px, les grilles à colonnes fixes du certificat se resserrent au lieu de rogner les montants, et le
+ * logo du compte rendu garde sa taille.
+ */
+@media (width < 60rem) {
+	[data-surcouche='apercu'] .sheet :is(input, select) { min-height: 2.75rem; }
+	[data-surcouche='apercu'] .sheet button { display: inline-grid; place-items: center; min-width: 2.75rem; min-height: 2.75rem; }
+	[data-surcouche='apercu'] .cp-kv { grid-template-columns: minmax(0, 7rem) minmax(0, 1fr); }
+	[data-surcouche='apercu'] .cp-montants { grid-template-columns: minmax(0, 1fr) auto; column-gap: 0.75rem; }
+	[data-surcouche='apercu'] .cp-deux { grid-template-columns: minmax(0, 1fr); }
+	/* le max-width: 100 % de Tailwind sur les images laissait la colonne du logo s'écraser (6 px) dans la feuille resserrée */
+	[data-surcouche='apercu'] .cr-logo img { max-width: none; }
+}

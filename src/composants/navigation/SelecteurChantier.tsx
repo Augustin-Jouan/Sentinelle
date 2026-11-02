@@ -10,6 +10,8 @@ import type { ChantierNavigation } from '@/donnees/navigation';
 export function SelecteurChantier({ chantiers, courant }: { chantiers: ChantierNavigation[]; courant: ChantierNavigation | null }) {
 	const router = useRouter();
 	const [ouvert, setOuvert] = useState(false);
+	/** Le bas du bouton, à l'ouverture : en étroit, la liste se cale sur la largeur de l'écran, juste dessous. */
+	const [dessous, setDessous] = useState(0);
 	const racine = useRef<HTMLDivElement>(null);
 	const nom = courant ? courant.reference : 'Tous les chantiers';
 
@@ -45,13 +47,16 @@ export function SelecteurChantier({ chantiers, courant }: { chantiers: ChantierN
 		<div ref={racine} className="relative max-w-96 flex-none max-etroit:min-w-0 max-etroit:flex-initial">
 			<button type="button" className={cx(MENU.bouton, 'min-w-60 max-etroit:min-w-0')} aria-haspopup="listbox" aria-expanded={ouvert}
 				title={courant ? `Chantier ouvert : ${nom}` : 'Tous les chantiers — en ouvrir un'}
-				onClick={(e) => { e.stopPropagation(); setOuvert((o) => !o); }}>
+				onClick={(e) => { e.stopPropagation(); setDessous(e.currentTarget.getBoundingClientRect().bottom + 6); setOuvert((o) => !o); }}>
 				<span className={MENU.cle}>{courant ? 'Chantier ouvert' : 'Affichage'}</span>
 				<span className={MENU.valeur}>{nom}</span>
 				<svg className={cx(MENU.fleche, ouvert && 'rotate-180')} viewBox="0 0 16 16" fill="none" strokeWidth={1.6} aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
 			</button>
 			<div role="listbox" aria-label="Choisir un chantier"
-				className={cx(MENU.liste, 'absolute top-[calc(100%+0.375rem)] left-0 z-30 w-80 min-w-full max-etroit:w-[min(20rem,calc(100vw-1.75rem))]', !ouvert && 'hidden')}>
+				style={{ '--dessous': `${dessous}px` } as React.CSSProperties}
+				className={cx(MENU.liste, 'absolute top-[calc(100%+0.375rem)] left-0 z-30 w-80 min-w-full',
+					// En étroit, partie du sélecteur, la liste débordait à droite : elle prend la largeur de l'écran, marges comprises.
+					'max-etroit:fixed max-etroit:inset-x-3.5 max-etroit:top-(--dessous) max-etroit:w-auto max-etroit:min-w-0', !ouvert && 'hidden')}>
 				<button type="button" role="option" aria-selected={!courant} className={cx(MENU.item, courant ? MENU.itemAutre : MENU.itemCourant)} onClick={() => aller('/chantiers')}>
 					<span className={MENU.nom}>Tous les chantiers</span>
 					<span className={MENU.meta}>{chantiers.length}</span>
