@@ -48,26 +48,9 @@
 }
 
 /*
- * Les saisies posées sur une feuille d'aperçu (certificat, compte rendu, PV) : 16 px sur un téléphone, sinon Safari
- * sur iPhone zoome la page à chaque saisie. Hors couche, comme la feuille de CSS_DOCUMENTS injectée par l'aperçu,
- * et plus précis que ses règles (.cr-saisie…) : c'est l'écran qui l'emporte, le PDF ne voit jamais cette feuille.
+ * L'aperçu montre la feuille telle qu'elle sortira de l'imprimante, jamais remise en page pour l'écran : elle garde
+ * sa largeur réelle (CSS_DOCUMENTS la bornait à 100 % du cadre, et, élément flex, elle se serrait jusqu'à son
+ * contenu : les deux la reformataient sur un téléphone), et CadreApercu la réduit d'un bloc (zoom) pour qu'elle
+ * tienne. Hors couche, comme CSS_DOCUMENTS que l'aperçu injecte ; le PDF, lui, ne charge jamais base.css.
  */
-@media (width < 60rem) {
-	[data-surcouche='apercu'] .sheet :is(input, textarea, select) { font-size: 1rem; }
-}
-
-/*
- * Une feuille d'aperçu sous le doigt (même périmètre que la règle précédente : l'écran seulement, jamais le PDF) :
- * chaque saisie et chaque case à toucher (décision d'un PV, convocation d'un compte rendu, caution d'un certificat)
- * fait au moins 44 px, les grilles à colonnes fixes du certificat se resserrent au lieu de rogner les montants, et le
- * logo du compte rendu garde sa taille.
- */
-@media (width < 60rem) {
-	[data-surcouche='apercu'] .sheet :is(input, select) { min-height: 2.75rem; }
-	[data-surcouche='apercu'] .sheet button { display: inline-grid; place-items: center; min-width: 2.75rem; min-height: 2.75rem; }
-	[data-surcouche='apercu'] .cp-kv { grid-template-columns: minmax(0, 7rem) minmax(0, 1fr); }
-	[data-surcouche='apercu'] .cp-montants { grid-template-columns: minmax(0, 1fr) auto; column-gap: 0.75rem; }
-	[data-surcouche='apercu'] .cp-deux { grid-template-columns: minmax(0, 1fr); }
-	/* le max-width: 100 % de Tailwind sur les images laissait la colonne du logo s'écraser (6 px) dans la feuille resserrée */
-	[data-surcouche='apercu'] .cr-logo img { max-width: none; }
-}
+[data-surcouche='apercu'] .sheet { max-width: none; flex-shrink: 0; }
