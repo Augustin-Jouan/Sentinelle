@@ -19,7 +19,7 @@ const ONGLETS = [
 ] as const;
 
 /** Une icône ronde de la barre (ex-.nav-ic) : l'accueil, le thème. */
-const ICONE = 'inline-flex size-8 items-center justify-center rounded-full [&_svg]:size-4 [&_svg]:stroke-[1.5]';
+const ICONE = 'inline-flex size-8 flex-none items-center justify-center rounded-full [&_svg]:size-4 [&_svg]:stroke-[1.5]';
 const ICONE_AU_REPOS = 'text-muted hover:bg-idle-soft hover:text-ink';
 const ICONE_ACTIVE = 'bg-accent-soft text-accent-2';
 
@@ -40,7 +40,8 @@ export function BarreNavigation({ utilisateur, navigation, children }: { utilisa
 				<div className="flex min-h-13 items-center gap-3.5 px-6 py-1.5 max-etroit:gap-2 max-etroit:px-3.5 max-etroit:py-2">
 					<Link className="group inline-flex flex-none items-center rounded-sm px-1 py-0.5 hover:bg-idle-soft" href="/chantiers"
 						title="Sentinelle — revenir à l'accueil" aria-label="Sentinelle — revenir à l'accueil"><Sigle survol /></Link>
-					<Link className={cx(ICONE, accueil ? ICONE_ACTIVE : ICONE_AU_REPOS)} href="/chantiers" title="Tous les chantiers" aria-label="Tous les chantiers"><Icone.Maison /></Link>
+					{/* En étroit, le sigle suffit pour revenir à l'accueil : la maison laisse sa place au sélecteur. */}
+					<Link className={cx(ICONE, accueil ? ICONE_ACTIVE : ICONE_AU_REPOS, 'max-etroit:hidden')} href="/chantiers" title="Tous les chantiers" aria-label="Tous les chantiers"><Icone.Maison /></Link>
 					<SelecteurChantier chantiers={navigation.chantiers} courant={surChantier ? courant : null} />
 					<div className="ml-auto flex items-center gap-0.75">
 						<Link href="/artisans" className={cx('inline-flex items-center gap-1.75 rounded-full px-3 py-1.75 text-13 whitespace-nowrap transition-[background-color,color] duration-120',

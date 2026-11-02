@@ -90,7 +90,7 @@ export function TableauLots({ vue }: { vue: VueMarches }) {
 							return (
 								<tr key={l.id} data-lot={l.designation} data-inactif={l.entreprise ? undefined : ''} data-ouvert={l.id === lotOuvert ? '' : undefined}
 									onClick={() => setLotOuvert(l.id)}>
-									<td data-saisie className="w-18 font-mono text-12 text-muted" onClick={arreter}>
+									<td data-saisie className="w-18 min-w-16 font-mono text-12 text-muted" onClick={arreter}>
 										<ChampEnLigne variante="texte-mini" libelle="Numéro du lot" placeholder="—" valeur={l.numero ?? ''} enregistrer={champ(l.id, 'numero')} />
 									</td>
 									<td data-saisie className="min-w-64 font-medium whitespace-nowrap" onClick={arreter}>

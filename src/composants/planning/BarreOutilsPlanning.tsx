@@ -60,7 +60,7 @@ export function BarreOutilsPlanning(p: Props) {
 					)}
 				</span>
 			</div>
-			<div className="flex items-center gap-3">
+			<div className="flex flex-wrap items-center gap-3">
 				<MenuDeroulant id="lots-vus" k="Lots affichés" multi largeur="large" className="self-stretch"
 					valeurs={p.lots.filter((l) => !p.masques.includes(l.id)).map((l) => l.id)}
 					libelle={caches ? `${vus} lot${vus > 1 ? 's' : ''} sur ${p.lots.length}` : 'Tous les lots'}

@@ -51,7 +51,7 @@ export function CarteChantier({ c, ouvert }: { c: DonneesCarte; ouvert: boolean 
 	return (
 		<Carte variante="cliquable" estompee={c.termine} role="button" tabIndex={0} data-testid="carte-chantier" onClick={ouvrir}
 			onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ouvrir(); } }}>
-			<div className="flex items-start justify-between gap-3">
+			<div className="flex items-start justify-between gap-3 max-etroit:flex-wrap">
 				{/* Un chantier terminé est barré. */}
 				<span className={cx('font-titre text-17 font-semibold', c.termine && 'line-through decoration-1')}>{c.reference}</span>
 				<span className="flex flex-none items-center gap-1.5">
