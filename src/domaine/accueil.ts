@@ -57,17 +57,3 @@ export function synthese(cartes: CarteChantier[]): Synthese {
 		documents: actifs.reduce((n, c) => n + c.documents, 0),
 	};
 }
-
-/** Un composant client l'affiche sans appeler le serveur : il vit ici, pas dans donnees/ (Prisma). */
-export const SUPPRESSION_IMPOSSIBLE = 'Ce chantier a déjà des documents générés : il ne peut plus être supprimé. Marquez-le terminé.';
-
-const pluriel = (n: number, mot: string, suite = '') => `${n} ${mot}${n > 1 ? 's' : ''}${suite}`;
-
-/** Ce que la suppression emporte, pour la confirmation. */
-export function pertesSuppression(c: CarteChantier): string[] {
-	return [
-		c.lots ? pluriel(c.lots, 'lot') : '',
-		c.periodes ? pluriel(c.periodes, 'période', ' de planning') : '',
-		c.documents ? pluriel(c.documents, 'document') : '',
-	].filter(Boolean);
-}

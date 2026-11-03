@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chantiersVisibles, pertesSuppression, synthese, type CarteChantier } from './accueil';
+import { chantiersVisibles, synthese, type CarteChantier } from './accueil';
 import { formatEuros } from './montants';
 
 const carte = (o: Partial<CarteChantier>): CarteChantier => ({
@@ -35,13 +35,5 @@ describe('synthese (renderSynthese() de la maquette)', () => {
 		expect(synthese(TOUS)).toEqual({
 			enCours: 3, termines: 1, ttcTexte: formatEuros('707904'), lots: 19, aAttribuer: 2, documents: 6,
 		});
-	});
-});
-
-describe('pertesSuppression (removeChantier() de la maquette)', () => {
-	it('dit ce que la suppression emporte, au pluriel près', () => {
-		expect(pertesSuppression(PERRIER)).toEqual(['13 lots', '24 périodes de planning', '6 documents']);
-		expect(pertesSuppression(carte({ lots: 1, periodes: 1 }))).toEqual(['1 lot', '1 période de planning']);
-		expect(pertesSuppression(MOREAU)).toEqual([]);
 	});
 });

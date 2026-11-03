@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { SUPPRESSION_IMPOSSIBLE } from '@/domaine/accueil';
 import { ErreurMetier } from '@/domaine/erreurs';
 import { LOTS_DE_BASE } from '@/domaine/lotsDeBase';
 import { sommeAvenants } from '@/domaine/avenants';
@@ -10,7 +9,7 @@ import {
 	type DocumentSuppression, type ResumeSuppression,
 } from '@/domaine/suppression';
 import { LIBELLES_TYPES } from '@/documents/libelles';
-import { estCleEtrangere, estDoublon, estIntrouvable } from './erreursPrisma';
+import { estCleEtrangere, estDoublon } from './erreursPrisma';
 import { prisma } from './prisma';
 import { verrouillerChantier, type Tx } from './verrouLot';
 
@@ -152,21 +151,6 @@ export async function lireEnTeteChantier(id: string): Promise<EnTeteChantierVue 
 export async function listerChargesAffaire(): Promise<{ id: string; nom: string }[]> {
 	const lignes = await prisma.utilisateur.findMany({ where: { NOT: { banned: true } }, orderBy: { name: 'asc' } });
 	return lignes.map((u) => ({ id: u.id, nom: u.name }));
-}
-
-/**
- * Lots, périodes, fermetures et comptes rendus partent en cascade ; un document généré l'interdit
- * (clé étrangère Restrict). La base tranche en une seule instruction : un document produit par un collègue
- * pendant la suppression la fait échouer proprement, sans rien effacer.
- */
-export async function supprimerChantier(id: string): Promise<void> {
-	try {
-		await prisma.chantier.delete({ where: { id } });
-	} catch (e) {
-		if (estCleEtrangere(e)) throw new ErreurMetier(SUPPRESSION_IMPOSSIBLE);
-		if (estIntrouvable(e)) throw new ErreurMetier('Ce chantier a déjà été supprimé.');
-		throw e;
-	}
 }
 
 const ORDRE_TYPES = Object.keys(LIBELLES_TYPES);

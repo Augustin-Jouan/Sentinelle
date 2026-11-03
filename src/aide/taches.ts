@@ -90,7 +90,7 @@ export const PARTIES_TACHES: PartieTaches[] = [
 				titre: 'Terminer ou supprimer un chantier',
 				texte: `
 					- **Terminer** : bouton **Terminer** de sa carte sur l'accueil (⑬), ou **Marquer terminé** ④ dans le panneau de l'en-tête. Le chantier quitte l'accueil tant que **Masquer les terminés** est coché ; **Rouvrir** le remet en cours. Il reste consultable et modifiable.
-					- **Supprimer** : corbeille de sa carte sur l'accueil (⑭), seulement tant qu'aucun document n'a été généré. Sentinelle liste ce qui sera perdu et demande confirmation ; la suppression est définitive. Dès qu'un document existe, marquez plutôt le chantier terminé.
+					- **Supprimer** : corbeille de sa carte sur l'accueil (⑭). L'alerte liste tout ce qui sera effacé, documents compris. S'il y en a, **Télécharger l'archive avant de supprimer** les récupère. Pour confirmer, tapez « je supprime » suivi de la référence. C'est définitif, on ne peut pas l'annuler.
 				`,
 			},
 		],

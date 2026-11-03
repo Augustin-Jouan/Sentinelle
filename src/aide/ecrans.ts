@@ -85,7 +85,7 @@ export const PARTIES_ECRANS: Partie[] = [
 					{ element: 'Masquer les terminés', role: 'Cache les chantiers terminés ; décochez pour les revoir.' },
 					{ element: "Carte d'un chantier", role: 'Client, construction, adresse, nombre de lots, total TTC des marchés. Un clic ouvre le chantier.' },
 					{ element: 'Terminer', role: 'Marque le chantier terminé (devient « Rouvrir »). Il reste consultable et modifiable.' },
-					{ element: 'Supprimer', role: "Supprime le chantier, seulement s'il n'a encore aucun document. Définitif." },
+					{ element: 'Supprimer', role: "Ouvre l'alerte de suppression définitive, documents compris. Il faut taper la phrase de confirmation ; s'il y a des documents, un lien télécharge l'archive." },
 					{ element: 'Carte « Nouveau chantier »', role: 'Même effet que le bouton 7.' },
 				],
 			},
