@@ -2,7 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { creerChantier, marquerTermine, modifierChampChantier, supprimerChantier, type ChampChantier, type SaisieChantier } from '@/donnees/chantiers';
+import {
+	creerChantier, lireResumeSuppression, marquerTermine, modifierChampChantier, supprimerChantierDefinitivement,
+	type ChampChantier, type SaisieChantier,
+} from '@/donnees/chantiers';
+import { entreeJournalSuppression, type ResumeSuppression } from '@/domaine/suppression';
 import { executer, type Resultat } from './executer';
 
 const CHAMPS = ['reference', 'maitreOuvrage', 'adresseClient', 'natureTravaux', 'adresse', 'cp', 'commune', 'mission', 'dateSignaturePrevue', 'chargeAffaireId'] as const;
@@ -36,10 +40,15 @@ export async function marquerTermineAction(id: string, termine: boolean): Promis
 	});
 }
 
-export async function supprimerChantierAction(id: string): Promise<Resultat> {
+export async function lireResumeSuppressionAction(id: string): Promise<Resultat<ResumeSuppression>> {
+	return executer({}, async () => lireResumeSuppression(id));
+}
+
+export async function supprimerChantierAction(id: string, phrase: string, documentsAttendus: string[]): Promise<Resultat> {
 	return executer({}, async (u) => {
-		await supprimerChantier(id);
-		console.error('[chantier] suppression', { par: u.id, chantier: id });
+		const { documents } = await supprimerChantierDefinitivement(id, { phrase, documentsAttendus });
+		console.error('[chantier] suppression', entreeJournalSuppression(u.id, id, documents));
+		revalidatePath('/chantiers');
 		revalidatePath('/', 'layout');
 		return null;
 	});

@@ -1,12 +1,17 @@
 import { z } from 'zod';
-import { SUPPRESSION_IMPOSSIBLE } from '@/domaine/accueil';
 import { ErreurMetier } from '@/domaine/erreurs';
 import { LOTS_DE_BASE } from '@/domaine/lotsDeBase';
 import { sommeAvenants } from '@/domaine/avenants';
 import { formatEuros, totalArrondi, ttcEngage } from '@/domaine/montants';
 import { exemplairesParDefaut } from '@/domaine/regles';
-import { estCleEtrangere, estDoublon, estIntrouvable } from './erreursPrisma';
+import {
+	DEJA_SUPPRIME, DOCUMENTS_CHANGES, PHRASE_INCORRECTE, phraseCorrespond,
+	type DocumentSuppression, type ResumeSuppression,
+} from '@/domaine/suppression';
+import { LIBELLES_TYPES } from '@/documents/libelles';
+import { estCleEtrangere, estDoublon } from './erreursPrisma';
 import { prisma } from './prisma';
+import { verrouillerChantier, type Tx } from './verrouLot';
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -148,17 +153,87 @@ export async function listerChargesAffaire(): Promise<{ id: string; nom: string 
 	return lignes.map((u) => ({ id: u.id, nom: u.name }));
 }
 
+const ORDRE_TYPES = Object.keys(LIBELLES_TYPES);
+
+function trierDocuments(documents: DocumentSuppression[]): DocumentSuppression[] {
+	return [...documents].sort((a, b) => {
+		const types = ORDRE_TYPES.indexOf(a.type) - ORDRE_TYPES.indexOf(b.type);
+		if (types !== 0) return types;
+		const series = a.serie < b.serie ? -1 : a.serie > b.serie ? 1 : 0;
+		if (series !== 0) return series;
+		return a.version - b.version;
+	});
+}
+
+function memesIdentifiants(actuels: string[], attendus: string[]): boolean {
+	const a = new Set(actuels);
+	const b = new Set(attendus);
+	if (a.size !== b.size) return false;
+	for (const id of a) if (!b.has(id)) return false;
+	return true;
+}
+
+async function effacerDocuments(tx: Tx, ids: string[]) {
+	if (ids.length === 0) return;
+	await tx.document.deleteMany({ where: { id: { in: ids } } });
+}
+
 /**
- * Lots, périodes, fermetures et comptes rendus partent en cascade ; un document généré l'interdit
- * (clé étrangère Restrict). La base tranche en une seule instruction : un document produit par un collègue
- * pendant la suppression la fait échouer proprement, sans rien effacer.
+ * Contenu de l'alerte de suppression : documents triés par type (`TypeDocument`), série, puis version.
  */
-export async function supprimerChantier(id: string): Promise<void> {
+export async function lireResumeSuppression(id: string): Promise<ResumeSuppression> {
+	const c = await prisma.chantier.findUnique({
+		where: { id },
+		select: {
+			reference: true,
+			documents: { select: { id: true, type: true, serie: true, nomFichier: true, version: true, creeLe: true } },
+			_count: { select: { lots: true, fermetures: true } },
+			lots: { select: { _count: { select: { periodes: true } } } },
+			comptesRendus: { where: { statut: 'BROUILLON' }, select: { id: true }, take: 1 },
+		},
+	});
+	if (!c) throw new ErreurMetier(DEJA_SUPPRIME);
+	return {
+		reference: c.reference,
+		documents: trierDocuments(c.documents),
+		lots: c._count.lots,
+		periodes: c.lots.reduce((n, l) => n + l._count.periodes, 0),
+		fermetures: c._count.fermetures,
+		compteRenduEnBrouillon: c.comptesRendus.length > 0,
+	};
+}
+
+/**
+ * Suppression définitive, documents compris. Une seule transaction : verrou du chantier
+ * (`FOR NO KEY UPDATE`), phrase, puis comparaison de l'ensemble des documents affichés.
+ * Un document inséré après cette vérification fait échouer la suppression de la ligne
+ * (clé étrangère Restrict) : tout est annulé.
+ */
+export async function supprimerChantierDefinitivement(
+	id: string,
+	confirmation: { phrase: string; documentsAttendus: string[] },
+): Promise<{ documents: number }> {
 	try {
-		await prisma.chantier.delete({ where: { id } });
+		return await prisma.$transaction(async (tx) => {
+			if (!(await verrouillerChantier(tx, id))) throw new ErreurMetier(DEJA_SUPPRIME);
+			const chantier = await tx.chantier.findUniqueOrThrow({
+				where: { id },
+				select: { reference: true, documents: { select: { id: true, sourceId: true } } },
+			});
+			if (!phraseCorrespond(confirmation.phrase, chantier.reference)) throw new ErreurMetier(PHRASE_INCORRECTE);
+			const ids = chantier.documents.map((d) => d.id);
+			if (!memesIdentifiants(ids, confirmation.documentsAttendus)) throw new ErreurMetier(DOCUMENTS_CHANGES);
+
+			const derives = chantier.documents.filter((d) => d.sourceId !== null).map((d) => d.id);
+			const racines = chantier.documents.filter((d) => d.sourceId === null).map((d) => d.id);
+			await effacerDocuments(tx, derives);
+			await effacerDocuments(tx, racines);
+			await tx.chantier.delete({ where: { id } });
+			return { documents: ids.length };
+		});
 	} catch (e) {
-		if (estCleEtrangere(e)) throw new ErreurMetier(SUPPRESSION_IMPOSSIBLE);
-		if (estIntrouvable(e)) throw new ErreurMetier('Ce chantier a déjà été supprimé.');
+		if (e instanceof ErreurMetier) throw e;
+		if (estCleEtrangere(e)) throw new ErreurMetier(DOCUMENTS_CHANGES);
 		throw e;
 	}
 }
