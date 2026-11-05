@@ -326,11 +326,11 @@ export const PARTIES_TACHES: PartieTaches[] = [
 			},
 			{
 				id: 'parametres',
-				titre: "Modifier les coordonnées de l'entreprise",
+				titre: "Modifier le logo et les coordonnées de l'entreprise",
 				texte: `
 					1. Ouvrez **Mon compte** › **Paramètres** ④.
 					![parametres]
-					2. Corrigez la raison sociale et l'activité ①, les coordonnées ②, les mentions légales des certificats ③ ou la ville de signature ④.
+					2. Changez le logo (PNG ou JPEG, 2 Mo au plus), corrigez la raison sociale et l'activité ①, les coordonnées ②, les mentions légales des certificats ③ ou la ville de signature ④.
 					Le changement vaut pour les documents générés ensuite ; aucun document existant ne passe « modifié ».
 				`,
 			},

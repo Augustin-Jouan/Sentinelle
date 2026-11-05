@@ -14,7 +14,7 @@ const e = formatEuros;
 const SOCIETE = {
 	adresse: '71 rue du Général Patton', cp: '44110', ville: 'Châteaubriant', telephone: '02 40 81 40 26',
 	email: 'contact@socoreve-chateaubriant.com', rcs: '328999503', ape: '4120A', tvaIntracommunautaire: 'FR47328999503',
-	villeSignature: 'Châteaubriant',
+	villeSignature: 'Châteaubriant', logo: null,
 };
 // Spec, annexe A : CARRELAGE — FAÏENCE (MD CARRELAGE), certificat n° 03.
 const CARRELAGE: SourceCertificat = {
@@ -62,6 +62,7 @@ describe('certificat de paiement (annexe A)', () => {
 				},
 			},
 			societe: {
+				logo: null,
 				adresseLigne: '71 rue du Général Patton - 44110 CHÂTEAUBRIANT',
 				contactLigne: 'Tél. : 02 40 81 40 26 - contact@socoreve-chateaubriant.com',
 				rcsLigne: 'RCS : 328999503 – APE 4120A',
@@ -115,7 +116,7 @@ describe('certificat de paiement (annexe A)', () => {
 
 describe('gabarit du certificat', () => {
 	it('impression : logo en data URI, textes de la feuille, aucune saisie', () => {
-		const html = renderToStaticMarkup(createElement(Gabarit, { donnees: batirCertificat(CARRELAGE, SAISIE), mode: 'impression' }));
+		const html = renderToStaticMarkup(createElement(Gabarit, { donnees: batirCertificat({ ...CARRELAGE, societe: { ...SOCIETE, logo: 'data:image/jpeg;base64,/9j/' } }, SAISIE), mode: 'impression' }));
 		expect(html).toContain('src="data:image/jpeg;base64,');
 		expect(html).toContain('CERTIFICAT DE PAIEMENT N° 03');
 		expect(html).toContain('mois de Juillet 2026');

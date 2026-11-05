@@ -81,7 +81,7 @@ function sourceCertificat(lot: LotCertificat, p: Parametres, numero: number): So
 			.map((a) => ({ id: a.id, numero: a.numero, montantHt: a.montantHt.toString(), manuel: a.manuel })),
 		societe: {
 			adresse: p.adresse, cp: p.cp, ville: p.ville, telephone: p.telephone, email: p.email,
-			rcs: p.rcs, ape: p.ape, tvaIntracommunautaire: p.tvaIntracommunautaire, villeSignature: p.villeSignature,
+			rcs: p.rcs, ape: p.ape, tvaIntracommunautaire: p.tvaIntracommunautaire, villeSignature: p.villeSignature, logo: p.logo,
 		},
 	};
 }

@@ -33,6 +33,7 @@ describe('feuille du compte rendu', () => {
 				coordination: [{ titre: 'GROS ŒUVRE', suite: [{ texte: 'reprise', surligne: true }, { texte: ' du mur', surligne: false }], lignes: [] }],
 			},
 			societe: {
+				logo: null,
 				lignes: ['71 rue du Général Patton', '44110 Châteaubriant', 'Tél. 02 40 81 40 26', '', 'Email : contact@socoreve-chateaubriant.com', 'Site : socoreve-chateaubriant.com'],
 			},
 		});
@@ -60,7 +61,7 @@ describe('feuille du compte rendu', () => {
 
 describe('gabarit du compte rendu', () => {
 	it('impression : logo, en-tête, légende, convocation C en rouge, surlignage, aucune saisie', () => {
-		const html = renderToStaticMarkup(createElement(Gabarit, { donnees: batirCompteRendu(CR_SOURCE, CR_SAISIES), mode: 'impression' }));
+		const html = renderToStaticMarkup(createElement(Gabarit, { donnees: batirCompteRendu({ ...CR_SOURCE, societe: { ...COORDONNEES_SOCOREVE, logo: 'data:image/jpeg;base64,/9j/' } }, CR_SAISIES), mode: 'impression' }));
 		expect(html).toContain('src="data:image/jpeg;base64,');
 		expect(html).toContain('COMPTE<br/>RENDU DE<br/>CHANTIER');
 		expect(html).toContain('Suivi des travaux effectué par Augustin Jouan — Portable : 06 12 34 56 78');

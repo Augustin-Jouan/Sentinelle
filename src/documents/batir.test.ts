@@ -15,6 +15,7 @@ const CADRE_ATTENDU = {
 		adresseLigne: '71 rue du Général Patton - 44110 – Châteaubriant',
 		telephone: '02 40 81 40 26',
 		fax: null,
+		logo: null,
 	},
 	villeSignature: 'Châteaubriant',
 	dateGeneration: '29.09.2026',

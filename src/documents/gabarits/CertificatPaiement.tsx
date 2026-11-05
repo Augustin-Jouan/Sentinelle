@@ -1,6 +1,6 @@
 import { Fragment, type KeyboardEvent } from 'react';
 import type { DonneesCertificat } from '../schemas';
-import { LOGO_SOCOREVE } from './logo';
+import { LogoEntreprise, logoFige } from './Logo';
 import type { ModeGabarit } from './Zone';
 
 /**
@@ -51,11 +51,11 @@ export function CertificatPaiement({ donnees, mode, edition }: { donnees: Donnee
 		);
 	}
 
+	const logo = logoFige(s.logo);
 	return (
 		<article className="sheet sheet-doc sheet-cp">
 			<div className="cp-tete">
-				{/* eslint-disable-next-line @next/next/no-img-element -- data URI, imprimée par Chromium sans réseau */}
-				<img src={LOGO_SOCOREVE} alt="SOCOREVE" />
+				{logo && <LogoEntreprise src={logo} />}
 				<div className="cp-adr">{s.adresseLigne}<br />{s.contactLigne}<br />{s.rcsLigne}<br />{s.tvaLigne}</div>
 			</div>
 			<div className="cp-cadre">

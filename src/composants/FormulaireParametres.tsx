@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { modifierParametreAction } from '@/actions/parametres';
 import { ChampEnLigne } from '@/composants/ChampEnLigne';
+import { ChampLogo } from '@/composants/ChampLogo';
 import { Champ, SectionChamps } from '@/composants/briques/Champ';
 import { Ecran } from '@/composants/briques/Ecran';
 import { Blanc, Coupure, Feuille, FormulaireEtFeuille } from '@/composants/briques/Feuille';
@@ -19,9 +20,12 @@ function Paire({ etroit = false, children }: { etroit?: boolean; children: React
  * Les paramètres de l'entreprise, avec à côté l'en-tête tel que les documents l'impriment (batirCadre, certificat.ts, coordonnees.ts).
  * Chaque champ s'enregistre quand on le quitte (ChampEnLigne) ; la feuille suit la frappe.
  */
-export function FormulaireParametres({ initiales }: { initiales: ValeursParametres }) {
+export function FormulaireParametres({ initiales, logoInitial }: { initiales: ValeursParametres; logoInitial: string | null }) {
 	const [v, setV] = useState(initiales);
+	const [logo, setLogo] = useState(logoInitial);
 	const [active, setActive] = useState<ChampParametres | null>(null);
+	/* eslint-disable-next-line @next/next/no-img-element -- data URI, enregistrée en base */
+	const logoFeuille = logo && <img src={logo} alt="Logo de l'entreprise" className="h-14 w-auto max-w-32 flex-none object-contain object-left" />;
 
 	const champ = (c: ChampParametres, libelle: string, o: { aide?: string; type?: 'text' | 'email' | 'tel'; chiffres?: boolean; clavier?: 'numeric' } = {}) => (
 		<Champ libelle={libelle} pour={`p-${c}`} aide={o.aide}>
@@ -38,24 +42,30 @@ export function FormulaireParametres({ initiales }: { initiales: ValeursParametr
 	const feuilles = (
 		<div className="flex flex-col gap-6">
 			<Feuille legende="En-tête des marchés et du récapitulatif.">
-				<p className="text-11 leading-[1.4]">
-					<span className="text-12">{b('raisonSociale')}</span><br />
-					{b('libelleActivite')}<br />
-					{b('adresse')} - {b('cp')} – {b('ville')}<br />
-					Tél. {b('telephone')}{montre('fax') && <> - Fax. {b('fax')}</>}
-				</p>
+				<div className="flex items-center gap-3">
+					{logoFeuille}
+					<p className="min-w-0 text-11 leading-[1.4]">
+						<span className="text-12">{b('raisonSociale')}</span><br />
+						{b('libelleActivite')}<br />
+						{b('adresse')} - {b('cp')} – {b('ville')}<br />
+						Tél. {b('telephone')}{montre('fax') && <> - Fax. {b('fax')}</>}
+					</p>
+				</div>
 				<p className="mt-4 mb-3.5 text-center font-titre text-15 font-bold tracking-capitales">MARCHE DE TRAVAUX DE GRE A GRE</p>
 				<Coupure />
 				<p>Fait en triple exemplaire à {b('villeSignature')} le : <span className="text-feuille-gris italic">jour de l&apos;édition</span></p>
 			</Feuille>
 			<Feuille legende="En-tête des certificats de paiement ; les comptes rendus et les PV reprennent l'adresse, le téléphone, l'e-mail et le site.">
-				<p className="text-11 leading-[1.6]">
-					<span className="text-12">{b('raisonSociale')}</span><br />
-					{b('adresse')} - {b('cp')} <span className="uppercase">{b('ville')}</span><br />
-					Tél. : {b('telephone')}{montre('email') && <> - {b('email')}</>}<br />
-					RCS : {b('rcs')} – APE {b('ape')}<br />
-					N° TVA Intra. : {b('tvaIntracommunautaire')}
-				</p>
+				<div className="flex items-center gap-3">
+					{logoFeuille}
+					<p className="min-w-0 text-11 leading-[1.6]">
+						<span className="text-12">{b('raisonSociale')}</span><br />
+						{b('adresse')} - {b('cp')} <span className="uppercase">{b('ville')}</span><br />
+						Tél. : {b('telephone')}{montre('email') && <> - {b('email')}</>}<br />
+						RCS : {b('rcs')} – APE {b('ape')}<br />
+						N° TVA Intra. : {b('tvaIntracommunautaire')}
+					</p>
+				</div>
 				{montre('siteWeb') && <>
 					<Coupure />
 					<p className="text-11">Site : {b('siteWeb')}</p>
@@ -68,6 +78,7 @@ export function FormulaireParametres({ initiales }: { initiales: ValeursParametr
 		<Ecran titre="Paramètres de l'entreprise" sousTitre={<p className="mt-1 text-13 text-muted">Repris sur tous les documents. Chaque champ s&apos;enregistre quand on le quitte.</p>}>
 			<FormulaireEtFeuille feuille={feuilles} onFocus={suivreFocus} onBlur={() => setActive(null)}>
 				<SectionChamps titre="Entreprise">
+					<ChampLogo logo={logo} onChange={setLogo} />
 					{champ('raisonSociale', 'Raison sociale')}
 					{champ('libelleActivite', 'Activité')}
 				</SectionChamps>
