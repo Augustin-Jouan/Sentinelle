@@ -71,7 +71,7 @@ async function lireSource(client: Tx, chantierId: string, numero: number): Promi
 			id: l.id, designation: l.designation, entreprise: l.artisan?.nom ?? null,
 			interlocuteur: l.artisan?.interlocuteur ?? '', telephone: l.artisan?.telephone ?? '',
 		})),
-		societe: { adresse: p.adresse, cp: p.cp, ville: p.ville, telephone: p.telephone, email: p.email, siteWeb: p.siteWeb },
+		societe: { adresse: p.adresse, cp: p.cp, ville: p.ville, telephone: p.telephone, email: p.email, siteWeb: p.siteWeb, logo: p.logo },
 	};
 }
 

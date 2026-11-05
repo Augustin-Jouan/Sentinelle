@@ -11,6 +11,10 @@ export const CSS_DOCUMENTS = `
 .sheet h4 { font-family: 'Outfit', sans-serif; font-size: 1.0625rem; font-weight: 700; letter-spacing: .05em; text-align: center; margin: 1.25rem 0 1rem; }
 .sheet .firm { font-size: 0.625rem; line-height: 1.4; }
 .sheet .firm b { font-size: 0.75rem; letter-spacing: .02em; }
+/* Le logo à la hauteur des quatre lignes de l'entreprise : la page ne s'allonge pas. Un logo tient dans son cadre sans se déformer. */
+.firm-logo { display: flex; align-items: center; gap: .625rem; margin: .5rem 0; }
+.firm-logo img { flex: none; height: 3.5rem; width: auto; max-width: 8rem; object-fit: contain; object-position: left; }
+.sheet .firm-logo .firm { margin: 0; min-width: 0; }
 .sheet .ctr { text-align: center; font-style: italic; margin: .625rem 0; }
 .sheet .ctr-b { text-align: center; margin: .375rem 0; }
 .sheet .fine { font-size: 0.5625rem; color: #5a6062; line-height: 1.35; margin: .375rem 0; }
@@ -27,7 +31,9 @@ export const CSS_DOCUMENTS = `
 .sign-row i { color: #7a8082; font-style: italic; }
 
 .sheet-recap { width: 66rem; display: block; }
-.sheet-recap h4 { text-align: left; margin: 0 0 .875rem; font-size: 1.125rem; }
+.recap-titre { display: flex; align-items: center; gap: .875rem; margin: 0 0 .875rem; }
+.recap-titre img { flex: none; height: 3rem; width: auto; max-width: 8rem; object-fit: contain; object-position: left; }
+.sheet-recap h4 { text-align: left; margin: 0; font-size: 1.125rem; }
 .recap-entete { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: .25rem 2rem; padding-bottom: .875rem; margin-bottom: .875rem; border-bottom: 1px solid #d8dad4; }
 .recap-entete dl { display: grid; grid-template-columns: 8.5rem minmax(0,1fr); gap: .1875rem .625rem; margin: 0; }
 .recap-entete dt { color: #5a6062; }
@@ -54,6 +60,7 @@ table.recap tr.total .lbl-total { font-family: 'Outfit', sans-serif; letter-spac
 .sheet-doc, .sheet-doc * { box-sizing: border-box; }
 .doc-entete { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 1.5rem; padding-bottom: .75rem; border-bottom: 1px solid #b9beb8; }
 .doc-entete .firm { margin: 0; }
+.doc-entete .firm-logo { margin: 0; }
 .doc-kv { display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: .1875rem .625rem; margin: 0; }
 .doc-kv dt { color: #5a6062; }
 .doc-kv dd { margin: 0; font-weight: 600; }
@@ -96,7 +103,7 @@ table.d-avenant tr.apres td { border-top: 2px solid #16191b; font-weight: 600; f
 /* Certificat de paiement : A4 portrait (maquette renderCpSheet). Double classe : « .sheet-doc » fixerait 68rem. */
 .sheet-doc.sheet-cp { width: 46rem; }
 .cp-tete { display: flex; align-items: center; gap: 1.25rem; margin-bottom: .875rem; }
-.cp-tete img { width: 5.5rem; height: auto; flex: none; }
+.cp-tete img { height: 6rem; width: auto; max-width: 10rem; flex: none; object-fit: contain; object-position: left; }
 .cp-adr { font-style: italic; font-size: .8125rem; line-height: 1.45; }
 .cp-cadre { border: 1px solid #16191b; margin-bottom: .625rem; }
 .cp-titre { text-align: center; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.0625rem; letter-spacing: .03em; padding: .375rem; border-bottom: 1px solid #16191b; }
@@ -135,8 +142,8 @@ table.cp-titu th.vide { border: 0; }
 .sheet-doc.sheet-cr { width: 46rem; font-size: .6875rem; line-height: 1.4; }
 .cr-tete { width: 100%; border-collapse: collapse; border: 1px solid #16191b; margin-bottom: .875rem; }
 .cr-tete td { vertical-align: middle; padding: .375rem .625rem; }
-.cr-logo { width: 6.5rem; border-right: 1px solid #16191b; text-align: center; }
-.cr-logo img { width: 5.25rem; height: auto; display: block; margin: 0 auto; }
+.cr-logo { width: 1%; border-right: 1px solid #16191b; text-align: center; }
+.cr-logo img { height: 5.75rem; width: auto; max-width: 9rem; object-fit: contain; display: block; margin: 0 auto; }
 .cr-adr { font-weight: 700; font-size: .75rem; line-height: 1.35; }
 .cr-titre { width: 9.5rem; border-left: 1px solid #16191b; text-align: center; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: .03em; line-height: 1.2; }
 .sheet .cr-suivi { margin: 0 0 .25rem 2.5rem; font-weight: 700; }
@@ -177,8 +184,11 @@ textarea.cr-saisie { display: block; width: 100%; min-height: 3rem; resize: vert
 /* PV de réception : A4 portrait, une page (maquette pagePv). */
 .sheet-doc.sheet-pv { width: 46rem; font-size: .75rem; line-height: 1.55; }
 .pv-pages { display: flex; flex-direction: column; align-items: center; gap: 1.75rem; }
-.pv-tete { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1rem; align-items: start; }
-.pv-tete img { width: 6.25rem; height: auto; }
+.pv-tete { display: flex; gap: 1rem; align-items: flex-start; }
+.pv-tete > div { flex: 1; min-width: 0; }
+.pv-tete img { flex: none; height: 6.85rem; width: auto; max-width: 11rem; margin-right: .75rem; object-fit: contain; object-position: left; }
+/* Sans logo, le titre n'a plus à se décaler pour lui laisser la place. */
+.pv-tete > div:only-child .pv-titre { margin-left: 0; }
 .pv-adr { text-align: right; font-weight: 700; font-size: .75rem; }
 .pv-titre { text-align: center; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: .9375rem; letter-spacing: .02em; margin: 1.25rem 0 0 5rem; line-height: 1.35; }
 .sheet .pv-date { margin: .25rem 0 0 1rem; }

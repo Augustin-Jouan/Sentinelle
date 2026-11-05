@@ -3,7 +3,7 @@ import type { SourceCoordonnees } from '@/documents/coordonnees';
 
 export const COORDONNEES_SOCOREVE: SourceCoordonnees = {
 	adresse: '71 rue du Général Patton', cp: '44110', ville: 'Châteaubriant', telephone: '02 40 81 40 26',
-	email: 'contact@socoreve-chateaubriant.com', siteWeb: 'socoreve-chateaubriant.com',
+	email: 'contact@socoreve-chateaubriant.com', siteWeb: 'socoreve-chateaubriant.com', logo: null,
 };
 
 /** Deux lots de PERRIER : l'un attribué, l'autre pas. */

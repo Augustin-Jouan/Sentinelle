@@ -14,7 +14,7 @@ import type { Cadre, DonneesAvenant, DonneesDocument, DonneesMarche, DonneesPlan
 
 export type SourceParametres = {
 	raisonSociale: string; libelleActivite: string; adresse: string; cp: string; ville: string;
-	telephone: string; fax: string | null; villeSignature: string;
+	telephone: string; fax: string | null; villeSignature: string; logo: string | null;
 };
 
 export type SourceArtisan = { nom: string; adresse: string; cp: string; commune: string; interlocuteur: string; telephone: string };
@@ -44,6 +44,7 @@ const adresseComplete = (a: { adresse: string; cp: string; commune: string }) =>
 export function batirCadre(p: SourceParametres, maintenant: Date): Cadre {
 	return {
 		entete: {
+			logo: p.logo,
 			raisonSociale: p.raisonSociale,
 			libelleActivite: p.libelleActivite,
 			adresseLigne: `${p.adresse} - ${p.cp} – ${p.ville}`,

@@ -449,7 +449,7 @@ export const PARTIES_ECRANS: Partie[] = [
 				titre: "Paramètres de l'entreprise",
 				intro: "Réservé aux administrateurs (Mon compte › Paramètres). À droite, un aperçu montre l'en-tête tel qu'il sera imprimé.",
 				reperes: [
-					{ element: 'Entreprise', role: 'Raison sociale et activité, en tête des marchés et du récapitulatif.' },
+					{ element: 'Entreprise', role: 'Logo, imprimé sur tous les documents ; raison sociale et activité, en tête des marchés et du récapitulatif.' },
 					{ element: 'Coordonnées', role: "Adresse, téléphone, fax (imprimé s'il est rempli), e-mail, site." },
 					{ element: 'Mentions légales', role: 'RCS, code APE, n° de TVA intracommunautaire, sur les certificats de paiement.' },
 					{ element: 'Signature', role: 'Ville de signature des documents (« Fait à … »).' },

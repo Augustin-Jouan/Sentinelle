@@ -56,7 +56,7 @@ function sourceReception(c: ChantierReception, l: LotReception, p: Parametres): 
 	return {
 		chantier: { maitreOuvrage: c.maitreOuvrage, adresse: c.adresse, cp: c.cp, commune: c.commune, mission: c.mission },
 		lot: { id: l.id, numero: l.numero, designation: l.designation, entreprise: l.artisan?.nom ?? null, retenueGarantie: l.retenueGarantie.toString() },
-		societe: { adresse: p.adresse, cp: p.cp, ville: p.ville, telephone: p.telephone, email: p.email, siteWeb: p.siteWeb },
+		societe: { adresse: p.adresse, cp: p.cp, ville: p.ville, telephone: p.telephone, email: p.email, siteWeb: p.siteWeb, logo: p.logo },
 	};
 }
 

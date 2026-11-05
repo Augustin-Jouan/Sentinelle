@@ -5,9 +5,16 @@ import { z } from 'zod';
 const texte = z.string();
 const date = z.string().regex(/^\d{2}\.\d{2}\.\d{4}$/);
 
+/**
+ * Le logo de l'entreprise, en data URI, figé comme le reste de l'en-tête ; null si elle n'en a pas.
+ * Absent d'un document enregistré avant le logo paramétrable.
+ */
+const logoSchema = texte.nullable().optional();
+
 /** En-tête SOCOREVE et date de génération : figés avec le document, exclus de l'empreinte. */
 export const cadreSchema = z.object({
 	entete: z.object({
+		logo: logoSchema,
 		raisonSociale: texte,
 		libelleActivite: texte,
 		adresseLigne: texte,
@@ -190,6 +197,7 @@ export const contenuCertificatSchema = z.object({
 
 /** En-tête SOCOREVE du certificat : figé avec le document, exclu de l'empreinte (comme le cadre des autres documents). */
 export const societeSchema = z.object({
+	logo: logoSchema,
 	adresseLigne: texte,
 	contactLigne: texte,
 	rcsLigne: texte,
@@ -200,7 +208,7 @@ export const societeSchema = z.object({
 const segmentsSchema = z.array(z.object({ texte, surligne: z.boolean() }));
 
 /** En-tête SOCOREVE du compte rendu et du PV : ses lignes, figées avec le document, exclues de l'empreinte. */
-export const lignesSocieteSchema = z.object({ lignes: z.array(texte) });
+export const lignesSocieteSchema = z.object({ lignes: z.array(texte), logo: logoSchema });
 
 export const contenuCompteRenduSchema = z.object({
 	/** « 04 ». */

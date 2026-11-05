@@ -11,7 +11,7 @@ import type { DonneesCertificat, Societe } from './schemas';
 
 export type SourceSociete = {
 	adresse: string; cp: string; ville: string; telephone: string; email: string | null;
-	rcs: string; ape: string; tvaIntracommunautaire: string; villeSignature: string;
+	rcs: string; ape: string; tvaIntracommunautaire: string; villeSignature: string; logo: string | null;
 };
 
 export type SourceCertificat = {
@@ -53,6 +53,7 @@ export function entreeCalcul(s: SourceCertificat, cumul: Decimal): EntreeCalcul 
 export function batirSociete(p: SourceSociete): Societe {
 	const email = p.email?.trim();
 	return {
+		logo: p.logo,
 		adresseLigne: `${p.adresse} - ${p.cp} ${p.ville.toLocaleUpperCase('fr-FR')}`,
 		contactLigne: `Tél. : ${p.telephone}${email ? ` - ${email}` : ''}`,
 		rcsLigne: `RCS : ${p.rcs} – APE ${p.ape}`,

@@ -134,6 +134,8 @@ model Parametres {
   tvaIntracommunautaire String  @default("FR47328999503")
   /// Imprimé sur les comptes rendus ; facultatif comme l'e-mail.
   siteWeb               String? @default("socoreve-chateaubriant.com")
+  /// Imprimé sur tous les documents, en data URI (PNG ou JPEG) ; facultatif.
+  logo                  String?
 }
 
 model Artisan {

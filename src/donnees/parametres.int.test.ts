@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { creerParametresTest, viderBase } from '../../tests/integration/aide';
-import { lireParametres, modifierParametre } from './parametres';
+import { LOGO_SOCOREVE } from '@/documents/gabarits/logo';
+import { lireParametres, modifierLogo, modifierParametre } from './parametres';
 
 describe('paramètres', () => {
 	beforeEach(async () => {
@@ -30,5 +31,21 @@ describe('paramètres', () => {
 		await modifierParametre('tvaIntracommunautaire', ' FR47328999503 ');
 		expect((await lireParametres()).tvaIntracommunautaire).toBe('FR47328999503');
 		await expect(modifierParametre('rcs', '  ')).rejects.toThrow('Ce champ est obligatoire.');
+	});
+
+	it('à l\'installation, le logo est celui de SOCOREVE', async () => {
+		expect((await lireParametres()).logo).toBe(LOGO_SOCOREVE);
+	});
+
+	it('change le logo, puis le retire', async () => {
+		await modifierLogo('data:image/png;base64,iVBORw0KGgoAAAAN');
+		expect((await lireParametres()).logo).toBe('data:image/png;base64,iVBORw0KGgoAAAAN');
+		await modifierLogo(null);
+		expect((await lireParametres()).logo).toBeNull();
+	});
+
+	it('refuse ce qui n\'est pas une image et garde le logo en place', async () => {
+		await expect(modifierLogo('data:image/svg+xml;base64,PHN2Zz4=')).rejects.toThrow('Choisissez une image PNG ou JPEG.');
+		expect((await lireParametres()).logo).toBe(LOGO_SOCOREVE);
 	});
 });

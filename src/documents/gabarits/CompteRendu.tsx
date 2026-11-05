@@ -2,7 +2,7 @@ import { Fragment, type KeyboardEvent } from 'react';
 import type { ChampCompteRendu, Segment } from '@/domaine/compteRendu';
 import type { SaisiesCompteRendu } from '../compteRendu';
 import type { DonneesCompteRendu } from '../schemas';
-import { LOGO_SOCOREVE } from './logo';
+import { LogoEntreprise, logoFige } from './Logo';
 import type { ModeGabarit } from './Zone';
 
 /**
@@ -42,15 +42,13 @@ export function CompteRendu({ donnees, mode, edition }: { donnees: DonneesCompte
 		<input type="date" className="cr-saisie" aria-label={libelle} value={e.saisies[champ]} onChange={(ev) => e.surChamp(champ, ev.target.value)} />
 	);
 
+	const logo = logoFige(societe.logo);
 	return (
 		<article className="sheet sheet-doc sheet-cr">
 			<table className="cr-tete">
 				<tbody>
 					<tr>
-						<td className="cr-logo">
-							{/* eslint-disable-next-line @next/next/no-img-element -- data URI, imprimée par Chromium sans réseau */}
-							<img src={LOGO_SOCOREVE} alt="SOCOREVE" />
-						</td>
+						{logo && <td className="cr-logo"><LogoEntreprise src={logo} /></td>}
 						<td className="cr-adr">{societe.lignes.map((l, i) => <Fragment key={i}>{i > 0 && <br />}{l}</Fragment>)}</td>
 						<td className="cr-titre">COMPTE<br />RENDU DE<br />CHANTIER</td>
 					</tr>

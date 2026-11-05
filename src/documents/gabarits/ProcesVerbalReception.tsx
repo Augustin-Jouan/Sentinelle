@@ -2,7 +2,7 @@ import { Fragment, type KeyboardEvent, type ReactNode } from 'react';
 import { LIBELLES_DECISIONS, type ChampReception, type ChampReceptionCommun, type Decision } from '@/domaine/reception';
 import type { SaisiesReception, SaisiesReceptionCommunes } from '../reception';
 import type { DonneesReception } from '../schemas';
-import { LOGO_SOCOREVE } from './logo';
+import { LogoEntreprise, logoFige } from './Logo';
 import type { ModeGabarit } from './Zone';
 
 /**
@@ -42,11 +42,11 @@ export function ProcesVerbalReception({ donnees, mode, edition }: { donnees: Don
 		<span className="pv-blanc">{date(ed.saisies.dateEffet || ed.commun.date, "Date d'effet", (v) => ed.surChamp('dateEffet', v))}</span>
 	) : <Blanc>{c.effet}</Blanc>);
 
+	const logo = logoFige(societe.logo);
 	return (
 		<article className="sheet sheet-doc sheet-pv">
 			<div className="pv-tete">
-				{/* eslint-disable-next-line @next/next/no-img-element -- data URI, imprimée par Chromium sans réseau */}
-				<img src={LOGO_SOCOREVE} alt="SOCOREVE" />
+				{logo && <LogoEntreprise src={logo} />}
 				<div>
 					<div className="pv-adr">{societe.lignes.map((l, i) => <Fragment key={i}>{i > 0 && <br />}{l}</Fragment>)}</div>
 					<div className="pv-titre">PROCÈS-VERBAL DE RÉCEPTION<br />DES TRAVAUX ENTREPRISE</div>

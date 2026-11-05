@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LOT_DISPARU } from '@/donnees/lots';
+import { modifierLogo } from '@/donnees/parametres';
 import { prisma } from '@/donnees/prisma';
 import { viderBase } from '../../tests/integration/aide';
 import { insererPerrier } from '../../tests/integration/perrier';
@@ -23,6 +24,15 @@ describe('génération et versions', () => {
 		expect(doc.type).toBe('MARCHE_GRE_A_GRE');
 		expect(Array.from(doc.pdf)).toEqual([37, 80, 68, 70]);
 		expect((doc.donnees as { contenu: { montantTtcTexte: string } }).contenu.montantTtcTexte).toBe('115 500,00 €');
+	});
+
+	it('fige le logo des paramètres avec le document ; en changer plus tard ne crée pas de version', async () => {
+		await modifierLogo('data:image/png;base64,iVBORw0KGgoAAAAN');
+		const r = await genererMarche(p.lots['GROS ŒUVRE'], p.utilisateurId, deps);
+		const doc = await prisma.document.findUniqueOrThrow({ where: { id: r.documentId } });
+		expect((doc.donnees as { cadre: { entete: { logo: string } } }).cadre.entete.logo).toBe('data:image/png;base64,iVBORw0KGgoAAAAN');
+		await modifierLogo(null);
+		expect(await genererMarche(p.lots['GROS ŒUVRE'], p.utilisateurId, deps)).toMatchObject({ documentId: r.documentId, version: 1, nouvelle: false });
 	});
 
 	it('ne crée rien si rien n\'a changé, même un autre jour ou après un changement de paramètres', async () => {

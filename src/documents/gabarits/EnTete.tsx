@@ -1,7 +1,8 @@
 import type { Cadre } from '../schemas';
+import { LogoEntreprise } from './Logo';
 
 export function EnTete({ entete }: { entete: Cadre['entete'] }) {
-	return (
+	const coordonnees = (
 		<p className="firm">
 			<b>{entete.raisonSociale}</b><br />
 			{entete.libelleActivite}<br />
@@ -9,4 +10,5 @@ export function EnTete({ entete }: { entete: Cadre['entete'] }) {
 			{`Tél. ${entete.telephone}${entete.fax ? ` - Fax. ${entete.fax}` : ''}`}
 		</p>
 	);
+	return entete.logo ? <div className="firm-logo"><LogoEntreprise src={entete.logo} />{coordonnees}</div> : coordonnees;
 }

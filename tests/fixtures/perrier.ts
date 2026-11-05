@@ -12,6 +12,7 @@ export const PERRIER_PARAMETRES: SourceParametres = {
 	telephone: '02 40 81 40 26',
 	fax: null,
 	villeSignature: 'Châteaubriant',
+	logo: null,
 };
 
 export const PERRIER_CHANTIER: SourceChantier = {

@@ -4,6 +4,6 @@ import { lireParametres } from '@/donnees/parametres';
 
 export default async function PageParametres() {
 	await exigerPage({ admin: true });
-	const { id: _id, ...p } = await lireParametres();
-	return <FormulaireParametres initiales={{ ...p, fax: p.fax ?? '', email: p.email ?? '', siteWeb: p.siteWeb ?? '' }} />;
+	const { id: _id, logo, ...p } = await lireParametres();
+	return <FormulaireParametres initiales={{ ...p, fax: p.fax ?? '', email: p.email ?? '', siteWeb: p.siteWeb ?? '' }} logoInitial={logo} />;
 }

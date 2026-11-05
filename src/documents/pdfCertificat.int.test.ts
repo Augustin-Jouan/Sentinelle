@@ -14,7 +14,7 @@ const SOURCE: SourceCertificat = {
 	precedents: [{ id: 'm1', numero: 1, montantHt: '3000', manuel: true }, { id: 'm2', numero: 2, montantHt: '4200', manuel: true }],
 	societe: {
 		adresse: '71 rue du Général Patton', cp: '44110', ville: 'Châteaubriant', telephone: '02 40 81 40 26', email: 'contact@socoreve-chateaubriant.com',
-		rcs: '328999503', ape: '4120A', tvaIntracommunautaire: 'FR47328999503', villeSignature: 'Châteaubriant',
+		rcs: '328999503', ape: '4120A', tvaIntracommunautaire: 'FR47328999503', villeSignature: 'Châteaubriant', logo: null,
 	},
 };
 const SAISIE = { cumul: new Decimal('9850'), mois: '2026-07', date: '2026-09-30' };

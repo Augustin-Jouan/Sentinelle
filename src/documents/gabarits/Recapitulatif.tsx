@@ -1,10 +1,14 @@
 import type { DonneesRecap } from '../schemas';
+import { LogoEntreprise } from './Logo';
 
 export function Recapitulatif({ donnees }: { donnees: DonneesRecap }) {
 	const { contenu: c, cadre } = donnees;
 	return (
 		<article className="sheet sheet-recap">
-			<h4>RÉCAPITULATIF DES MARCHÉS</h4>
+			<div className="recap-titre">
+				{cadre.entete.logo && <LogoEntreprise src={cadre.entete.logo} />}
+				<h4>RÉCAPITULATIF DES MARCHÉS</h4>
+			</div>
 			<div className="recap-entete">
 				<dl>
 					<dt>Mr / Mme :</dt><dd>{c.maitreOuvrage}</dd>

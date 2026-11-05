@@ -24,7 +24,7 @@ describe('feuille du PV de réception', () => {
 				reserves: ['Reprise des joints de la cuisine', 'Nettoyage du chantier'], delai: '30 jours', retenue: '5',
 				dateReception: '2026-10-12',
 			},
-			societe: { lignes: ['71 rue du Général Patton - 44110 CHÂTEAUBRIANT', 'Tél. 02 40 81 40 26 – contact@socoreve-chateaubriant.com'] },
+			societe: { logo: null, lignes: ['71 rue du Général Patton - 44110 CHÂTEAUBRIANT', 'Tél. 02 40 81 40 26 – contact@socoreve-chateaubriant.com'] },
 		});
 		expect(donneesDocumentSchema.parse(d)).toEqual(d);
 	});
