@@ -293,9 +293,9 @@ export const PARTIES_TACHES: PartieTaches[] = [
 		],
 	},
 	{
-		titre: 'Pour les administrateurs',
+		titre: 'Comptes et paramètres',
 		intro: `
-			Ces écrans s'ouvrent depuis le menu **Mon compte** (vos initiales, en haut à droite).
+			Ces écrans s'ouvrent depuis le menu **Mon compte** (vos initiales, en haut à droite). **Comptes** est réservé aux administrateurs ; **Paramètres** est ouvert à tous.
 			![compte]
 		`,
 		taches: [

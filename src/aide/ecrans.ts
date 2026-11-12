@@ -77,7 +77,7 @@ export const PARTIES_ECRANS: Partie[] = [
 					{ element: 'Sélecteur de chantier', role: "Ouvre directement un chantier, sans repasser par l'accueil (voir l'écran suivant)." },
 					{ element: 'Artisans', role: 'Le référentiel des entreprises ; le chiffre est leur nombre.' },
 					{ element: 'Thème', role: 'Passe en clair ou en sombre. Réglage personnel.' },
-					{ element: 'Mon compte', role: 'Vos initiales : mot de passe, déconnexion, et pour un administrateur Paramètres et Comptes.' },
+					{ element: 'Mon compte', role: 'Vos initiales : mot de passe, Paramètres, déconnexion, et pour un administrateur Comptes.' },
 					{ element: 'Nouveau chantier', role: "Ouvre le formulaire de création d'un chantier." },
 					{ element: 'Chiffres clés', role: 'Chantiers en cours, montant total des marchés engagés, lots sans entreprise, documents produits.' },
 					{ element: 'Recherche', role: 'Filtre les cartes par référence, client ou commune.' },
@@ -108,7 +108,7 @@ export const PARTIES_ECRANS: Partie[] = [
 					{ element: 'Votre compte', role: "Nom, rôle (Maître d'œuvre ou Administrateur) et e-mail." },
 					{ element: "Aide — guide d'utilisation", role: 'Ce guide.' },
 					{ element: 'Changer mon mot de passe', role: 'Choisir un nouveau mot de passe (12 caractères au moins).' },
-					{ element: 'Paramètres', role: "Administrateurs : coordonnées de l'entreprise imprimées sur les documents." },
+					{ element: 'Paramètres', role: "Logo et coordonnées de l'entreprise imprimés sur les documents." },
 					{ element: 'Comptes', role: 'Administrateurs : créer, bloquer, réinitialiser les comptes.' },
 					{ element: 'Se déconnecter', role: 'Ferme la session sur ce navigateur.' },
 				],
@@ -410,7 +410,7 @@ export const PARTIES_ECRANS: Partie[] = [
 		],
 	},
 	{
-		titre: 'Administration',
+		titre: 'Comptes et paramètres',
 		ecrans: [
 			{
 				id: 'comptes',
@@ -447,7 +447,7 @@ export const PARTIES_ECRANS: Partie[] = [
 			{
 				id: 'parametres',
 				titre: "Paramètres de l'entreprise",
-				intro: "Réservé aux administrateurs (Mon compte › Paramètres). À droite, un aperçu montre l'en-tête tel qu'il sera imprimé.",
+				intro: "Mon compte › Paramètres, ouvert à tous les comptes. À droite, un aperçu montre l'en-tête tel qu'il sera imprimé.",
 				reperes: [
 					{ element: 'Entreprise', role: 'Logo, imprimé sur tous les documents ; raison sociale et activité, en tête des marchés et du récapitulatif.' },
 					{ element: 'Coordonnées', role: "Adresse, téléphone, fax (imprimé s'il est rempli), e-mail, site." },
