@@ -50,11 +50,9 @@ export function MenuCompte({ utilisateur }: { utilisateur: UtilisateurConnecte }
 				<hr className={MENU.separateur} />
 				<Link className={cx(ITEM, 'flow-root')} role="menuitem" href="/aide" onClick={fermer}>Aide — guide d&apos;utilisation</Link>
 				<Link className={cx(ITEM, 'flow-root')} role="menuitem" href="/mot-de-passe" onClick={fermer}>Changer mon mot de passe</Link>
+				<Link className={cx(ITEM, 'flow-root')} role="menuitem" href="/parametres" onClick={fermer}>Paramètres</Link>
 				{utilisateur.role === 'admin' && (
-					<>
-						<Link className={cx(ITEM, 'flow-root')} role="menuitem" href="/parametres" onClick={fermer}>Paramètres</Link>
-						<Link className={cx(ITEM, 'flow-root')} role="menuitem" href="/admin/comptes" onClick={fermer}>Comptes</Link>
-					</>
+					<Link className={cx(ITEM, 'flow-root')} role="menuitem" href="/admin/comptes" onClick={fermer}>Comptes</Link>
 				)}
 				{/* Sur un téléphone, l'interrupteur de la barre laisse sa place : le thème se bascule ici. */}
 				<button type="button" className={cx(ITEM, 'hidden max-etroit:block')} role="menuitem" onClick={() => { basculerTheme(); fermer(); }}>Thème clair / sombre</button>

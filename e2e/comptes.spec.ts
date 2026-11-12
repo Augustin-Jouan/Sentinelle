@@ -26,4 +26,9 @@ test('l\'admin crée un compte, le collègue change son mot de passe provisoire'
 	await ouvrirMenuCompte(page);
 	await expect(page.getByRole('menuitem', { name: 'Se déconnecter' })).toBeVisible();
 	await expect(page.getByRole('menuitem', { name: 'Comptes' })).toHaveCount(0);
+	await expect(page.getByRole('menuitem', { name: 'Paramètres' })).toBeVisible();
+	await page.goto('/parametres');
+	await expect(page.getByRole('heading', { name: 'Paramètres de l\'entreprise' })).toBeVisible();
+	await page.goto('/admin/comptes');
+	await expect(page).toHaveURL(/\/chantiers$/);
 });
